@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sin conexión · RESPIA News</title>
+    <!--
+      Esta página la sirve el service worker cuando no hay red, así que no puede
+      depender de React ni de los estilos de la app: va todo aquí.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --surface: #fbfbfd;
+        --ink: #14161d;
+        --muted: #5b6070;
+        --accent: #3d2bff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface: #0d0f14;
+          --ink: #edeef3;
+          --muted: #9aa0b0;
+          --accent: #8b7dff;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      body {
+        min-height: 100dvh;
+        display: grid;
+        place-content: center;
+        gap: 0.75rem;
+        padding: 2rem;
+        background: var(--surface);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.6;
+        text-align: left;
+      }
+
+      .eyebrow {
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        max-width: 16ch;
+      }
+
+      p {
+        color: var(--muted);
+        max-width: 42ch;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="eyebrow">Sin conexión</p>
+    <h1>El teléfono no tiene red.</h1>
+    <p>
+      RESPIA News necesita conexión para traer noticias nuevas. Vuelve a
+      intentarlo cuando recuperes la señal.
+    </p>
+  </body>
+</html>

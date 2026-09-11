@@ -1,0 +1,1 @@
+export { ServiceWorkerRegistrar } from "./ServiceWorkerRegistrar";

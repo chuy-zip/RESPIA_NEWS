@@ -1,0 +1,1 @@
+export { JokeProbe } from "./JokeProbe";

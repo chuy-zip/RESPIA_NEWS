@@ -1,0 +1,95 @@
+.list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  /* columna del punto | etiqueta | dato técnico */
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--border-hairline);
+}
+
+.step:last-child {
+  border-bottom: none;
+}
+
+/* El punto de estado, y la línea que conecta un salto con el siguiente. */
+.marker {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-signal-idle);
+}
+
+.step:not(:last-child) .marker::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: calc(var(--space-3) * 2);
+  transform: translateX(-50%);
+  background-color: var(--color-line);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+}
+
+.detail {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------- estados */
+
+.step[data-state="idle"] .label {
+  color: var(--color-ink-muted);
+}
+
+.step[data-state="running"] .marker {
+  background-color: var(--color-signal-wait);
+  animation: pulse 1s var(--ease-out) infinite;
+}
+
+.step[data-state="running"] .detail {
+  color: var(--color-signal-wait);
+}
+
+.step[data-state="ok"] .marker {
+  background-color: var(--color-signal-ok);
+}
+
+.step[data-state="ok"] .detail {
+  color: var(--color-signal-ok);
+}
+
+.step[data-state="fail"] .marker {
+  background-color: var(--color-signal-fail);
+}
+
+.step[data-state="fail"] .detail {
+  color: var(--color-signal-fail);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

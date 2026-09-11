@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { InstallHint } from "@/components/pwa/InstallHint";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { JokeProbe } from "@/components/smoke-test/JokeProbe";
 
 import styles from "./page.module.css";
@@ -25,7 +25,7 @@ export default function HomePage() {
 
           <JokeProbe />
 
-          <InstallHint />
+          <InstallPrompt />
         </main>
 
         <footer className={styles.footer}>

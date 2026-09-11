@@ -1,0 +1,49 @@
+.steps {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Caja del glifo: replica el aspecto de un botón del sistema. */
+.icon,
+.iconNumber {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-raised);
+  color: var(--color-accent);
+}
+
+.icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.iconNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.text {
+  font-size: var(--text-base);
+  color: var(--color-ink);
+}
+
+.text b {
+  font-weight: 600;
+}

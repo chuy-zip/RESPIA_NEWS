@@ -17,6 +17,20 @@
   align-items: center;
 }
 
+/* En iOS los pasos aparecen debajo, así que todo se apila siempre. */
+.ios {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--color-ink-muted);
+  max-width: 52ch;
+}
+
 .list {
   display: grid;
   gap: var(--space-4);

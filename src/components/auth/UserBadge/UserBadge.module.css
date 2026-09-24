@@ -1,0 +1,31 @@
+.badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+/* Acción secundaria: se lee como enlace, no compite con el botón principal. */
+.signOut {
+  padding: 0;
+  border: none;
+  background: none;
+  min-height: auto;
+
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.signOut:hover {
+  color: var(--color-ink);
+}

@@ -10,11 +10,26 @@
  *   - estáticos (/_next/static, iconos): caché primero, se refresca de fondo.
  *   - /api/*: siempre red. Son datos frescos, no se cachean nunca.
  *
+ * Nunca se cachea una respuesta marcada `no-store` o `private` (ver
+ * isCacheable). Desde que existe /contenido, "/" y esa ruta llevan esa marca
+ * automáticamente porque leen la sesión con cookies(): cachearlas a ciegas
+ * dejaría en el teléfono, sin conexión, la página de un usuario que ya cerró
+ * sesión o de otra persona en el mismo dispositivo.
+ *
  * Al cambiar CACHE_VERSION se invalida todo lo guardado del deploy anterior.
  */
 
-const CACHE_VERSION = "respia-v1";
-const PRECACHE_URLS = ["/", "/offline.html", "/icons/icon-192.png"];
+const CACHE_VERSION = "respia-v2";
+// "/" ya no se precachea: desde que responde distinto según la sesión, guardar
+// una copia fija en la instalación filtraría el estado de quien instaló la app.
+// Sin conexión y sin nada en caché, la app cae a offline.html.
+const PRECACHE_URLS = ["/offline.html", "/icons/icon-192.png"];
+
+/** No cachear nada que el servidor haya marcado como privado o efímero. */
+function isCacheable(response) {
+  const cacheControl = response.headers.get("cache-control") ?? "";
+  return !/no-store|private/i.test(cacheControl);
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -65,7 +80,7 @@ async function networkFirst(request) {
 
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && isCacheable(response)) {
       cache.put(request, response.clone());
     }
     return response;
@@ -94,7 +109,7 @@ async function cacheFirst(request) {
 
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && isCacheable(response)) {
       cache.put(request, response.clone());
     }
     return response;

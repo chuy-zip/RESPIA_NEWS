@@ -23,6 +23,12 @@ interface ProbeResult {
  * Pide un chiste a /api/joke y muestra en qué salto va la petición. Sustituye
  * al futuro feed de noticias: sirve para confirmar que el Route Handler
  * funciona igual en local y en Vercel.
+ *
+ * Este componente NO decide si hay sesión: se usa dentro de src/app/contenido,
+ * cuya página ya verificó al usuario en el servidor antes de renderizarlo. Aun
+ * así, si la sesión caduca justo mientras el usuario está en la pantalla, la
+ * llamada igual puede recibir un 401 — ese caso lo cubre la rama de error de
+ * abajo, como cualquier otro fallo del backend.
  */
 export function JokeProbe() {
   const [status, setStatus] = useState<ProbeStatus>("idle");

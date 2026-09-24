@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getCurrentUser } from "@/lib/auth/dal";
 import { HttpError } from "@/lib/http/fetchJson";
 import { getRandomJoke, JOKES_PROVIDER_NAME } from "@/lib/services/jokes";
 import type { ApiErrorResponse, JokeResponse } from "@/types/joke";
@@ -7,9 +8,14 @@ import type { ApiErrorResponse, JokeResponse } from "@/types/joke";
 /**
  * GET /api/joke
  *
- * Frontera HTTP del backend. Su única responsabilidad es traducir entre el
- * mundo HTTP (status, JSON) y el servicio: no contiene lógica de negocio ni
- * conoce al proveedor externo.
+ * Frontera HTTP del backend. Traduce entre el mundo HTTP (status, JSON) y el
+ * servicio: no contiene lógica de negocio ni conoce al proveedor externo.
+ *
+ * **Requiere sesión.** El bloqueo se decide aquí, en el servidor: sin sesión no
+ * se llama siquiera al proveedor y se responde 401. No es un ocultamiento en la
+ * interfaz — quien haga `curl` a esta ruta sin cookies recibe 401, no el
+ * chiste. Cuando esto sea el servicio de noticias, el mismo patrón protegerá el
+ * cuerpo de los artículos.
  */
 
 // Cada visita debe traer un chiste distinto, así que no se prerenderiza.
@@ -30,6 +36,22 @@ function statusForError(error: HttpError): number {
 export async function GET() {
   const startedAt = Date.now();
 
+  const user = await getCurrentUser();
+
+  if (!user) {
+    const body: ApiErrorResponse = {
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Inicia sesión para usar esta función.",
+      },
+    };
+
+    return NextResponse.json(body, {
+      status: 401,
+      headers: { "cache-control": "private, no-store" },
+    });
+  }
+
   try {
     const joke = await getRandomJoke();
 
@@ -42,8 +64,10 @@ export async function GET() {
       },
     };
 
+    // `private` además de `no-store`: la respuesta depende de quién la pidió,
+    // así que ninguna caché intermedia debe guardarla y servírsela a otro.
     return NextResponse.json(body, {
-      headers: { "cache-control": "no-store" },
+      headers: { "cache-control": "private, no-store" },
     });
   } catch (error) {
     const isKnown = error instanceof HttpError;

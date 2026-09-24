@@ -48,6 +48,37 @@
   max-width: 58ch;
 }
 
+/* Zona de sesión: botón de entrar, o identidad y salida. */
+.session {
+  display: flex;
+  align-items: center;
+  margin-top: var(--space-2);
+}
+
+.authError {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-signal-fail);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-sunken);
+  font-size: var(--text-base);
+  max-width: 58ch;
+}
+
+.protectedLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: fit-content;
+
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+.protectedLink:hover {
+  color: var(--color-accent-hover);
+}
+
 /* -------------------------------------------------------------- footer */
 
 .footer {

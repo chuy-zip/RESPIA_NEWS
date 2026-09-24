@@ -39,14 +39,19 @@ interface JokeApiPayload {
 }
 
 function buildProviderUrl(): string {
-  const language = process.env.JOKES_LANG ?? "es";
+  const params = new URLSearchParams({ type: "single" });
 
-  const params = new URLSearchParams({
-    type: "single",
-    lang: language,
-  });
+  // El pool en español es minúsculo: JokeAPI solo tiene 6 chistes en "es" que
+  // pasan el filtro seguro (contra 183 en inglés, su idioma por defecto). Con
+  // un fondo de 6, la repetición es casi inmediata. Por eso no se fija "es" a
+  // menos que alguien lo pida explícitamente con JOKES_LANG — sin ese
+  // parámetro, el proveedor devuelve inglés, que sí tiene variedad real.
+  if (process.env.JOKES_LANG) {
+    params.set("lang", process.env.JOKES_LANG);
+  }
 
-  // safe-mode es un parámetro sin valor: filtra contenido sensible en origen.
+  // safe-mode es un parámetro sin valor: filtra contenido sensible en origen,
+  // en cualquier idioma que se pida.
   return `${PROVIDER_ENDPOINT}?safe-mode&${params.toString()}`;
 }
 

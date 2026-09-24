@@ -15,17 +15,19 @@ import styles from "./JokeTeaser.module.css";
  * la práctica casi todo lo que trae la API real sale en inglés. Un ejemplo en
  * español al lado de resultados en inglés se sentía como un dato distinto en
  * vez de una muestra de lo mismo.
+ *
+ * El chiste no sale de la API: es uno propio, elegido por ser amable y sin la
+ * traducción atropellada que suelen traer los del proveedor.
  */
 export function JokeTeaser() {
   return (
     <article className={styles.card} aria-labelledby="teaser-title">
       <p className={styles.eyebrow}>Ejemplo · sin conexión al backend</p>
       <p id="teaser-title" className={styles.joke}>
-        My wife is really mad at the fact that I have no sense of direction.
-        So I packed up my stuff and right.
+        Why do programmers prefer dark mode? Because light attracts bugs.
       </p>
       <footer className={styles.meta}>
-        <span className={styles.tag}>Misc</span>
+        <span className={styles.tag}>Programming</span>
         <span className={styles.note}>
           Así se ve el contenido. Lo real está detrás del login.
         </span>

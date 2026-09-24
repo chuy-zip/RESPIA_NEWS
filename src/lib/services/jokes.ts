@@ -15,9 +15,26 @@ import type { Joke } from "@/types/joke";
  * de cliente, que es justo la separación que queremos mantener.
  */
 
-const PROVIDER_ENDPOINT = "https://v2.jokeapi.dev/joke/Any";
+const PROVIDER_BASE = "https://v2.jokeapi.dev/joke";
 
 export const JOKES_PROVIDER_NAME = "JokeAPI v2";
+
+/**
+ * Categorías que de verdad tienen chistes de tipo simple y contenido apto.
+ *
+ * El catálogo completo del proveedor incluye Dark, Spooky y Christmas, pero
+ * ninguna de las tres tiene un solo chiste que cumpla `type=single` +
+ * `safe-mode` a la vez (verificado contra la API: las tres devuelven "No
+ * matching joke found" de forma consistente). Pedirlas sería un 502
+ * garantizado, así que ni se listan.
+ *
+ * Tampoco se usa /joke/Any: ese endpoint devuelve las categorías ponderadas
+ * por cuántos chistes tiene cada una, y Programming por sí sola es la mitad
+ * del catálogo seguro — de ahí que casi siempre saliera "Programming". Elegir
+ * la categoría nosotros mismos, al azar y con el mismo peso para cada una,
+ * reparte la variedad de verdad.
+ */
+const CATEGORIES = ["Programming", "Misc", "Pun"] as const;
 
 /** Forma cruda del proveedor. Solo se usa dentro de este archivo. */
 interface JokeApiPayload {
@@ -39,6 +56,7 @@ interface JokeApiPayload {
 }
 
 function buildProviderUrl(): string {
+  const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
   const params = new URLSearchParams({ type: "single" });
 
   // El pool en español es minúsculo: JokeAPI solo tiene 6 chistes en "es" que
@@ -51,8 +69,8 @@ function buildProviderUrl(): string {
   }
 
   // safe-mode es un parámetro sin valor: filtra contenido sensible en origen,
-  // en cualquier idioma que se pida.
-  return `${PROVIDER_ENDPOINT}?safe-mode&${params.toString()}`;
+  // en cualquier idioma y categoría que se pida.
+  return `${PROVIDER_BASE}/${category}?safe-mode&${params.toString()}`;
 }
 
 /** Pide un chiste al proveedor y lo traduce al tipo del dominio. */

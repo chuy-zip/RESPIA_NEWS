@@ -495,6 +495,7 @@ prod/
    │  ├─ manifest.ts              Manifiesto de la PWA (/manifest.webmanifest)
    │  ├─ page.tsx                 Portada pública (dinámica: lee la sesión)
    │  ├─ contenido/page.tsx       Pantalla protegida
+   │  ├─ admin/page.tsx           Portal administrativo (solo administradores; 404 al resto)
    │  ├─ auth/callback/route.ts   Canje del código OAuth por sesión
    │  ├─ actions/auth.ts          Server Action: cerrar sesión
    │  └─ api/joke/route.ts        API protegida de prueba
@@ -604,7 +605,7 @@ azar con el mismo peso entre `Programming`, `Misc` y `Pun` (sin eso, el endpoint
 | Proxy | Refresca la sesión. **No autoriza** | ✅ |
 | DAL en el servidor | Verifica el JWT con `getClaims()` antes de servir nada protegido | ✅ |
 | Respuesta 401 / pantalla bloqueada | El servidor no serializa el contenido si no hay sesión | ✅ |
-| Rol de administrador (`requireAdmin`, `private.is_admin()`) | Distingue a los administradores del resto de usuarios con sesión | Listo en el código; requiere ejecutar `docs/sql/001_admins.sql` |
+| Rol de administrador (`requireAdmin`, `private.is_admin()`) | Distingue a los administradores del resto de usuarios con sesión | ✅ Script `001_admins.sql` ejecutado. La barra superior (`SiteHeader`) muestra el icono del portal solo a administradores y `/admin` responde 404 al resto |
 | RLS en la base de datos | Segunda capa: aunque alguien llame directo a la API de datos, Postgres niega | ⏳ no hay tablas de noticias |
 
 ### Receta: proteger una página
@@ -802,7 +803,7 @@ prueba, observación y corrección. Estos son casos reales de esta infraestructu
 | El tope de 100 usuarios de prueba favorecía a Firebase | Es de la pantalla de consentimiento de Google y aplica a ambos | Argumento descartado |
 | ESLint 10 era la versión a usar | Rompe con el plugin de React de `eslint-config-next` 16 | Se fijó la 9.x |
 | El modo Testing de Google limita quién entra | Un correo fuera de la lista pudo entrar | Se documentó que no es un control de acceso nuestro |
-| Solo Google puede crear cuentas | El endpoint público de ajustes de Auth mostró `email: true` | Se documentó desactivar el proveedor Email |
+| Solo Google puede crear cuentas | El endpoint público de ajustes de Auth mostró `email: true` | Se desactivó el proveedor Email; el mismo endpoint ahora devuelve `email: false` |
 | Hacía falta la Supabase CLI y una carpeta `supabase/` | Para una sola base, un responsable del esquema y sin pruebas automatizadas, suma más costo que beneficio | Se reemplazó por scripts SQL numerados en `docs/sql/` |
 | El repositorio público quita la limitación de colaboradores de Vercel Hobby | La guía oficial de Vercel no distingue entre público y privado | Se documentó la limitación sin esa excepción |
 ---
@@ -1049,9 +1050,9 @@ Ordenados por prioridad. Los dueños son sugeridos.
 |---|---|---|---|---|
 | 1 | **Supabase Free se pausa tras 7 días sin actividad de base de datos** | La demo puede encontrar la base caída | Sin mecanismo automático (decisión del equipo). Entrar al dashboard cada pocos días y confirmar que el proyecto está activo antes de la demostración (sección 13) | Infra |
 | 2 | **Pantalla de consentimiento en modo Testing**, más la anomalía sin explicar | Para la demo los compañeros no pueden depender de una lista de usuarios de prueba | Crear `/privacidad` y publicar la app antes de la demo. Ver *Publishing status* | Infra y Frontend (la página) |
-| 3 | **Login por correo y contraseña habilitado en Supabase** | Permite crear cuentas por la API sin pasar por Google | Desactivar el proveedor Email (sección 6.2) | Infra |
+| 3 | **Login por correo y contraseña en Supabase** (resuelto: ya está desactivado) | Si alguien lo reactiva, se podrían crear cuentas por la API sin pasar por Google | No reactivar el proveedor Email (sección 6.2) | Infra |
 | 4 | **Hobby: solo el dueño de la cuenta dispara despliegues** | Los commits de otros autores pueden quedar bloqueados; que el repositorio sea público no lo evita | Si ocurre, ver las alternativas de la sección 6.1 | Infra |
-| 5 | **Cualquier cuenta de Google tiene sesión; el rol de administrador aún no existe en la base** | El portal administrativo no podría distinguir administradores | Ejecutar el script 001, agregar a los administradores y usar `requireAdmin()` y `private.is_admin()` en el portal (sección 13) | Infra y Backend |
+| 5 | **Cualquier cuenta de Google tiene sesión; el rol de administrador aún no existe en la base** | El portal administrativo no podría distinguir administradores | Script 001 ya ejecutado y administradores agregados. Falta que cada página y ruta administrativa nueva use `isAdmin()` / `requireAdmin()` y que las tablas de noticias usen `private.is_admin()` en sus políticas (sección 13) | Infra y Backend |
 | 6 | **Sin tablas de noticias ni sus políticas** | Nada persistente todavía | Definir el modelo y escribir scripts numerados en `docs/sql/` (sección 13) | Backend |
 | 7 | **Sin control del gasto de IA** | USD 20 en total; una API abierta los agota | Límite diario por usuario y registro en `ai_usage`; reservar crédito para la demo | Backend e IA |
 | 8 | **Cookies de sesión sin `httpOnly`** | Un XSS robaría la sesión | Sanear todo HTML y no usar `dangerouslySetInnerHTML` con contenido sin sanear. No se agregará CSP | Frontend |

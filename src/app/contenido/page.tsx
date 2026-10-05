@@ -13,8 +13,8 @@ import styles from "./page.module.css";
  *
  * A propósito es una ruta aparte de "/" y no una sección que aparece y
  * desaparece en la misma página: así el bloqueo se puede comprobar navegando
- * directo a /contenido sin sesión, tal como pide el criterio de aceptación en
- * POC_ALCANCE.md.
+ * directo a /contenido sin sesión y comprobar que el servidor la rechaza (ver
+ * docs/INFRA_HANDOFF.md, sección de pruebas).
  *
  * El bloqueo real ocurre aquí, en el servidor, con `getCurrentUser()` — no es
  * un enlace que se esconde en el cliente. Alguien podría escribir esta URL a

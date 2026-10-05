@@ -147,16 +147,16 @@ export function InstallPrompt() {
       ) : deferredEvent ? (
         <div className={styles.action}>
           <p className={styles.lead}>
-            Se instala como aplicación: icono propio, pantalla completa y
-            funciona sin conexión.
+            Se instala como aplicación: icono propio y pantalla completa, sin la
+            barra del navegador.
           </p>
           <Button onClick={install}>Instalar app</Button>
         </div>
       ) : environment === "ios" ? (
         <div className={styles.ios}>
           <p className={styles.lead}>
-            Se instala como aplicación: icono propio, pantalla completa y
-            funciona sin conexión. En iPhone son tres toques.
+            Se instala como aplicación: icono propio y pantalla completa, sin la
+            barra del navegador. En iPhone son tres toques.
           </p>
 
           <Button

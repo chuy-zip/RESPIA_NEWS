@@ -3,8 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // Next 16 escribe AGENTS.md y CLAUDE.md en cada `next dev`. Por ahora el repo
-  // va sin archivos .md, así que se desactiva.
+  // Next 16 escribe AGENTS.md y CLAUDE.md en la raíz del repo en cada
+  // `next dev`. No son documentación del equipo (esa vive en docs/), así que se
+  // desactiva. No quitarlo sin consultarlo.
   agentRules: false,
 
   async headers() {

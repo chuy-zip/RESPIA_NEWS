@@ -83,3 +83,63 @@ export async function requireUser(): Promise<AuthenticatedUser> {
 
   return user;
 }
+
+/** Error que lanza `requireAdmin` cuando hay sesión pero no es administrador. */
+export class ForbiddenError extends Error {
+  constructor() {
+    super("No tienes permiso para usar esta función.");
+    this.name = "ForbiddenError";
+  }
+}
+
+/**
+ * ¿El usuario de la petición es administrador?
+ *
+ * Quién es administrador vive en la tabla `public.admins` (script
+ * docs/sql/001_admins.sql), **no** en `user_metadata` —que el propio usuario
+ * puede editar— ni en nada que venga del navegador. Se identifica por `user_id`
+ * (inmutable); la columna `email` de esa tabla es solo una copia legible, no se
+ * usa para decidir permisos. La tabla solo se modifica desde el SQL Editor de
+ * Supabase; con la sesión del usuario únicamente se puede leer su propia fila, así
+ * que esta consulta no puede mostrar a nadie más.
+ *
+ * Falla cerrado: si la consulta da error (por ejemplo, porque el script aún no
+ * se ejecutó), devuelve false en lugar de dar acceso.
+ */
+export const isAdmin = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return false;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[dal] no se pudo consultar public.admins", error);
+    return false;
+  }
+
+  return data !== null;
+});
+
+/**
+ * Exige sesión Y rol de administrador.
+ *
+ * Lanza `UnauthorizedError` sin sesión (responder 401) y `ForbiddenError` con
+ * sesión pero sin rol (responder 403).
+ */
+export async function requireAdmin(): Promise<AuthenticatedUser> {
+  const user = await requireUser();
+
+  if (!(await isAdmin())) {
+    throw new ForbiddenError();
+  }
+
+  return user;
+}

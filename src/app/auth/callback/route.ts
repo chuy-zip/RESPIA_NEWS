@@ -7,7 +7,9 @@ import { createClient } from "@/lib/supabase/server";
  *
  * Último salto del login: Google devuelve al usuario a Supabase, y Supabase lo
  * manda aquí con un `code` de un solo uso. Aquí se canjea por una sesión, que
- * queda guardada en cookies httpOnly.
+ * queda guardada en cookies (SameSite=Lax). Ojo: @supabase/ssr las crea SIN
+ * httpOnly a propósito, porque el cliente de navegador necesita leerlas. Por
+ * eso hay que evitar cualquier XSS: nunca renderizar HTML sin sanear.
  *
  * Termine bien o mal, siempre se vuelve a la portada. Si algo falla, el motivo
  * viaja en `?auth_error=` para que la pantalla lo muestre en vez de dejar al

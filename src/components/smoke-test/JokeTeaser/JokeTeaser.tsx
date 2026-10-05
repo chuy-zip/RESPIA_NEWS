@@ -4,7 +4,8 @@ import styles from "./JokeTeaser.module.css";
  * Adelanto público, con un dato fijo, no en vivo.
  *
  * Simula el patrón "ver un adelanto sin sesión, contenido completo solo con
- * sesión" que va a tener el portal real (ver SUPABASE_AUTH.md, sección 2). No
+ * sesión" que va a tener el portal real (ver docs/INFRA_HANDOFF.md, modelo de
+ * acceso). No
  * llama a ningún backend: es texto quemado a propósito, para que quede claro
  * que esto NO es la prueba de la cadena de datos — esa vive en /contenido, y
  * ahí sí es en vivo y ahí sí exige sesión.

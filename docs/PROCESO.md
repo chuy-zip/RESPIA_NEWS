@@ -77,8 +77,10 @@ entrada de bitácora donde se trabajó con un asistente de IA se anota:
 - **Cómo se verificó** que lo propuesto era correcto (prueba, lectura del código,
   documentación oficial).
 
-Si la IA propuso algo incorrecto y se detectó, **se anota**. Es evidencia valiosa
-del proceso, no un fallo que esconder.
+Si la IA propuso algo incorrecto y el error fue **significativo** (llevó a una nueva
+decisión o cambió una implementación), **se anota**. Es evidencia valiosa del
+proceso, no un fallo que esconder. Los errores menores que se corrigen sobre la marcha
+no se registran: la bitácora es para lo que enseñó algo.
 
 Esto es distinto del **uso de IA dentro del producto** (qué funciones llaman a un
 modelo, cuánto cuestan y por qué). Eso se documenta en la feature de costos y en

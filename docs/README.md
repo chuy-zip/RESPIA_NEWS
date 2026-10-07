@@ -55,19 +55,25 @@ el resultado.
 
 ### Reglas
 
-1. **Todo trabajo responde a un requisito** (`RF-08`, `RT-03`…). Si lo que te piden no
-   corresponde a ninguno, dilo y propón agregarlo a `ALCANCE.md`; no lo inventes.
+1. **Todo trabajo responde a un requisito** (`RF-08`, `RT-03`…). La persona no tiene por
+   qué darte el ID: **búscalo tú** en [ALCANCE.md](ALCANCE.md) (los IDs están en las
+   tablas de las secciones 1 a 4) o a partir de la feature en
+   [features/README.md](features/README.md). Si ninguno corresponde, dilo y propón
+   agregarlo a `ALCANCE.md`; no lo inventes.
 2. **No cambies requisitos ni criterios de aceptación en silencio.** Si hay que
    cambiarlos, propón el cambio a la persona y, si lo aprueba, regístralo en el
    registro de cambios de `ALCANCE.md`. La matriz de estado sí la actualizas tú.
 3. **Trabaja por ciclos** (comprensión, hipótesis, construcción, prueba,
-   observación, corrección). Cuando algo cambie por lo que observaste, o una
-   hipótesis falle, **escribe una entrada en la bitácora** de la feature con la
-   plantilla de [PROCESO.md](PROCESO.md#plantilla-de-entrada). Usa la fecha real; no
-   inventes fechas ni resultados.
+   observación, corrección). **Escribe una entrada en la bitácora** de la feature solo
+   cuando lo que observaste **cambió una decisión o una implementación**, o descartó una
+   hipótesis importante. No registres cada paso ni cada error menor. Usa la plantilla de
+   [PROCESO.md](PROCESO.md#plantilla-de-entrada), la fecha real, y no inventes fechas ni
+   resultados.
 4. **Registra tu propio uso de IA** en cada entrada: qué herramienta y modelo eres, qué
    se te pidió, qué propusiste, qué aceptó o rechazó el equipo y cómo se verificó. Si
-   te equivocaste, anótalo: es evidencia, no algo que esconder.
+   cometiste un error **significativo** (uno que llevó a una nueva decisión), anótalo:
+   es evidencia, no algo que esconder. Los errores menores que corregiste sobre la
+   marcha no se registran.
 5. **Nunca marques una tarea como hecha sin haber ejecutado su prueba** y dejado el
    registro (fecha, dónde, qué se vio, resultado). Si no puedes probarla tú (requiere
    una cuenta real, un teléfono, un acceso que no tienes), dilo y déjala pendiente:
@@ -78,14 +84,11 @@ el resultado.
 7. **El repositorio es público.** No escribas secretos, llaves, tokens, correos
    reales ni datos de personas, ni en el código ni en los documentos. No leas ni
    muestres los valores de `.env.local`: si necesitas una credencial, pídela.
-8. **No impongas flujo de Git.** No crees ramas, pull requests ni issues, y no hagas
-   commit ni deploy salvo que la persona te lo pida.
-9. **No agregues herramientas, dependencias ni tareas sin una consecuencia concreta que
+8. **No agregues herramientas, dependencias ni tareas sin una consecuencia concreta que
    las justifique.** El equipo ya decidió no usar la CLI de Supabase, fijar la versión de Node ni tareas
    programadas (CRON jobs); ver [plataforma](features/plataforma/README.md). No las vuelvas a proponer.
-10. **Los documentos de este repositorio son autocontenidos:** no referencian archivos
-    que estén fuera de él.
-11. **Escribe en español**, de forma breve y directa.
+9. **Los documentos de este repositorio son autocontenidos:** no referencian archivos
+   que estén fuera de él.
 
 ### Al terminar
 

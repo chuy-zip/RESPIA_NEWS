@@ -87,10 +87,10 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 ## 4. Su primer cambio
 
 1. Busque el requisito en `ALCANCE.md` (por ejemplo `RF-08`). Si no hay un requisito, no hay tarea.
-2. Cree una rama desde `main` actualizado:
+2. Cree una rama desde `dev` actualizado:
 
    ```bash
-   git switch main
+   git switch dev
    git pull
    git switch -c front/feed-y-lector-tarjetas
    ```
@@ -101,7 +101,7 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 4. Escriba el cambio en la sección «Cambio en curso»: requisitos, criterios de
    aceptación y tareas. Hágalo **antes** del código.
 5. Construya el cambio, solo o con un agente (sección 5). Modifique solo las carpetas de su parte.
-6. Abra un PR hacia `main`. Vercel crea una preview del PR. Ejecute la prueba en la preview.
+6. Abra un PR hacia **`dev`** (no hacia `main`). Vercel crea una preview del PR. Ejecute la prueba en la preview.
    Escriba en la tabla de tareas: fecha, dónde, qué vio y resultado.
 7. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
 8. Verifique la Definición de Done (sección 6).
@@ -112,8 +112,9 @@ Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 
 [docs/PROCESO.md](docs/PROCESO.md).
 
 > **Atención:** todo lo que llega a `main` se publica en producción de forma
-> automática. No suba directo a `main`. Antes de fusionar un PR, ejecute
-> `npm run typecheck` y `npm run lint`.
+> automática. No suba directo a `main` ni a `dev`. `dev` pasa a `main` solo con un
+> release antes de cada demo. Antes de fusionar un PR, ejecute `npm run typecheck`
+> y `npm run lint`.
 
 ---
 
@@ -158,7 +159,8 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 - No llame a la base de datos ni a un modelo de IA desde un componente cliente.
 - No cree un archivo si el dato cabe en uno existente. No deje carpetas vacías.
 - No marque una tarea como hecha sin el registro de su prueba.
-- No trabaje en `main` ni haga `git push --force` sobre ramas de otros.
+- No trabaje en `main` ni en `dev`, ni haga `git push --force` sobre ramas de otros.
+- No ejecute un script SQL antes de que su PR llegue a `main`: `dev` y producción comparten la base.
 
 ---
 

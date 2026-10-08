@@ -33,7 +33,7 @@ cosa: eso vive en cada feature (`features/`).
 | RF-03 | Portal web administrativo con autenticación | Solo una cuenta registrada como administradora entra al portal. Una cuenta común no ve el acceso y, si escribe la dirección a mano, recibe "no encontrado" | Entrar con una cuenta administradora y con una común |
 | RF-04 | Ubicación simulada elegida por el usuario; la personalización depende de ella y no del GPS | El usuario elige una región de una lista y su elección se guarda. La app nunca pide permiso de geolocalización del dispositivo. Con el mismo contenido, dos usuarios con regiones distintas ven resultados distintos | Dos cuentas con regiones distintas sobre las mismas noticias: comparar qué aparece, dónde y con qué prominencia; comprobar que no sale ningún aviso de ubicación |
 | RF-05 | Forma práctica de compartir y probar la app durante la clase | Un compañero abre el enlace público, inicia sesión con Google y ve las instrucciones de instalación en la propia app, sin ayuda del equipo | Que alguien ajeno al equipo lo haga desde su teléfono |
-| RF-06 | Página de privacidad y pantalla de consentimiento de Google publicada | `/privacidad` es pública, está en español, enlazada desde la portada y describe los datos que **realmente** se guardan (se contrasta con el esquema de la base). La pantalla de consentimiento de Google está en producción: una cuenta que no pertenece al equipo puede iniciar sesión | Iniciar sesión con una cuenta de Google ajena al equipo; revisar la página contra las tablas |
+| RF-06 | Página de privacidad y acceso para cuentas ajenas al equipo | `/privacidad` es pública, está en español, enlazada desde la portada y describe los datos que **realmente** se guardan (se contrasta con el esquema de la base). Una cuenta de Google que no pertenece al equipo puede iniciar sesión sin estar registrada en Google Cloud | Iniciar sesión con una cuenta de Google ajena al equipo; revisar la página contra las tablas |
 
 ### 1.2 Experiencia móvil
 
@@ -147,7 +147,7 @@ por el registro de cambios.
 | RF-03 | En curso | Acceso y rol listos; faltan las funciones del portal |
 | RF-04 | Pendiente | |
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
-| RF-06 | Pendiente | |
+| RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
 | RF-07 a RF-18 | Pendiente | |
 | RT-01 a RT-06 | Pendiente | |
 | RP-01 a RP-03 | Pendiente | |
@@ -160,4 +160,5 @@ por el registro de cambios.
 |---|---|---|
 | 7-oct-2026 | Versión inicial | Fijar el alcance a partir del enunciado |
 | 7-oct-2026 | `RPR-01` a `RPR-03`: se quitan los issues y los pull requests como unidad de trabajo; las tareas viven en la lista de cada feature | El equipo no impondrá reglas de control de versiones porque no se cumplirían, y exigirlas daría evidencia falsa |
+| 7-oct-2026 | `RF-06`: se quita el criterio de que la pantalla de consentimiento de Google esté en producción; queda el de que una cuenta ajena pueda iniciar sesión | La documentación de Google exceptúa del modo Testing a las apps que solo piden nombre, correo y perfil, así que publicar no es necesario. Ver la bitácora de [acceso](features/acceso/bitacora.md) |
 | 7-oct-2026 | La evidencia pasa a ser un registro escrito de la prueba (fecha, dónde, qué se vio, resultado); las capturas son opcionales. Se ajustan las pruebas de `RF-01` y `RF-08` | Tomar capturas cuesta tiempo y se desactualizan |

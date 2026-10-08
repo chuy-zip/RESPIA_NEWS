@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
+
+import styles from "./SignInButton.module.css";
 
 interface SignInButtonProps {
   label?: string;
@@ -43,8 +46,15 @@ export function SignInButton({
   }
 
   return (
-    <Button onClick={signIn} disabled={pending} variant={variant}>
-      {pending ? "Abriendo Google…" : label}
-    </Button>
+    <div className={styles.wrapper}>
+      <Button onClick={signIn} disabled={pending} variant={variant}>
+        {pending ? "Abriendo Google…" : label}
+      </Button>
+      {/* Que la política sea visible justo donde se entregan los datos (RF-06). */}
+      <p className={styles.note}>
+        Consulta cómo tratamos tus datos en la{" "}
+        <Link href="/privacidad">política de privacidad</Link>.
+      </p>
+    </div>
   );
 }

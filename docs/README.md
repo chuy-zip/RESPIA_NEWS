@@ -80,7 +80,8 @@ el resultado.
    no declares ✅ lo que no verificaste.
 6. **Cumple la [definición de Done](PROCESO.md#definición-de-done)** y, al terminar,
    actualiza la tabla de tareas de la feature (estado y evidencia) y la matriz de
-   estado de `ALCANCE.md`.
+   estado de `ALCANCE.md`. Si tu cambio guarda un dato nuevo del usuario, actualiza
+   también `src/app/privacidad/page.tsx` (`RF-06`).
 7. **El repositorio es público.** No escribas secretos, llaves, tokens, correos
    reales ni datos de personas, ni en el código ni en los documentos. No leas ni
    muestres los valores de `.env.local`: si necesitas una credencial, pídela.

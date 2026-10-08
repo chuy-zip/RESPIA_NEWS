@@ -26,6 +26,7 @@ Sesión con Google, quién es administrador y qué se entrega sin sesión.
 | `/admin` responde 404 a quien no es administrador | No se confirma a un usuario común que la ruta existe |
 | El icono de administración es comodidad, no seguridad | El control real está en la página y en la base |
 | Proveedor Email de Supabase desactivado | Dejaba crear cuentas por la API sin pasar por Google |
+| La pantalla de consentimiento de Google se queda en *Testing* y no se agregan permisos | Con solo nombre, correo y perfil, Testing no restringe quién entra. Un permiso adicional sí lo haría |
 
 ## Cómo se prueba
 
@@ -59,6 +60,7 @@ una común.
 | ✅ | Proveedor Email desactivado | `RF-03` | Bitácora 2026-10-04: el endpoint público de ajustes devuelve solo Google |
 | ✅ | Icono de administración y pantalla `/admin` | `RF-03` | Bitácora 2026-10-04, commit `766ddf0`. Probado sin sesión; falta la prueba con cuentas |
 | ⏳ | Probar `RF-03` con una cuenta administradora y una común, y anotar el resultado | `RF-03` | |
-| ⏳ | Crear `/privacidad` y enlazarla desde la portada | `RF-06` | |
-| ⏳ | Publicar la pantalla de consentimiento de Google | `RF-06` | |
-| ⏳ | Probar el inicio de sesión con una cuenta ajena al equipo | `RF-06` | |
+| ⏳ | Crear `/privacidad` y enlazarla desde la portada | `RF-06` | Creada el 2026-10-07 (`src/app/privacidad/page.tsx`) y compilada; el servidor local responde 200. Se enlaza desde el pie de la portada y bajo el botón de iniciar sesión (que aparece en `/`, `/contenido` y `/admin` sin sesión). Falta probarla desplegada |
+| — | ~~Publicar la pantalla de consentimiento de Google~~ | `RF-06` | Descartada el 2026-10-07: con permisos básicos no hace falta. Bitácora 2026-10-07 |
+| ✅ | Probar el inicio de sesión con una cuenta ajena al equipo | `RF-06` | Prueba del equipo reportada el 2026-10-07: una cuenta que no es del equipo ni está definida en Google Cloud inició sesión sin problema |
+| ⏳ | Mantener `/privacidad` al día: cada feature que guarde un dato nuevo del usuario la actualiza en el mismo cambio | `RF-06` | Tarea permanente |

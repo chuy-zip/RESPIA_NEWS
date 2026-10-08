@@ -56,7 +56,7 @@ enunciado los reserva.
 | Bloqueo en servidor (401 / pantalla bloqueada sin sesión) | ✅ | `curl` contra producción, sección 11 |
 | Refresco automático de sesión | ✅ | Implementado en `src/proxy.ts` (sección 4.3) |
 | Base de datos con tablas de noticias y RLS | ⏳ | Aún no existen tablas de noticias (las define Backend). Los scripts base están en `docs/sql/` (sección 13) |
-| Pantalla de consentimiento de Google publicada | ⏳ | Sigue en modo *Testing*, sección 6 |
+| Cuentas ajenas al equipo pueden iniciar sesión | ✅ | Con solo los permisos básicos, el modo *Testing* no restringe quién entra; probado con una cuenta ajena. No hace falta publicar la pantalla de consentimiento (sección 6.3) |
 
 ---
 
@@ -357,25 +357,30 @@ Comportamientos conocidos que no son errores:
   verificada; sin eso, muestra el dominio, que aquí es el de Supabase. Se arregla
   con verificación de marca o con un dominio propio para Auth (función de pago).
   Es cosmético.
-- **En modo Testing** solo pueden entrar los usuarios agregados como "Test users"
-  (tope de 100) y las autorizaciones caducan a los 7 días.
-- **Publicar la app exige una URL de inicio y una URL de política de privacidad.**
-  Google bloqueó el botón de publicar por eso. Falta crear la página `/privacidad`
-  (sección 15).
+- **El modo Testing limita a 100 "Test users" y caduca las autorizaciones a los 7
+  días, pero no cuando la app solo pide nombre, correo y perfil**, que es nuestro
+  caso. La documentación de Google (*Manage App Audience*) dice que, para esos
+  permisos básicos, los usuarios no necesitan estar en la lista, no ven advertencia
+  y sus autorizaciones no caducan. Por eso **no hace falta publicar la pantalla de
+  consentimiento** y cualquier compañero puede entrar a la demo.
+- **Publicar sí exige** un nombre de app, un correo de asistencia, una URL de inicio
+  y una URL de política de privacidad. Existe `/privacidad`, pero no es necesario
+  publicar.
 
-**Anomalía sin explicar.** Un correo que no estaba en la lista de usuarios de
-prueba pudo iniciar sesión estando la app en Testing. No se determinó la causa.
-Hipótesis, de más a menos probable: (1) es el mismo buzón con otra forma de
-escribirlo (Gmail ignora los puntos y los sufijos `+algo`); (2) la cuenta tiene un
-rol en el proyecto de Google Cloud; (3) la app terminó publicada sin notarlo. Se
-resuelve mirando el campo *Publishing status* en Audience.
+**Qué explica que un correo fuera de la lista pudiera entrar.** Antes se había
+tomado como una anomalía. La causa es la excepción anterior: con permisos básicos el
+modo Testing no restringe a nadie.
+
+**Cuándo sí volvería a restringir:** si algún día se agrega un permiso que no sea
+básico (por ejemplo, acceso al calendario o a los contactos), el modo Testing pasa a
+limitar a la lista de usuarios de prueba, y habría que publicar y pasar la
+verificación de Google. Por eso **no se agregan otros permisos**.
 
 **Consecuencia importante:** el modo Testing de Google **nunca fue nuestro control
-de acceso**. Es un freno de Google sobre apps sin verificar, no una lista blanca
-hermética, y desaparece al publicar. Hoy, **cualquier cuenta de Google obtiene
-sesión** en la app. Es coherente con el enunciado (los compañeros deben poder
-entrar a la demo), pero cualquier restricción real (por ejemplo, quién es
-administrador) debe construirse **dentro de la aplicación y la base de datos**.
+de acceso**. Hoy **cualquier cuenta de Google obtiene sesión** en la app. Es
+coherente con el enunciado (los compañeros deben poder entrar a la demo), pero
+cualquier restricción real (por ejemplo, quién es administrador) debe construirse
+**dentro de la aplicación y la base de datos**.
 
 ---
 
@@ -802,7 +807,7 @@ prueba, observación y corrección. Estos son casos reales de esta infraestructu
 | Firebase y Supabase difieren mucho en OAuth | Tras investigar, están casi empatados; tres argumentos a favor de Supabase eran falsos | Se descartaron esos argumentos (sección 3) |
 | El tope de 100 usuarios de prueba favorecía a Firebase | Es de la pantalla de consentimiento de Google y aplica a ambos | Argumento descartado |
 | ESLint 10 era la versión a usar | Rompe con el plugin de React de `eslint-config-next` 16 | Se fijó la 9.x |
-| El modo Testing de Google limita quién entra | Un correo fuera de la lista pudo entrar | Se documentó que no es un control de acceso nuestro |
+| El modo Testing de Google limita quién entra | Un correo fuera de la lista pudo entrar. La documentación de Google exceptúa a las apps que solo piden nombre, correo y perfil | Se documentó que no es un control de acceso nuestro y que no hace falta publicar la pantalla de consentimiento |
 | Solo Google puede crear cuentas | El endpoint público de ajustes de Auth mostró `email: true` | Se desactivó el proveedor Email; el mismo endpoint ahora devuelve `email: false` |
 | Hacía falta la Supabase CLI y una carpeta `supabase/` | Para una sola base, un responsable del esquema y sin pruebas automatizadas, suma más costo que beneficio | Se reemplazó por scripts SQL numerados en `docs/sql/` |
 | El repositorio público quita la limitación de colaboradores de Vercel Hobby | La guía oficial de Vercel no distingue entre público y privado | Se documentó la limitación sin esa excepción |
@@ -1049,7 +1054,7 @@ Ordenados por prioridad. Los dueños son sugeridos.
 | # | Riesgo o deuda | Impacto | Siguiente paso | Dueño |
 |---|---|---|---|---|
 | 1 | **Supabase Free se pausa tras 7 días sin actividad de base de datos** | La demo puede encontrar la base caída | Sin mecanismo automático (decisión del equipo). Entrar al dashboard cada pocos días y confirmar que el proyecto está activo antes de la demostración (sección 13) | Infra |
-| 2 | **Pantalla de consentimiento en modo Testing**, más la anomalía sin explicar | Para la demo los compañeros no pueden depender de una lista de usuarios de prueba | Crear `/privacidad` y publicar la app antes de la demo. Ver *Publishing status* | Infra y Frontend (la página) |
+| 2 | **Pantalla de consentimiento en modo Testing** (resuelto: no estorba mientras solo se pidan permisos básicos) | Si se agrega un permiso que no sea básico, el modo Testing pasaría a limitar el acceso a la lista de usuarios de prueba | No agregar permisos a la pantalla de consentimiento (sección 6.3) | Infra |
 | 3 | **Login por correo y contraseña en Supabase** (resuelto: ya está desactivado) | Si alguien lo reactiva, se podrían crear cuentas por la API sin pasar por Google | No reactivar el proveedor Email (sección 6.2) | Infra |
 | 4 | **Hobby: solo el dueño de la cuenta dispara despliegues** | Los commits de otros autores pueden quedar bloqueados; que el repositorio sea público no lo evita | Si ocurre, ver las alternativas de la sección 6.1 | Infra |
 | 5 | **Cualquier cuenta de Google tiene sesión; el rol de administrador aún no existe en la base** | El portal administrativo no podría distinguir administradores | Script 001 ya ejecutado y administradores agregados. Falta que cada página y ruta administrativa nueva use `isAdmin()` / `requireAdmin()` y que las tablas de noticias usen `private.is_admin()` en sus políticas (sección 13) | Infra y Backend |

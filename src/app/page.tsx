@@ -72,6 +72,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
         <footer className={styles.footer}>
           <span>RESPIA News</span>
+          <Link href="/privacidad" className={styles.footerLink}>
+            Privacidad
+          </Link>
           <span className={styles.footerNote}>
             Pantalla temporal de infraestructura
           </span>

@@ -4,6 +4,31 @@ De lo más reciente a lo más antiguo. Las entradas de esta página se **reconst
 el 7-oct-2026** a partir del historial de Git y de la conversación de trabajo con el
 asistente de IA; las fechas son hora local (Guatemala).
 
+## 2026-10-07 · No hace falta publicar la pantalla de consentimiento de Google
+
+**Requisitos:** `RF-06`
+
+- **Comprensión:** el botón de publicar de Google estaba bloqueado y se creyó
+  necesario publicar para que los compañeros pudieran entrar a la demo.
+- **Hipótesis:** mientras la app siga en *Testing*, solo entran las cuentas de la lista
+  de usuarios de prueba, así que había que publicar. Era la lectura del equipo y del
+  asistente, y también la explicación pendiente de la entrada del 2026-09-23.
+- **Prueba:** el equipo inició sesión con una cuenta que no es del equipo ni está
+  definida en Google Cloud (segunda vez que ocurre). El asistente revisó la
+  documentación oficial de Google sobre la audiencia de la app.
+- **Observación:** la documentación exceptúa a las apps que solo piden nombre, correo y
+  perfil: sus usuarios no necesitan estar en la lista, no ven advertencia y sus
+  autorizaciones no caducan. Nuestra app solo pide esos permisos. Eso explica los dos
+  casos y deja sin necesidad la publicación.
+- **Corrección:** se descartó publicar. Se cambió el criterio de `RF-06` (ya no exige
+  la pantalla en producción) y se corrigió [INFRA_HANDOFF.md](../../INFRA_HANDOFF.md),
+  que afirmaba que Testing limitaba el acceso. Queda como regla no agregar permisos.
+- **Uso de IA:** el asistente había dado por cierto, en esta feature y en el handoff,
+  que Testing limitaba el acceso, y trató el caso como una anomalía sin explicar. La
+  consulta de la documentación oficial lo corrigió.
+- **Evidencia:** documentación de Google, *Manage App Audience*, y la prueba del equipo
+  con una cuenta ajena.
+
 ## 2026-10-04 · Icono y pantalla de administración
 
 **Requisitos:** `RF-03` · **Commit:** `766ddf0`
@@ -67,9 +92,10 @@ asistente de IA; las fechas son hora local (Guatemala).
   (2) que la cuenta tuviera un rol en el proyecto de Google Cloud, y (3) otra causa.
   Advirtió que no pudo reconfirmar la segunda con una fuente autoritativa.
 - **Prueba:** comparar el correo exacto contra la lista.
-- **Observación:** la causa **no se determinó**. Lo que sí quedó claro es que quien
-  decide quién puede iniciar sesión con Google es Google, no nuestro código, y que
-  la lista de prueba no es un control de seguridad nuestro.
+- **Observación:** la causa **no se determinó** en ese momento (se explicó el 2026-10-07,
+  ver la entrada de esa fecha). Lo que sí quedó claro es que quien decide quién puede
+  iniciar sesión con Google es Google, no nuestro código, y que la lista de prueba no
+  es un control de seguridad nuestro.
 - **Corrección:** el permiso de administración no depende de esa lista: se decide en
   la base (ver la entrada del 4-oct).
 - **Uso de IA:** el asistente separó lo comprobado de lo supuesto y lo declaró.

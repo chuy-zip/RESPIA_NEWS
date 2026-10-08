@@ -96,6 +96,15 @@
   color: var(--color-ink-muted);
 }
 
+.footerLink {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footerLink:hover {
+  color: var(--color-ink);
+}
+
 .footerNote {
   color: var(--color-line-strong);
 }

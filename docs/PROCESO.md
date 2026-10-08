@@ -5,8 +5,8 @@ Versión 0.2 · 2026-10-08. Cubre `RPR-01` a `RPR-03` de [ALCANCE.md](ALCANCE.md
 Cada cambio debe mostrar tres datos: **qué hizo el agente, qué decidió el equipo y
 qué evidencia lo respalda.**
 
-El equipo no impone reglas de control de versiones: no se exigen ramas, pull
-requests ni revisiones. La evidencia vive en la documentación, no en el flujo de Git.
+Cada parte trabaja en sus carpetas y en su propia rama (sección 8). La evidencia
+vive en la documentación; Git evita que dos partes se pisen.
 
 ## 1. Dónde va cada dato
 
@@ -116,7 +116,61 @@ Escríbala en la columna «Evidencia» de la tabla de tareas del spec. Si la pru
 enseñó algo, escriba una entrada en la bitácora y enlácela. Una tarea no se da por
 hecha sin su registro.
 
-## 8. Plantillas
+## 8. Git y propiedad de carpetas
+
+### Ramas
+
+- `main` es producción: Vercel publica todo lo que llega. **Nadie sube directo a `main`.** Todo entra por pull request (PR).
+- Una rama por cambio: `<parte>/<feature>-<descripcion>`. Partes: `front`, `back`, `datos`, `ia`, `infra`, `docs`.
+  Ejemplos: `front/feed-y-lector-tarjetas`, `ia/chat-fuentes`, `datos/portal-admin-tabla-noticias`.
+- Una rama vive 3 días como máximo. Traiga `main` a su rama cada día:
+
+```bash
+git pull origin main
+```
+
+### Dueño de cada carpeta
+
+Una rama modifica solo las carpetas de su parte. Si necesita cambiar una carpeta de otra parte, haga una de dos cosas:
+(a) pida el cambio al dueño, o (b) inclúyalo en su PR y espere la aprobación del dueño. `.github/CODEOWNERS` pide esa revisión automáticamente.
+
+| Carpeta | Dueño |
+|---|---|
+| `src/app/**/page.tsx`, `*.module.css`, `src/app/layout.tsx`, `src/components/`, `src/styles/`, `public/` (excepto `sw.js`), `e2e/` | Frontend · Sergio Orellana |
+| `src/app/api/`, `src/app/actions/` (excepto `auth.ts`), `src/lib/services/`, `src/lib/http/`, `src/types/` | Backend · Gerardo Pineda |
+| `src/lib/ia/` | IA · Rodrigo Mansilla |
+| `supabase/migrations/`, `src/lib/supabase/`, `src/lib/auth/`, `src/proxy.ts`, `src/app/auth/`, `src/app/actions/auth.ts`, `public/sw.js`, `src/app/manifest.ts`, `next.config.ts`, `.env.example`, `package.json` | Infra · Ricardo Chuy |
+| `specs/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
+| `AGENTS.md`, `docs/PROCESO.md`, `docs/ALCANCE.md`, `docs/DECISIONES.md` | Todo el equipo |
+
+### Archivos compartidos: reglas para evitar conflictos
+
+| Archivo | Regla |
+|---|---|
+| `src/types/` | Es el contrato entre frontend y backend. Un cambio de tipo va en un PR pequeño y propio, antes del código que lo usa |
+| `supabase/migrations/` | Use el número siguiente. Fusione el PR del script pronto. Si dos PR usan el mismo número, el último en fusionarse cambia su número |
+| `package.json`, `package-lock.json` | Una dependencia nueva por PR, con aviso al equipo. Si `package-lock.json` tiene conflicto, no lo edite a mano: tome el de `main` y ejecute `npm install` |
+| `docs/ALCANCE.md`, `docs/DECISIONES.md` | Agregue filas al final. No reordene ni edite filas de otros |
+
+### Commits y pull requests
+
+- Mensaje de commit: `<parte>(<feature>): descripción`. Ejemplo: `ia(chat): cita las fuentes en la respuesta [RF-13]`.
+- Título del PR: el mismo formato. Descripción: requisito, qué cambió, cómo se probó (URL de la preview de Vercel) y qué no se probó.
+- Antes de fusionar: la preview de Vercel compila, `npm run typecheck` y `npm run lint` no muestran errores, y la prueba se hizo en la preview.
+- Fusione con **Squash and merge**: un commit por PR en `main`. GitHub conserva las líneas `Co-Authored-By` del agente.
+- Si el PR solo toca carpetas de su parte, el autor puede fusionarlo. Si toca carpetas de otra parte, espere la aprobación del dueño.
+
+### Configuración de GitHub (la hace el dueño del repositorio)
+
+En Settings → Branches → regla para `main`:
+
+1. Active «Require a pull request before merging», con 0 aprobaciones obligatorias.
+2. Active «Block force pushes» y no permita borrar la rama.
+3. En Settings → General, deje activo solo «Allow squash merging».
+
+No active «Require review from Code Owners»: bloquearía los PR en los que el autor es el único dueño.
+
+## 9. Plantillas
 
 ### Spec (`specs/<feature>.md`)
 

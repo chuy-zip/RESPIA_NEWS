@@ -87,18 +87,33 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 ## 4. Su primer cambio
 
 1. Busque el requisito en `ALCANCE.md` (por ejemplo `RF-08`). Si no hay un requisito, no hay tarea.
-2. Abra `specs/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
+2. Cree una rama desde `main` actualizado:
+
+   ```bash
+   git switch main
+   git pull
+   git switch -c front/feed-y-lector-tarjetas
+   ```
+
+   Formato: `<parte>/<feature>-<descripcion>`. Partes: `front`, `back`, `datos`, `ia`, `infra`, `docs`.
+3. Abra `specs/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
    cree `docs/features/<feature>/bitacora.md`.
-3. Escriba el cambio en la sección «Cambio en curso»: requisitos, criterios de
+4. Escriba el cambio en la sección «Cambio en curso»: requisitos, criterios de
    aceptación y tareas. Hágalo **antes** del código.
-4. Construya el cambio, solo o con un agente (sección 5).
-5. Ejecute la prueba. Escriba en la tabla de tareas: fecha, dónde, qué vio y resultado.
-6. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
-7. Verifique la Definición de Done (sección 6).
-8. Cierre el cambio: actualice «Comportamiento actual» y borre «Cambio en curso».
+5. Construya el cambio, solo o con un agente (sección 5). Modifique solo las carpetas de su parte.
+6. Abra un PR hacia `main`. Vercel crea una preview del PR. Ejecute la prueba en la preview.
+   Escriba en la tabla de tareas: fecha, dónde, qué vio y resultado.
+7. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
+8. Verifique la Definición de Done (sección 6).
+9. Cierre el cambio: actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
+   **Squash and merge**. Si el PR toca carpetas de otra parte, espere la aprobación del dueño.
+
+Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 8 de
+[docs/PROCESO.md](docs/PROCESO.md).
 
 > **Atención:** todo lo que llega a `main` se publica en producción de forma
-> automática. Antes de subir a `main`, ejecute `npm run typecheck` y `npm run lint`.
+> automática. No suba directo a `main`. Antes de fusionar un PR, ejecute
+> `npm run typecheck` y `npm run lint`.
 
 ---
 
@@ -143,6 +158,7 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 - No llame a la base de datos ni a un modelo de IA desde un componente cliente.
 - No cree un archivo si el dato cabe en uno existente. No deje carpetas vacías.
 - No marque una tarea como hecha sin el registro de su prueba.
+- No trabaje en `main` ni haga `git push --force` sobre ramas de otros.
 
 ---
 

@@ -43,15 +43,19 @@ frontend, backend, datos e IA.
    ni datos de personas. No leas ni muestres los valores de `.env.local`.
 10. Si tu cambio guarda un dato nuevo del usuario, actualiza `src/app/privacidad/page.tsx` (`RF-06`).
 11. Los commits hechos con un agente llevan la línea `Co-Authored-By` del agente.
+12. **No trabajes en `main`.** Crea una rama `<parte>/<feature>-<descripcion>` y abre un PR.
+13. **Modifica solo las carpetas de la parte de tu rama.** Si necesitas una carpeta de otra
+    parte, dilo a la persona: el cambio necesita la aprobación del dueño (tabla de la sección
+    8 de `PROCESO.md` y `.github/CODEOWNERS`).
 
 ## Dónde trabaja cada parte
 
 | Parte | Trabaja en | Regla |
 |---|---|---|
-| **Frontend** | `src/app/**/page.tsx` y `*.module.css` (pantallas), `src/components/`, `src/styles/`, `e2e/` | Un componente por carpeta con `index.ts`. No llames a la base de datos desde un componente cliente: pide los datos al backend |
-| **Backend** | `src/app/api/` (endpoints), `src/app/actions/` (server actions), `src/lib/services/` (lógica de negocio), `src/types/` | Cada ruta y página protegida verifica la sesión en el servidor con `src/lib/auth/dal.ts`. La ruta HTTP no contiene lógica de negocio: llama a un servicio |
-| **Modelación de datos** | `supabase/migrations/` (SQL numerado), `src/types/` | Script nuevo con el número siguiente, idempotente, con RLS, `GRANT` mínimos y una política por operación. No edites un script ya ejecutado |
-| **IA (modelos)** | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_` |
+| **Frontend** (Sergio Orellana) | `src/app/**/page.tsx` y `*.module.css` (pantallas), `src/components/`, `src/styles/`, `e2e/` | Un componente por carpeta con `index.ts`. No llames a la base de datos desde un componente cliente: pide los datos al backend |
+| **Backend** (Gerardo Pineda) | `src/app/api/` (endpoints), `src/app/actions/` (server actions), `src/lib/services/` (lógica de negocio), `src/types/` | Cada ruta y página protegida verifica la sesión en el servidor con `src/lib/auth/dal.ts`. La ruta HTTP no contiene lógica de negocio: llama a un servicio |
+| **Modelación de datos** (Ricardo Chuy) | `supabase/migrations/` (SQL numerado), `src/types/` | Script nuevo con el número siguiente, idempotente, con RLS, `GRANT` mínimos y una política por operación. No edites un script ya ejecutado |
+| **IA (modelos)** (Rodrigo Mansilla) | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_` |
 | **Proceso** | `specs/`, `docs/` | Ver [docs/PROCESO.md](docs/PROCESO.md) |
 
 Las carpetas `e2e/` y `src/lib/ia/` se crean con su primer archivo. No dejes carpetas vacías.

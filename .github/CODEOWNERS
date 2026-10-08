@@ -1,0 +1,35 @@
+# Dueños de cada carpeta. GitHub pide su revisión cuando un PR toca sus archivos.
+# La última línea que coincide gana: las reglas específicas van al final.
+# Tabla completa y reglas: docs/PROCESO.md, sección 8.
+
+# Frontend · Sergio Orellana
+/src/app/                       @SergioAle210
+/src/components/                @SergioAle210
+/src/styles/                    @SergioAle210
+/public/                        @SergioAle210
+/e2e/                           @SergioAle210
+
+# Backend · Gerardo Pineda
+/src/app/api/                   @Gerax5
+/src/app/actions/               @Gerax5
+/src/lib/services/              @Gerax5
+/src/lib/http/                  @Gerax5
+/src/types/                     @Gerax5
+
+# IA · Rodrigo Mansilla
+/src/lib/ia/                      @Rodrimansidub14
+
+# Infra · Ricardo Chuy (infraestructura ya implementada; ver AGENTS.md)
+/supabase/migrations/             @chuy-zip
+/src/lib/supabase/                @chuy-zip
+/src/lib/auth/                    @chuy-zip
+/src/proxy.ts                     @chuy-zip
+/src/app/auth/                    @chuy-zip
+/src/app/actions/auth.ts          @chuy-zip
+/src/app/manifest.ts              @chuy-zip
+/public/sw.js                     @chuy-zip
+/next.config.ts                   @chuy-zip
+/.env.example                     @chuy-zip
+/package.json                     @chuy-zip
+/package-lock.json                @chuy-zip
+/.github/                         @chuy-zip

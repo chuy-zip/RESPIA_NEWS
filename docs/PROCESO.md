@@ -192,6 +192,19 @@ En Settings → Branches, cree una regla para `main` y otra para `dev`:
 
 No active «Require review from Code Owners»: bloquearía los PR en los que el autor es el único dueño.
 
+### Configuración de Vercel (la hace el dueño de la cuenta)
+
+| Ajuste | Valor | Razón |
+|---|---|---|
+| Settings → Environments → Production | Rama `main` | Solo `main` publica en <https://respia-news.vercel.app> |
+| Settings → Git → Ignored Build Step | **Automatic** | Vercel construye una preview de `dev` y de cada PR. No use «Only build production»: apaga esas previews y el trabajo integrado se probaría por primera vez en producción |
+| Settings → Deployment Protection | El equipo puede abrir la preview de `dev` | Si «Vercel Authentication» está activo, solo el dueño de la cuenta ve las previews |
+
+> **Atención:** en el plan Hobby, Vercel puede bloquear el despliegue de un commit cuyo autor no
+> es el dueño de la cuenta ([INFRA_HANDOFF.md](INFRA_HANDOFF.md), sección 6.1). Si una preview sale
+> «blocked», pruebe en local con `npm run dev`. Si el release a `main` se bloquea, el dueño de la
+> cuenta hace el merge del PR de release.
+
 ## 9. Plantillas
 
 ### Spec (`specs/<feature>.md`)

@@ -1,137 +1,180 @@
-# Proceso de trabajo
+# Proceso de trabajo con agentes de IA
 
-El enunciado pide que el desarrollo asistido por IA sea **observable**: ciclos
-reales de comprensión, hipótesis, construcción, prueba, observación y corrección,
-con ejemplos de cómo la evidencia cambió una decisión, y evidencia de por qué cada
-tarea se dio por terminada. Este documento fija cómo lo hacemos. Los requisitos
-que cubre son `RPR-01` a `RPR-03` de [ALCANCE.md](ALCANCE.md).
+Versión 0.2 · 2026-10-08. Cubre `RPR-01` a `RPR-03` de [ALCANCE.md](ALCANCE.md).
 
-El equipo **no impone reglas de control de versiones**: no se exigen ramas, pull
-requests ni revisiones. Cada quien trabaja como le resulte práctico. Lo único que
-se pide es lo que hace falta para tener evidencia, y vive en la documentación, no
-en el flujo de Git.
+Cada cambio debe mostrar tres datos: **qué hizo el agente, qué decidió el equipo y
+qué evidencia lo respalda.**
 
-## Unidades de trabajo
+El equipo no impone reglas de control de versiones: no se exigen ramas, pull
+requests ni revisiones. La evidencia vive en la documentación, no en el flujo de Git.
 
-| Qué | Dónde vive | Para qué sirve como evidencia |
+## 1. Dónde va cada dato
+
+| Lugar | Contenido |
+|---|---|
+| **Notion** | El porqué: investigación (R&D) por área, teoría, alternativas e hipótesis completas |
+| **Repositorio** | El qué, el cómo, el resultado y las pruebas |
+
+- Registre cada dato en un solo lugar. Use enlaces; no copie.
+- Use el mismo ID de ciclo (`CIC-NNN`) en Notion y en la bitácora.
+- Cite los requisitos por su ID (`RF-08`). No copie su texto.
+
+| Archivo | Contenido |
+|---|---|
+| [ALCANCE.md](ALCANCE.md) | Requisitos con ID, criterios de aceptación y matriz de estado |
+| `specs/<feature>.md` | Spec de la feature: comportamiento actual, criterios, tareas y cambio en curso |
+| `docs/features/<feature>/bitacora.md` | Ciclos que cambiaron una decisión, con el registro del agente |
+| [DECISIONES.md](DECISIONES.md) | Todas las decisiones duraderas, una fila por decisión |
+
+## 2. Ciclo de trabajo
+
+**Comprensión → Hipótesis → Construcción → Prueba → Observación → Corrección**
+
+1. Escriba el cambio en `specs/<feature>.md`, sección «Cambio en curso»: requisitos,
+   criterios de aceptación y tareas.
+2. Construya con el agente. El agente lee [AGENTS.md](../AGENTS.md) y el spec.
+3. Ejecute la prueba. Registre la fecha, el entorno, lo observado y el resultado.
+4. Si la evidencia cambia una decisión, registre el ciclo en la bitácora. Si la
+   decisión es duradera, agregue una fila en [DECISIONES.md](DECISIONES.md).
+5. Cierre el cambio: actualice «Comportamiento actual», marque las tareas y borre
+   «Cambio en curso». Git conserva el historial.
+
+No todo cambio es un ciclo. Registre solo los ciclos que cambiaron una decisión o
+descartaron una hipótesis.
+
+## 3. Registro del uso de agentes
+
+Cada entrada de bitácora hecha con un agente incluye estos campos:
+
+| Campo | Contenido |
+|---|---|
+| **Agente** | Herramienta y modelo |
+| **Pedido** | Qué se pidió, en resumen. Sin datos sensibles |
+| **Propuesta** | Qué propuso el agente |
+| **Decisión** | Qué aceptó, rechazó o corrigió el equipo, y por qué |
+| **Verificación** | Cómo se comprobó: prueba, lectura del código o documentación oficial |
+
+> **Importante:** si el agente propuso algo incorrecto y eso cambió una decisión,
+> regístrelo. Es evidencia, no un fallo.
+
+Los commits hechos con un agente llevan la línea `Co-Authored-By` del agente.
+
+El uso de IA **dentro del producto** (qué función llama a un modelo, cuánto cuesta y
+por qué) se documenta en el spec de cada feature, sección «Uso de IA en el producto».
+
+## 4. Frameworks y qué demuestran
+
+| Framework | Qué demuestra | Dónde se ve |
 |---|---|---|
-| **Requisito** | [ALCANCE.md](ALCANCE.md) | Qué debe cumplirse y cómo se prueba |
-| **Tarea** | Tabla de tareas en el `README.md` de la feature, con el ID del requisito y su evidencia | Qué se planeó y qué quedó terminado |
-| **Ciclo** | Una entrada en `features/<feature>/bitacora.md` | Cómo cambió una decisión por la evidencia |
-| **Evidencia** | Un **registro escrito** de la prueba (ver [Evidencia](#evidencia)) | Por qué se dio por terminada la tarea |
+| First principles, Lean, Systems thinking | El problema se analizó antes de elegir la solución | Notion (hechos base); spec («No incluido», «Dependencias») |
+| SDD (spec-driven) | El plan existe antes del código | `specs/<feature>.md` |
+| TDD (test-driven) | El criterio de aceptación existe antes del código | Criterios del spec, `*.test.ts`, `e2e/` |
+| EDD (evidence-driven) | Cada cierre y cada decisión tienen evidencia | Bitácora, `DECISIONES.md` |
+| Context engineering | Qué información recibe el agente | `AGENTS.md`, spec |
+| Harness engineering | Qué puede hacer el agente y qué se verifica | `.claude/skills/`, hooks, `tsc`, `eslint` |
+| Loop engineering | Cuándo termina un ciclo | Definición de Done |
+| Memory engineering | Qué se conserva entre sesiones | Spec, `DECISIONES.md`, bitácora |
 
-Una tarea sin ID de requisito no se agrega: si no responde a ninguno, o falta el
-requisito (se agrega al alcance con registro de cambio) o la tarea sobra.
+## 5. Límites
 
-Los commits ayudan, pero son opcionales: si se puede, el mensaje cita el ID
-(`RF-08: feed con tres niveles`) y la bitácora anota el hash. Si no, no pasa nada;
-las fechas de la bitácora y del historial de Git dan igualmente la secuencia.
+> **Regla:** antes de crear un archivo, verifique si el dato cabe en un archivo existente.
 
-## El ciclo
+| Tipo | Límite |
+|---|---|
+| Spec | 1 por feature |
+| Bitácora | 1 por feature. Solo ciclos que cambiaron algo |
+| Decisiones | 1 archivo. 1 fila por decisión difícil de revertir o que afecta a 2 partes o más |
+| Test de lógica | 1 archivo por módulo con riesgo: costo de IA, roles, validaciones, feed. 1 test por criterio. Al lado del módulo (`*.test.ts`) |
+| Test e2e | 5 como máximo, con Playwright, en `e2e/`. Solo el camino principal del flujo. Sin estilos ni snapshots |
+| UI sin e2e | Prueba manual en Vercel y en un teléfono real. Pruebe carga, vacío, error, sin conexión y cada rol |
+| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más |
+| Capturas | 0 por defecto. Si hace falta una: `docs/features/<feature>/evidencia/AAAA-MM-DD-descripcion.ext`, sin llaves, tokens, cookies ni correos |
 
-Cada vez que se construye algo no trivial se recorre, y lo que valga la pena se
-anota en la bitácora de la feature:
+## 6. Definición de Done
 
-1. **Comprensión.** Qué problema se resuelve y qué se sabe de él.
-2. **Hipótesis.** Qué se cree que funcionará y qué se espera ver.
-3. **Construcción.** Qué se hizo.
-4. **Prueba.** Qué se ejecutó para comprobarlo.
-5. **Observación.** Qué pasó en realidad. Aquí van los descubrimientos.
-6. **Corrección.** Qué cambió por lo observado: código, decisión o requisito.
+Una tarea está terminada cuando todo esto es cierto:
 
-No todo cambio es un ciclo. Se anotan los que **cambiaron algo** por la evidencia
-o los que descartaron una hipótesis. Un ciclo donde todo salió como se esperaba,
-sin sorpresa, rara vez enseña algo.
+1. Cumple el criterio de aceptación.
+2. La prueba tiene un registro escrito.
+3. Está en Vercel y se probó allí. Si el requisito exige un dispositivo, se probó en uno real.
+4. `npm run typecheck` y `npm run lint` no muestran errores.
+5. No contiene secretos, llaves ni correos reales.
+6. El spec, la bitácora y la matriz de estado de `ALCANCE.md` están actualizados.
 
-Las entradas llevan la **fecha en que ocurrió** el hecho. Si una entrada se
-escribe después, se marca como *reconstruida* y se toma la fecha del historial de
-Git o de la conversación de trabajo.
+Cada spec puede agregar un **Done específico**.
 
-### Plantilla de entrada
+## 7. Evidencia
 
-```markdown
-## 2026-10-08 · Título corto de lo que pasó
+La evidencia es un **registro escrito de la prueba**. Debe decir:
 
-**Requisitos:** RF-08 · **Commit:** abc1234 (opcional)
-
-- **Comprensión:** …
-- **Hipótesis:** …
-- **Construcción:** …
-- **Prueba:** … (cómo se probó)
-- **Observación:** … (lo que se vio, aunque contradiga la hipótesis)
-- **Corrección:** … (qué cambió por eso)
-- **Uso de IA:** …
-- **Evidencia:** … (cuándo, dónde y qué resultado; una captura es opcional)
-```
-
-## Registro del uso de IA en el desarrollo
-
-El enunciado pide que el uso de IA al desarrollar se pueda observar. En cada
-entrada de bitácora donde se trabajó con un asistente de IA se anota:
-
-- **Herramienta y modelo** usados.
-- **Qué se le pidió**, resumido (no se pega el prompt completo si contiene datos
-  sensibles).
-- **Qué propuso** y **qué decidió el equipo**: qué se aceptó, qué se rechazó y qué
-  se corrigió. Esta parte es la más importante: muestra el criterio humano.
-- **Cómo se verificó** que lo propuesto era correcto (prueba, lectura del código,
-  documentación oficial).
-
-Si la IA propuso algo incorrecto y el error fue **significativo** (llevó a una nueva
-decisión o cambió una implementación), **se anota**. Es evidencia valiosa del
-proceso, no un fallo que esconder. Los errores menores que se corrigen sobre la marcha
-no se registran: la bitácora es para lo que enseñó algo.
-
-Esto es distinto del **uso de IA dentro del producto** (qué funciones llaman a un
-modelo, cuánto cuestan y por qué). Eso se documenta en la feature de costos y en
-cada feature que use un modelo, y se mide con el registro de llamadas (`RP-02`).
-
-## Definición de Done
-
-Una tarea está terminada cuando **todo** esto es cierto:
-
-1. Cumple el criterio de aceptación del requisito que cita.
-2. La prueba del requisito se **ejecutó** y su resultado quedó registrado por
-   escrito (ver [Evidencia](#evidencia)).
-3. El cambio está desplegado en Vercel y se probó ahí, no solo en local. Si el
-   requisito exige un dispositivo (iPhone, Android), se probó en uno real.
-4. `tsc` y `eslint` pasan.
-5. No hay secretos, llaves ni correos reales en el cambio.
-6. La documentación de la feature está al día: su tabla de tareas, con la
-   evidencia de la tarea, y, si hubo un descubrimiento, su entrada en la bitácora.
-7. La matriz de estado de [ALCANCE.md](ALCANCE.md) se actualiza.
-
-La prueba la ejecuta quien hizo el cambio. Si otra persona del equipo puede
-repetirla en su teléfono, mejor, pero no es requisito. Cada feature puede agregar
-un **Done específico** en su README si necesita algo más.
-
-## Evidencia
-
-La evidencia es un **registro escrito de la prueba**, no una captura. Las capturas
-se desactualizan y cuestan tiempo; un registro con fecha y resultado no. Para que
-valga como evidencia debe decir:
-
-- **Cuándo** se probó (fecha).
-- **Dónde:** el entorno y, si aplica, el dispositivo (por ejemplo "iPhone real, app
-  instalada" o "producción en Vercel").
-- **Qué se hizo y qué se vio.** Lo observado, no solo "funciona".
+- **Cuándo:** la fecha.
+- **Dónde:** el entorno y el dispositivo («iPhone real, app instalada», «producción en Vercel»).
+- **Qué se hizo y qué se vio.** Lo observado, no solo «funciona».
 - **Resultado:** pasó o falló.
 
-Se anota donde corresponda, y la tabla de tareas apunta ahí:
+Escríbala en la columna «Evidencia» de la tabla de tareas del spec. Si la prueba
+enseñó algo, escriba una entrada en la bitácora y enlácela. Una tarea no se da por
+hecha sin su registro.
 
-- La **entrada de la bitácora** de la feature, si la prueba enseñó algo.
-- Una fila en el README de la feature, si fue una prueba sin sorpresas.
-- Una **verificación ya documentada**, como una sección de
-  [INFRA_HANDOFF.md](INFRA_HANDOFF.md), sin copiarla.
-- El **commit**, si se quiere citar el cambio probado.
+## 8. Plantillas
 
-Las capturas son **opcionales**: sirven si alguien quiere dejar una, pero ninguna
-tarea las exige. Si se sube una, va pequeña a `features/<feature>/evidencia/`, con el
-nombre `AAAA-MM-DD-descripción.ext`, y **nunca** muestra llaves, tokens, cookies,
-correos reales ni datos de compañeros: el repositorio es público.
+### Spec (`specs/<feature>.md`)
 
-Una tarea no se da por hecha sin su registro.
+```markdown
+# <Feature>
 
-## Cómo se organiza la documentación
+**Requisitos:** `RF-xx` · **Bitácora:** [bitacora.md](../docs/features/<feature>/bitacora.md) ·
+**Investigación:** <enlace a Notion> · **Responsable:** <nombre>
 
-Ver [README.md](README.md) y [features/README.md](features/README.md).
+## Comportamiento actual
+Qué hace hoy la feature y las reglas menores con su razón.
+
+## Criterios de aceptación
+Cómo se prueba cada requisito.
+
+## No incluido
+Lo que la feature no hace, a propósito.
+
+## Dependencias
+Otras features, tablas o servicios de los que depende.
+
+## Uso de IA en el producto
+Función, modelo, para qué, alternativa más barata considerada y costo. «Ninguno» si no aplica.
+
+## Done específico
+Condiciones adicionales a la definición de Done, si hay.
+
+## Tareas
+| Estado | Tarea | Req. | Evidencia |
+|---|---|---|---|
+
+## Cambio en curso
+Vacío si no hay un cambio abierto.
+```
+
+### Entrada de bitácora
+
+Las entradas anteriores al 2026-10-08 usan un solo campo «Uso de IA». No se reescriben.
+
+```markdown
+## 2026-10-08 · CIC-NNN · Título corto de lo que pasó
+
+**Requisitos:** `RF-08` · **Notion:** <enlace> · **Commit:** abc1234 (opcional) ·
+**Decisión:** D-NN (si aplica)
+
+- **Comprensión:** …
+- **Hipótesis:** una línea. El detalle está en Notion.
+- **Construcción:** …
+- **Prueba:** cómo se probó.
+- **Observación:** lo que se vio, aunque contradiga la hipótesis.
+- **Corrección:** qué cambió por eso.
+- **Agente:** herramienta y modelo.
+- **Pedido:** …
+- **Propuesta:** …
+- **Decisión:** qué aceptó, rechazó o corrigió el equipo, y por qué.
+- **Verificación:** …
+- **Evidencia:** cuándo, dónde, qué se vio y resultado.
+```
+
+Las entradas llevan la fecha en que ocurrió el hecho. Si una entrada se escribe
+después, márquela como *reconstruida*.

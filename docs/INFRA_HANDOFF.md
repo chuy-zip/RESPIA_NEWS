@@ -55,7 +55,7 @@ enunciado los reserva.
 | Login con Google en iOS con la PWA instalada (modo standalone) | ✅ | Probado en dispositivo real. Era el mayor riesgo técnico |
 | Bloqueo en servidor (401 / pantalla bloqueada sin sesión) | ✅ | `curl` contra producción, sección 11 |
 | Refresco automático de sesión | ✅ | Implementado en `src/proxy.ts` (sección 4.3) |
-| Base de datos con tablas de noticias y RLS | ⏳ | Aún no existen tablas de noticias (las define Backend). Los scripts base están en `docs/sql/` (sección 13) |
+| Base de datos con tablas de noticias y RLS | ⏳ | Aún no existen tablas de noticias (las define Backend). Los scripts base están en `supabase/migrations/` (sección 13) |
 | Cuentas ajenas al equipo pueden iniciar sesión | ✅ | Con solo los permisos básicos, el modo *Testing* no restringe quién entra; probado con una cuenta ajena. No hace falta publicar la pantalla de consentimiento (sección 6.3) |
 
 ---
@@ -267,8 +267,9 @@ Fuente: `package.json`.
 | Node | `>=20.9.0` (campo `engines`) | Vercel muestra un aviso en el build porque el rango es abierto: es solo informativo |
 | Tipografías | Bricolage Grotesque, Inter, JetBrains Mono | Vía `next/font`: se descargan en el build y se sirven desde el propio dominio |
 
-**Decisión del equipo: no se usan pruebas automatizadas.** La verificación es
-manual y con scripts (sección 11).
+**Pruebas automatizadas limitadas** (D-15 en `docs/DECISIONES.md`): un archivo por
+módulo de lógica con riesgo y como máximo 5 tests e2e. El resto de la verificación
+es manual y con scripts (sección 11).
 
 ---
 
@@ -486,8 +487,10 @@ de la sección 13 ("RLS en toda tabla") no es opcional.
 
 ```
 prod/
+├─ AGENTS.md                      Reglas para agentes de IA (CLAUDE.md lo importa)
+├─ specs/                         Un spec por feature
 ├─ docs/                          Esta documentación y el enunciado en PDF
-│  └─ sql/                        Scripts SQL numerados de Supabase (se ejecutan en el SQL Editor)
+├─ supabase/migrations/           Scripts SQL numerados de Supabase (se ejecutan en el SQL Editor)
 ├─ public/
 │  ├─ sw.js                       Service worker. Se sirve tal cual, sin build
 │  ├─ offline.html                Pantalla sin conexión. HTML y CSS propios, sin React
@@ -587,8 +590,8 @@ prod/
 | **Tipografías con `next/font`** | Se alojan en el propio dominio: sin petición a Google en tiempo de ejecución | `layout.tsx` |
 | **Backend de prueba con `safe-mode`, `type=single` y categorías fijadas** | Contenido apto en origen. Ver detalle abajo | `lib/services/jokes.ts` |
 | **Servicios con `fetchJson` (timeout de 6 s y errores tipados)** | La ruta decide el estado HTTP según la causa: 504 por timeout; 502 por fallo del proveedor | `lib/http/fetchJson.ts`, `api/joke/route.ts` |
-| **El rol de administrador vive en una tabla (`public.admins`), identificado por `user_id` y no por correo, y nunca en `user_metadata`** | `user_metadata` lo edita el propio usuario, y un correo puede cambiar. La tabla guarda el correo como copia legible, solo se escribe desde el SQL Editor y, con la sesión de un usuario, solo se lee su propia fila | `docs/sql/001_admins.sql`, `lib/auth/dal.ts` |
-| **Esquema con scripts SQL numerados en `docs/sql/`, sin Supabase CLI** | Una sola base, un solo responsable del esquema y sin pruebas automatizadas: la CLI sumaría más costo que beneficio. El historial queda en git y se revisa en las PR | `docs/sql/` |
+| **El rol de administrador vive en una tabla (`public.admins`), identificado por `user_id` y no por correo, y nunca en `user_metadata`** | `user_metadata` lo edita el propio usuario, y un correo puede cambiar. La tabla guarda el correo como copia legible, solo se escribe desde el SQL Editor y, con la sesión de un usuario, solo se lee su propia fila | `supabase/migrations/001_admins.sql`, `lib/auth/dal.ts` |
+| **Esquema con scripts SQL numerados en `supabase/migrations/`, sin Supabase CLI** | Una sola base y un solo responsable del esquema: la CLI sumaría más costo que beneficio. El historial queda en git. Los scripts estaban en `docs/sql/` hasta el 2026-10-08 (D-14) | `supabase/migrations/` |
 | **Solo Google como proveedor de login** (falta desactivar Email) | El enunciado pide login con Google; cada proveedor extra es una puerta más que nadie decidió abrir | Configuración de Supabase (sección 6.2) |
 
 **Detalle del backend de prueba**, porque explica comportamientos que parecen
@@ -699,7 +702,7 @@ export async function POST() {
 darlo. La comprobación del rol es del servidor; en la base de datos, las políticas
 de escritura de las tablas de noticias deben usar `private.is_admin()` para que el
 rol se respete incluso si alguien se salta la aplicación (ver
-`docs/sql/001_admins.sql`).
+`supabase/migrations/001_admins.sql`).
 
 ### Reglas
 
@@ -809,7 +812,7 @@ prueba, observación y corrección. Estos son casos reales de esta infraestructu
 | ESLint 10 era la versión a usar | Rompe con el plugin de React de `eslint-config-next` 16 | Se fijó la 9.x |
 | El modo Testing de Google limita quién entra | Un correo fuera de la lista pudo entrar. La documentación de Google exceptúa a las apps que solo piden nombre, correo y perfil | Se documentó que no es un control de acceso nuestro y que no hace falta publicar la pantalla de consentimiento |
 | Solo Google puede crear cuentas | El endpoint público de ajustes de Auth mostró `email: true` | Se desactivó el proveedor Email; el mismo endpoint ahora devuelve `email: false` |
-| Hacía falta la Supabase CLI y una carpeta `supabase/` | Para una sola base, un responsable del esquema y sin pruebas automatizadas, suma más costo que beneficio | Se reemplazó por scripts SQL numerados en `docs/sql/` |
+| Hacía falta la Supabase CLI y una carpeta `supabase/` | Para una sola base, un responsable del esquema y sin pruebas automatizadas, suma más costo que beneficio | Se reemplazó por scripts SQL numerados en `docs/sql/` (desde el 2026-10-08, `supabase/migrations/`, todavía sin CLI) |
 | El repositorio público quita la limitación de colaboradores de Vercel Hobby | La guía oficial de Vercel no distingue entre público y privado | Se documentó la limitación sin esa excepción |
 ---
 
@@ -821,10 +824,9 @@ Hay **dos scripts base escritos** y **todavía no hay tablas de noticias** (las
 define Backend). La autenticación funciona sin tablas propias: los usuarios viven en
 el esquema `auth`, que administra Supabase.
 
-**El esquema se cambia con scripts SQL numerados** que viven en `docs/sql/` y se
-ejecutan en el SQL Editor del dashboard. No se usa la Supabase CLI ni una carpeta
-`supabase/` de migraciones: así el historial de cambios queda en git y se revisa en
-las Pull Requests, sin herramientas extra.
+**El esquema se cambia con scripts SQL numerados** que viven en `supabase/migrations/` y se
+ejecutan en el SQL Editor del dashboard. No se usa la Supabase CLI: la carpeta solo
+agrupa los scripts (D-14). El historial de cambios queda en git, sin herramientas extra.
 
 | Script | Para qué | Estado (4 de octubre de 2026) |
 |---|---|---|
@@ -834,12 +836,12 @@ las Pull Requests, sin herramientas extra.
 **Por qué no se usa la Supabase CLI.** Sus ventajas (migraciones con herramienta,
 base local en Docker, tipos de TypeScript generados, pruebas de políticas) pesan
 cuando varias personas cambian un esquema grande o hay varios entornos. Aquí hay una
-sola base, un solo responsable del esquema y no se usan pruebas automatizadas. Lo
+sola base, un solo responsable del esquema y no se prueban las políticas con herramienta. Lo
 único que se pierde es la generación automática de tipos; se pueden escribir a mano.
 
 ### Cómo se hace un cambio de esquema
 
-1. Escribir un script nuevo en `docs/sql/` con el siguiente número (`003_…`). Debe
+1. Escribir un script nuevo en `supabase/migrations/` con el siguiente número (`003_…`). Debe
    ser **idempotente** (`if not exists`, `drop policy if exists`, `on conflict`) y
    llevar un encabezado que explique para qué sirve.
 2. Incluirlo en la Pull Request: es lo que se revisa.
@@ -1058,7 +1060,7 @@ Ordenados por prioridad. Los dueños son sugeridos.
 | 3 | **Login por correo y contraseña en Supabase** (resuelto: ya está desactivado) | Si alguien lo reactiva, se podrían crear cuentas por la API sin pasar por Google | No reactivar el proveedor Email (sección 6.2) | Infra |
 | 4 | **Hobby: solo el dueño de la cuenta dispara despliegues** | Los commits de otros autores pueden quedar bloqueados; que el repositorio sea público no lo evita | Si ocurre, ver las alternativas de la sección 6.1 | Infra |
 | 5 | **Cualquier cuenta de Google tiene sesión; el rol de administrador aún no existe en la base** | El portal administrativo no podría distinguir administradores | Script 001 ya ejecutado y administradores agregados. Falta que cada página y ruta administrativa nueva use `isAdmin()` / `requireAdmin()` y que las tablas de noticias usen `private.is_admin()` en sus políticas (sección 13) | Infra y Backend |
-| 6 | **Sin tablas de noticias ni sus políticas** | Nada persistente todavía | Definir el modelo y escribir scripts numerados en `docs/sql/` (sección 13) | Backend |
+| 6 | **Sin tablas de noticias ni sus políticas** | Nada persistente todavía | Definir el modelo y escribir scripts numerados en `supabase/migrations/` (sección 13) | Backend |
 | 7 | **Sin control del gasto de IA** | USD 20 en total; una API abierta los agota | Límite diario por usuario y registro en `ai_usage`; reservar crédito para la demo | Backend e IA |
 | 8 | **Cookies de sesión sin `httpOnly`** | Un XSS robaría la sesión | Sanear todo HTML y no usar `dangerouslySetInnerHTML` con contenido sin sanear. No se agregará CSP | Frontend |
 | 9 | **Sin contenido offline** | Sin conexión solo se ve `offline.html` | Cuando existan noticias, cachear solo lo público | Frontend |

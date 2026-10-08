@@ -3,7 +3,7 @@
 Este documento fija **qué debe cumplir y probar el sistema**. Sale únicamente del
 enunciado del curso ([Proyecto 2 AI Assisted News App](Proyecto%202%20AI%20Assisted%20News%20App.pdf)),
 más las restricciones que el equipo adoptó. No describe cómo se construye cada
-cosa: eso vive en cada feature (`features/`).
+cosa: eso vive en el spec de cada feature (`specs/`).
 
 ## Reglas de este documento
 
@@ -15,7 +15,8 @@ cosa: eso vive en cada feature (`features/`).
 3. Cada requisito tiene un ID (`RF-` funcional, `RT-` transparencia, `RP-`
    presupuesto, `RPR-` proceso). Las tareas y la evidencia citan esos IDs.
 4. Una columna "Prueba" describe una prueba **manual y repetible**: qué se hace y
-   qué debe verse. No hay pruebas automatizadas (decisión del equipo). Cada
+   qué debe verse. Las pruebas automatizadas son limitadas (D-15 en
+   [DECISIONES.md](DECISIONES.md)). Cada
    prueba que se ejecute deja evidencia (ver [PROCESO.md](PROCESO.md)).
 5. Los umbrales numéricos de los criterios (por ejemplo "al menos 3 niveles") los
    eligió el equipo, porque el enunciado deja los criterios a cada equipo.
@@ -96,8 +97,8 @@ criterio señala dónde se demuestra.
 
 | ID | Requisito | Criterio de aceptación | Prueba |
 |---|---|---|---|
-| RPR-01 | Desarrollo asistido por IA observable, con ciclos de comprensión, hipótesis, construcción, prueba, observación y corrección | Hay al menos 5 ciclos documentados donde la evidencia cambió una decisión o implementación, cada uno con fecha, evidencia y registro del uso de IA | Revisar las bitácoras de `features/` |
-| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, las listas de tareas de cada feature (cada tarea cita un ID de requisito) y la [definición de Done](PROCESO.md#definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
+| RPR-01 | Desarrollo asistido por IA observable, con ciclos de comprensión, hipótesis, construcción, prueba, observación y corrección | Hay al menos 5 ciclos documentados donde la evidencia cambió una decisión o implementación, cada uno con fecha, evidencia y registro del uso de IA | Revisar las bitácoras de `docs/features/` |
+| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, las tablas de tareas de cada spec en `specs/` (cada tarea cita un ID de requisito) y la [definición de Done](PROCESO.md#6-definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
 | RPR-03 | Flujo de trabajo documentado y evidencia de por qué cada tarea concreta se consideró terminada | [PROCESO.md](PROCESO.md) describe el flujo. Cada tarea hecha tiene su evidencia o la referencia a dónde está | Tomar 3 tareas al azar y seguir su evidencia |
 
 ---
@@ -131,7 +132,7 @@ tienen que estar probados y con evidencia lista para cada parte.
 | 7 | Transparencia y Responsible AI | RT-01 a RT-06 |
 | 8 | Engineering loops y gestión | RPR-01, RPR-02, RPR-03 |
 | 9 | Costos | RP-01, RP-02 |
-| 10 | Lecciones aprendidas | Bitácoras de `features/` |
+| 10 | Lecciones aprendidas | Bitácoras de `docs/features/` y [DECISIONES.md](DECISIONES.md) |
 
 ---
 
@@ -162,3 +163,4 @@ por el registro de cambios.
 | 7-oct-2026 | `RPR-01` a `RPR-03`: se quitan los issues y los pull requests como unidad de trabajo; las tareas viven en la lista de cada feature | El equipo no impondrá reglas de control de versiones porque no se cumplirían, y exigirlas daría evidencia falsa |
 | 7-oct-2026 | `RF-06`: se quita el criterio de que la pantalla de consentimiento de Google esté en producción; queda el de que una cuenta ajena pueda iniciar sesión | La documentación de Google exceptúa del modo Testing a las apps que solo piden nombre, correo y perfil, así que publicar no es necesario. Ver la bitácora de [acceso](features/acceso/bitacora.md) |
 | 7-oct-2026 | La evidencia pasa a ser un registro escrito de la prueba (fecha, dónde, qué se vio, resultado); las capturas son opcionales. Se ajustan las pruebas de `RF-01` y `RF-08` | Tomar capturas cuesta tiempo y se desactualizan |
+| 8-oct-2026 | `RPR-02`: las tareas pasan de la tabla del README de cada feature a la tabla del spec (`specs/<feature>.md`). La regla 4 admite pruebas automatizadas limitadas | Proceso v0.2 (D-13, D-15 en [DECISIONES.md](DECISIONES.md)) |

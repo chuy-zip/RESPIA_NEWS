@@ -7,6 +7,17 @@ Producción: <https://respia-news.vercel.app>
 
 Este manual le dice cómo empezar. Las reglas completas están en los documentos que enlaza.
 
+## Equipo
+
+| Persona | Parte | Carpetas principales |
+|---|---|---|
+| Sergio Orellana | Frontend | `src/app/**/page.tsx`, `src/components/`, `src/styles/`, `e2e/` |
+| Gerardo Pineda | Backend | `src/app/api/`, `src/app/actions/`, `src/lib/services/` |
+| Ricardo Chuy | Infra | Vercel, Supabase, Google Cloud, `supabase/migrations/` |
+| Rodrigo Mansilla | AI Engineering | `src/lib/ia/` |
+
+Las variables de entorno y los accesos a Vercel y Supabase los entrega el responsable de infra.
+
 ---
 
 ## 1. Prepare el entorno
@@ -151,7 +162,7 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 
 | Necesita | Vaya a |
 |---|---|
-| El porqué de una feature: investigación e hipótesis | Notion (enlace en el encabezado de cada spec) |
+| El porqué de una feature: investigación e hipótesis | [Notion: Investigación (R&D)](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) |
 | Qué hace una feature y sus tareas | `specs/<feature>.md` |
 | Qué se decidió y por qué | [docs/DECISIONES.md](docs/DECISIONES.md) |
 | Cómo funciona la sesión, la seguridad o la base | [docs/INFRA_HANDOFF.md](docs/INFRA_HANDOFF.md) |

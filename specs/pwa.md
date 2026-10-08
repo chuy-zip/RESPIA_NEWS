@@ -3,7 +3,7 @@
 Instalación en iPhone y Android sin tiendas, y la forma de compartir la app para probarla.
 
 **Requisitos:** `RF-01`, `RF-05` · **Bitácora:** [bitacora.md](../docs/features/pwa/bitacora.md) ·
-**Decisiones:** D-01, D-05 · **Investigación:** pendiente en Notion ·
+**Decisiones:** D-01, D-05 · **Investigación:** [Notion](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) ·
 **Detalle técnico:** [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md)
 
 ## Comportamiento actual

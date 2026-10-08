@@ -3,7 +3,7 @@
 Dónde corre todo, cuánto cuesta y cómo se cambia la base de datos.
 
 **Requisitos:** `RP-04` · **Bitácora:** [bitacora.md](../docs/features/plataforma/bitacora.md) ·
-**Decisiones:** D-02, D-08, D-11, D-14, D-15 · **Investigación:** pendiente en Notion ·
+**Decisiones:** D-02, D-08, D-11, D-14, D-15 · **Investigación:** [Notion](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) ·
 **Detalle técnico y operación:** [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md)
 
 ## Comportamiento actual

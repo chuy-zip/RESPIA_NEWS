@@ -3,7 +3,7 @@
 Sesión con Google, quién es administrador y qué se entrega sin sesión.
 
 **Requisitos:** `RF-02`, `RF-03`, `RF-06` · **Bitácora:** [bitacora.md](../docs/features/acceso/bitacora.md) ·
-**Decisiones:** D-03, D-04, D-06, D-07, D-12 · **Investigación:** pendiente en Notion ·
+**Decisiones:** D-03, D-04, D-06, D-07, D-12 · **Investigación:** [Notion](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) ·
 **Detalle técnico:** [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md)
 
 ## Comportamiento actual

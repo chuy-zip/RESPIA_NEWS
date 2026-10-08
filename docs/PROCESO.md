@@ -12,11 +12,11 @@ requests ni revisiones. La evidencia vive en la documentación, no en el flujo d
 
 | Lugar | Contenido |
 |---|---|
-| **Notion** | El porqué: investigación (R&D) por área, teoría, alternativas e hipótesis completas |
+| **Notion** | El porqué: investigación (R&D) por área, teoría, alternativas e hipótesis completas. [Página del proyecto](https://app.notion.com/p/3f3f573ce6df81b8bf09c7294f924875) · [Investigación (R&D)](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) · [Frameworks](https://app.notion.com/p/3f3f573ce6df8157b385d2313b050874) |
 | **Repositorio** | El qué, el cómo, el resultado y las pruebas |
 
 - Registre cada dato en un solo lugar. Use enlaces; no copie.
-- Use el mismo ID de ciclo (`CIC-NNN`) en Notion y en la bitácora.
+- Use el mismo ID de ciclo (`CIC-NNN`) en Notion y en la bitácora. Notion asigna el número al crear la fila.
 - Cite los requisitos por su ID (`RF-08`). No copie su texto.
 
 | Archivo | Contenido |

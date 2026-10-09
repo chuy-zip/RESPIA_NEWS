@@ -162,7 +162,7 @@ Una rama modifica solo las carpetas de su parte. Si necesita cambiar una carpeta
 |---|---|
 | `src/app/**/page.tsx`, `*.module.css`, `src/app/layout.tsx`, `src/components/`, `src/styles/`, `public/` (excepto `sw.js`), `e2e/` | Frontend · Sergio Orellana |
 | `src/app/api/`, `src/app/actions/` (excepto `auth.ts`), `src/lib/services/`, `src/lib/http/`, `src/types/` | Backend · Gerardo Pineda |
-| `src/lib/ia/` | IA · Rodrigo Mansilla |
+| `src/lib/ia/`, `src/lib/recomendacion/` | IA · Rodrigo Mansilla |
 | `supabase/migrations/`, `src/lib/supabase/`, `src/lib/auth/`, `src/proxy.ts`, `src/app/auth/`, `src/app/actions/auth.ts`, `public/sw.js`, `src/app/manifest.ts`, `next.config.ts`, `.env.example`, `package.json` | Infra · Ricardo Chuy |
 | `specs/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
 | `AGENTS.md`, `docs/PROCESO.md`, `docs/ALCANCE.md`, `docs/DECISIONES.md` | Todo el equipo |

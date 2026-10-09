@@ -14,7 +14,7 @@ Este manual le dice cómo empezar. Las reglas completas están en los documentos
 | Sergio Orellana | Frontend | `src/app/**/page.tsx`, `src/components/`, `src/styles/`, `e2e/` |
 | Gerardo Pineda | Backend | `src/app/api/`, `src/app/actions/`, `src/lib/services/` |
 | Ricardo Chuy | Infra | Vercel, Supabase, Google Cloud, `supabase/migrations/` |
-| Rodrigo Mansilla | AI Engineering | `src/lib/ia/` |
+| Rodrigo Mansilla | AI Engineering | `src/lib/ia/`, `src/lib/recomendacion/` |
 
 Las variables de entorno y los accesos a Vercel y Supabase los entrega el responsable de infra.
 
@@ -77,7 +77,7 @@ seguridad, base de datos o despliegue. Sus secciones 10 (recetas de seguridad) y
 | Frontend | `src/app/**/page.tsx`, `src/components/`, `src/styles/`, `e2e/` |
 | Backend | `src/app/api/`, `src/app/actions/`, `src/lib/services/`, `src/types/` |
 | Modelación de datos | `supabase/migrations/`, `src/types/` |
-| IA | `src/lib/ia/` |
+| IA | `src/lib/ia/`, `src/lib/recomendacion/` |
 | Proceso | `specs/`, `docs/` |
 
 El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).

@@ -98,10 +98,10 @@ de PR y prompts, usa las dos skills del repositorio:
 | **Frontend** (Sergio Orellana) | `src/app/**/page.tsx` y `*.module.css` (pantallas), `src/components/`, `src/styles/`, `e2e/` | Un componente por carpeta con `index.ts`. No llames a la base de datos desde un componente cliente: pide los datos al backend |
 | **Backend** (Gerardo Pineda) | `src/app/api/` (endpoints), `src/app/actions/` (server actions), `src/lib/services/` (lógica de negocio), `src/types/` | Cada ruta y página protegida verifica la sesión en el servidor con `src/lib/auth/dal.ts`. La ruta HTTP no contiene lógica de negocio: llama a un servicio |
 | **Modelación de datos** (Ricardo Chuy) | `supabase/migrations/` (SQL numerado), `src/types/` | Script nuevo con el número siguiente, idempotente, con RLS, `GRANT` mínimos y una política por operación. No edites un script ya ejecutado |
-| **IA (modelos)** (Rodrigo Mansilla) | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_` |
+| **IA (modelos y recomendador)** (Rodrigo Mansilla) | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo), `src/lib/recomendacion/` (orden, niveles de prominencia e intereses del feed) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_`. El recomendador no llama a ningún modelo (`RP-03`). El endpoint del feed es de Backend y llama al recomendador |
 | **Proceso** | `specs/`, `docs/` | Ver [docs/PROCESO.md](docs/PROCESO.md) |
 
-Las carpetas `e2e/` y `src/lib/ia/` se crean con su primer archivo. No dejes carpetas vacías.
+Las carpetas `e2e/`, `src/lib/ia/` y `src/lib/recomendacion/` se crean con su primer archivo. No dejes carpetas vacías.
 
 ## Infraestructura ya implementada: no modificar sin coordinar
 

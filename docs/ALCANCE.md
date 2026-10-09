@@ -138,7 +138,7 @@ tienen que estar probados y con evidencia lista para cada parte.
 
 ## Estado
 
-Estado a 7-oct-2026. Es lo único de este documento que se actualiza sin pasar
+Estado a 7-oct-2026. Las filas de IA se actualizaron el 9-oct-2026. Es lo único de este documento que se actualiza sin pasar
 por el registro de cambios.
 
 | ID | Estado | Nota |
@@ -149,9 +149,12 @@ por el registro de cambios.
 | RF-04 | Pendiente | |
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
 | RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
-| RF-07 a RF-18 | Pendiente | |
+| RF-07 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
+| RF-08 a RF-11 | Pendiente | Diseño propuesto del recomendador en `specs/recomendacion.md` (D-20) |
+| RF-12 a RF-14 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
+| RF-15 a RF-18 | Pendiente | Imágenes de banco elegidas por el modelo (D-23). Sin código |
 | RT-01 a RT-06 | Pendiente | |
-| RP-01 a RP-03 | Pendiente | |
+| RP-01 a RP-03 | En curso | Modelos y reserva del 30 % decididos (D-22). Faltan el registro y el tope |
 | RP-04 | Hecho | |
 | RPR-01 a RPR-03 | En curso | Hay bitácora reconstruida de las features de infraestructura; faltan las demás |
 

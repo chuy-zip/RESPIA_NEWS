@@ -2,6 +2,32 @@
 
 De lo más reciente a lo más antiguo.
 
+## 2026-10-09 · CIC-25 · Búsqueda externa: RSS primero y Tavily de respaldo, sin MCP
+
+**Requisitos:** `RF-14`, `RF-06`, `RP-01` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·
+**Decisión:** D-25
+
+- **Comprensión:** faltaba elegir el proveedor de la búsqueda externa. Los candidatos eran APIs de pago: Tavily,
+  Exa, Brave y la búsqueda web de OpenRouter. El equipo preguntó si convenía un MCP, una skill o una opción open source.
+- **Hipótesis:** con una lista de sitios permitidos, el RSS de esos sitios cubre la mayoría de los casos sin
+  costo. Una API de búsqueda solo hace falta como respaldo.
+- **Construcción:** ninguna.
+- **Prueba:** revisión de la documentación de créditos de Tavily y estimación de búsquedas del mes de la demo.
+- **Observación:**
+  - Una skill solo instruye al agente que programa: no corre en la app.
+  - Un MCP de búsqueda envuelve la misma API de pago y quita al servidor el control de cuándo se busca.
+  - El RSS no cobra, no necesita llave y la pregunta no sale del servidor. Solo trae las últimas noticias de cada sitio.
+  - Tavily da 1 000 créditos gratis por mes, sin tarjeta. El peor caso estimado es de 460 créditos.
+- **Corrección:** D-25. Primero el RSS y Tavily solo si el RSS no tiene resultados. Sin MCP.
+- **Agente:** Claude Code (Claude Opus 5.5).
+- **Pedido:** decidir entre MCP, skill u open source, y confirmar si Tavily cabe en su plan gratis.
+- **Propuesta:** el agente descartó MCP y skill y propuso el RSS como fuente principal. Comparó el RSS, un
+  SearXNG propio y las APIs de búsqueda.
+- **Decisión:** el equipo eligió RSS y Tavily.
+- **Verificación:** documentación de créditos de Tavily, consultada el 2026-10-09. El cálculo del peor caso está
+  en Notion (*Arquitectura y costo del chat*).
+- **Evidencia:** 2026-10-09. La prueba del flujo queda pendiente (métrica de CIC-25).
+
 ## 2026-10-09 · CIC-25 · `RF-14` cambia: fuentes externas solo cuando la app no tiene noticias
 
 **Requisitos:** `RF-14`, `RF-13`, `RT-03`, `RT-04` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·

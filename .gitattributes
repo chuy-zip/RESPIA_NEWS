@@ -1,0 +1,10 @@
+# Finales de línea: el repositorio guarda todo en LF, en cualquier sistema.
+# Evita que un editor en Windows convierta un archivo entero a CRLF y que un
+# cambio de una línea aparezca como un diff del archivo completo.
+* text=auto eol=lf
+
+# Binarios: nunca se convierten ni se comparan como texto.
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary

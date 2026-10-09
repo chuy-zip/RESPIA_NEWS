@@ -25,10 +25,10 @@ Las variables de entorno y los accesos a Vercel y Supabase los entrega el respon
 Requisito: Node 20.9 o superior.
 
 1. Clone el repositorio.
-2. Instale las dependencias:
+2. Instale las dependencias. `npm ci` no modifica `package-lock.json`:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 3. Copie `.env.example` a `.env.local`.
@@ -158,6 +158,7 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 - No modifique la infraestructura de la tabla de `AGENTS.md` sin avisar al responsable de infra.
 - No llame a la base de datos ni a un modelo de IA desde un componente cliente.
 - No cree un archivo si el dato cabe en uno existente. No deje carpetas vacías.
+- No mezcle en un PR reformateos, renombres o cambios que la tarea no pide. Reglas en «Cambios mínimos» de [AGENTS.md](AGENTS.md).
 - No marque una tarea como hecha sin el registro de su prueba.
 - No trabaje en `main` ni en `dev`, ni haga `git push --force` sobre ramas de otros.
 - No ejecute un script SQL antes de que su PR llegue a `main`: `dev` y producción comparten la base.

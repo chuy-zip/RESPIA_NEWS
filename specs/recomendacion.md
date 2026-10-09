@@ -28,7 +28,7 @@ Todavía no existe. El diseño propuesto está en «Cambio en curso».
 ## Dependencias
 
 - Datos: regiones, temas y fecha de cada noticia (`RF-16`), un campo de importancia, una tabla de señales y la
-  región del perfil.
+  región del perfil. La cobertura es Centroamérica más noticias internacionales (D-26).
 - `portal-admin`: el administrador marca la importancia.
 - Backend: el endpoint del feed devuelve el nivel y la explicación de cada noticia.
 - Frontend: los niveles visuales y el registro de la señal al abrir una noticia.

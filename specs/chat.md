@@ -3,7 +3,7 @@
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
 **Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../docs/features/chat/bitacora.md) ·
-**Decisiones:** D-22, D-24, D-25 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
+**Decisiones:** D-22, D-24, D-25, D-26 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
 [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2), [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62),
@@ -61,7 +61,8 @@ Todavía no existe. El diseño está en «Cambio en curso».
 | ⏳ | Prompt y salida estructurada, probados con modelos `:free` | `RF-12`, `RF-13` | |
 | ⏳ | Tools `recomendaciones_del_usuario` y `buscar_noticias`, con SQL y sin modelo | `RF-12`, `RP-03` | |
 | ✅ | Elegir el proveedor de búsqueda externa | `RF-14` | D-25, 2026-10-09. Plan gratis de Tavily revisado en su documentación: 1 000 créditos por mes. Peor caso estimado del mes de la demo: 460 créditos |
-| ⏳ | Armar la lista de sitios permitidos por tema y anotar el feed RSS de cada sitio | `RF-14` | |
+| ⏳ | Armar la lista de sitios permitidos (Centroamérica e internacional, D-26) con el feed RSS de cada sitio | `RF-14` | |
+| ⏳ | Lector RSS y búsqueda por palabras, sin modelo (incremento 1) | `RF-14`, `RP-03` | |
 | ⏳ | Tool `buscar_externo`: RSS primero y Tavily si el RSS no tiene resultados, solo con 0 resultados internos | `RF-14` | |
 | ⏳ | Guardrails del servidor | `RF-14`, `RT-04` | |
 | ⏳ | Validar con el modelo de producción | `RF-12` | |
@@ -85,7 +86,7 @@ Diseño acordado el 2026-10-09 (D-24). Todavía no hay código.
 |---|---|---|
 | `recomendaciones_del_usuario()` | Las primeras noticias del feed del usuario | Ya va en el contexto. Tipo (b) |
 | `buscar_noticias(texto, tema, region, desde)` | Noticias publicadas que coinciden, por SQL (CIC-18) | Tipos (a), (c) y (d) |
-| `buscar_externo(consulta, tema)` | Noticias de los sitios permitidos para el tema: primero de su RSS y, si no hay, de Tavily (D-25) | Solo si `buscar_noticias` devolvió 0 resultados. Lo controla el servidor |
+| `buscar_externo(consulta)` | Noticias de los sitios permitidos: primero de su RSS y, si no hay, de Tavily (D-25) | Solo si `buscar_noticias` devolvió 0 resultados. Lo controla el servidor |
 
 ### Formato de la respuesta
 
@@ -119,10 +120,25 @@ Fuentes externas mencionan (no verificadas por la redacción):
 6. **Contenido como dato:** el texto de las noticias y de las páginas externas no da instrucciones al modelo.
 7. **Límites:** largo máximo de la pregunta, últimos 4 turnos y tope de tokens de salida.
 
+### Incremento 1: lector RSS (rama `chat`)
+
+Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
+
+- `src/lib/ia/rss.ts` guarda la lista de sitios permitidos y la función de búsqueda.
+- La lista cubre los 7 países de Centroamérica, un medio regional y medios internacionales en español (D-26).
+  Los medios de Belice publican en inglés. Un sitio entra en la lista solo si su feed respondió con el user agent
+  de la app.
+- La búsqueda compara las palabras de la pregunta con el título y el resumen de cada noticia. No llama a ningún
+  modelo (`RP-03`). Devuelve como máximo 5 noticias.
+- Solo se aceptan enlaces del dominio del sitio. El resumen se guarda sin HTML y con un largo máximo.
+- Cada feed tiene 5 s para responder. Un feed que falla se ignora y no detiene la búsqueda.
+- Next guarda cada feed 15 minutos, para no descargarlo en cada pregunta.
+- Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
+- Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
+
 ### Pendiente
 
-- Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Se agrega a `.env.example` junto con el código que
-  la usa, coordinado con Infra.
-- Lista de sitios permitidos por tema, con el feed RSS de cada sitio: decisión editorial del equipo.
-- Lector de XML para el RSS: dependencia nueva, en un PR propio y con aviso al equipo.
+- Tavily como respaldo del RSS y la tool `buscar_externo` dentro del flujo del chat.
+- Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Rodrigo carga el valor en `.env.local` y en Vercel.
+  El nombre se agrega a `.env.example` junto con el código que la usa.
 - Límite diario de preguntas por usuario: guarda el `user_id`, así que obliga a actualizar `/privacidad`.

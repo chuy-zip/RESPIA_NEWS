@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { getSiteUrl } from "@/lib/site";
+import { getCurrentUser } from "@/lib/auth/dal";
+import { DemoSession } from "@/components/news/DemoSession";
 
 import "@/styles/globals.css";
 
@@ -11,12 +13,6 @@ import "@/styles/globals.css";
  * petición a Google en tiempo de ejecución. Cada familia expone una variable CSS
  * que consumen los tokens en src/styles/tokens.css.
  */
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-bricolage",
-});
-
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -32,11 +28,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "RESPIA News",
-    template: "%s · RESPIA News",
+    default: "The Meridian Times",
+    template: "%s · The Meridian Times",
   },
   description:
-    "Portal de noticias con IA. Instalable en Android y iOS desde el navegador.",
+    "Tecnología, economía y finanzas en contexto. Una experiencia editorial de RESPIA News.",
   applicationName: "RESPIA News",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -65,16 +61,17 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const user = await getCurrentUser();
   return (
     <html
       lang="es"
-      className={`${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        {children}
+        <DemoSession key={user?.id ?? "visitor"}>{children}</DemoSession>
         <ServiceWorkerRegistrar />
       </body>
     </html>

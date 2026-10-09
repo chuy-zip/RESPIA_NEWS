@@ -34,7 +34,7 @@
 
 .primary {
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-action-ink);
 }
 
 .primary:hover:not(:disabled) {

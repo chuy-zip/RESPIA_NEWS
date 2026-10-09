@@ -87,32 +87,33 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 ## 4. Su primer cambio
 
 1. Busque el requisito en `ALCANCE.md` (por ejemplo `RF-08`). Si no hay un requisito, no hay tarea.
-2. Cree una rama desde `dev` actualizado:
+2. Si el cambio es de código, trabaje en la rama de su feature. Si la rama no existe, créela desde `dev` actualizado:
 
    ```bash
    git switch dev
    git pull
-   git switch -c front/feed-y-lector-tarjetas
+   git switch -c chat
    ```
 
-   Formato: `<parte>/<feature>-<descripcion>`. Partes: `front`, `back`, `datos`, `ia`, `infra`, `docs`.
+   La rama se llama como la feature de [docs/README.md](docs/README.md). La documentación no necesita rama: va directo a `dev`.
 3. Abra `specs/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
    cree `docs/features/<feature>/bitacora.md`.
 4. Escriba el cambio en la sección «Cambio en curso»: requisitos, criterios de
    aceptación y tareas. Hágalo **antes** del código.
 5. Construya el cambio, solo o con un agente (sección 5). Modifique solo las carpetas de su parte.
-6. Abra un PR hacia **`dev`** (no hacia `main`). Vercel crea una preview del PR. Ejecute la prueba en la preview.
+6. Cuando una parte de la feature funciona, abra un PR hacia **`dev`** (no hacia `main`). Vercel crea una preview del PR. Ejecute la prueba en la preview.
    Escriba en la tabla de tareas: fecha, dónde, qué vio y resultado.
 7. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
 8. Verifique la Definición de Done (sección 6).
 9. Cierre el cambio: actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
-   **Squash and merge**. Si el PR toca carpetas de otra parte, espere la aprobación del dueño.
+   **Create a merge commit**. Si el PR toca carpetas de otra parte, espere la aprobación del dueño.
 
 Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 8 de
 [docs/PROCESO.md](docs/PROCESO.md).
 
 > **Atención:** todo lo que llega a `main` se publica en producción de forma
-> automática. No suba directo a `main` ni a `dev`. `dev` pasa a `main` solo con un
+> automática. No suba directo a `main`. A `dev` solo sube directo la documentación.
+> El código llega por PR. `dev` pasa a `main` solo con un
 > release antes de cada demo. Antes de fusionar un PR, ejecute `npm run typecheck`
 > y `npm run lint`.
 

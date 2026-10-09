@@ -1,11 +1,11 @@
 # Proceso de trabajo con agentes de IA
 
-Versión 0.2 · 2026-10-08. Cubre `RPR-01` a `RPR-03` de [ALCANCE.md](ALCANCE.md).
+Versión 0.3 · 2026-10-09. Cubre `RPR-01` a `RPR-03` de [ALCANCE.md](ALCANCE.md).
 
 Cada cambio debe mostrar tres datos: **qué hizo el agente, qué decidió el equipo y
 qué evidencia lo respalda.**
 
-Cada parte trabaja en sus carpetas y en su propia rama (sección 8). La evidencia
+Cada parte trabaja en sus carpetas. El código va en la rama de su feature (sección 8). La evidencia
 vive en la documentación; Git evita que dos partes se pisen.
 
 ## 1. Dónde va cada dato
@@ -124,19 +124,21 @@ hecha sin su registro.
 ### Ramas
 
 ```
-<parte>/<feature>-<descripcion>  --PR, squash-->  dev  --PR, merge commit-->  main (producción)
-hotfix/<descripcion>             --PR, squash-->  main  --merge-->  dev
+documentación        --commit directo-->    dev
+<feature>            --PR, merge commit-->  dev  --PR, merge commit-->  main (producción)
+hotfix/<descripcion> --PR, squash-->        main  --merge-->  dev
 ```
 
 | Rama | Para qué | Cómo entra un cambio |
 |---|---|---|
 | `main` | Producción y demos. Vercel la publica en <https://respia-news.vercel.app> | Solo por PR de *release* desde `dev` (merge commit) o de `hotfix/` (squash) |
-| `dev` | Integración. Vercel la publica en una URL de preview fija. El equipo prueba aquí junto | Solo por PR desde una rama de trabajo (squash) |
-| `<parte>/<feature>-<descripcion>` | Un cambio. Sale de `dev` | Commits del autor |
+| `dev` | Integración. Vercel la publica en una URL de preview fija. El equipo prueba aquí junto | Documentación: commit directo. Código: PR desde la rama de su feature (merge commit) |
+| `<feature>` | Una funcionalidad mayor, por ejemplo `chat` o `recomendacion`. Sale de `dev` | Commits de quienes trabajan en la feature |
 
-- **Nadie sube directo a `main` ni a `dev`.**
-- Partes: `front`, `back`, `datos`, `ia`, `infra`, `docs`. Ejemplos: `front/feed-y-lector-tarjetas`, `ia/chat-fuentes`.
-- Una rama de trabajo vive 3 días como máximo. Traiga `dev` a su rama cada día:
+- **Nadie sube directo a `main`.**
+- **La documentación va directo a `dev`**, sin rama ni PR: `docs/`, `specs/`, `AGENTS.md` y `README.md`. Antes de subir, ejecute `git pull` y revise `git diff --stat`.
+- **El código va en la rama de su feature.** La rama se llama como la feature de [docs/README.md](README.md): `chat`, `recomendacion`, `portal-admin`. No cree una rama por cada cambio pequeño.
+- La rama vive hasta que la feature está terminada. Después, bórrela. Traiga `dev` a su rama cada día:
 
 ```bash
 git pull origin dev
@@ -155,7 +157,7 @@ después de fusionarlo, fusione `main` en `dev`.
 
 ### Dueño de cada carpeta
 
-Una rama modifica solo las carpetas de su parte. Si necesita cambiar una carpeta de otra parte, haga una de dos cosas:
+Cada persona modifica solo las carpetas de su parte, aunque comparta la rama de una feature. Si necesita cambiar una carpeta de otra parte, haga una de dos cosas:
 (a) pida el cambio al dueño, o (b) inclúyalo en su PR y espere la aprobación del dueño. `.github/CODEOWNERS` pide esa revisión automáticamente.
 
 | Carpeta | Dueño |
@@ -179,19 +181,19 @@ Una rama modifica solo las carpetas de su parte. Si necesita cambiar una carpeta
 ### Commits y pull requests
 
 - Mensaje de commit: `<parte>(<feature>): descripción`. Ejemplo: `ia(chat): cita las fuentes en la respuesta [RF-13]`.
-- Título del PR: el mismo formato. Descripción: requisito, qué cambió, cómo se probó (URL de la preview de Vercel) y qué no se probó. El PR de una rama de trabajo apunta a `dev`, no a `main`.
-- Antes de fusionar: la preview de Vercel compila, `npm run typecheck` y `npm run lint` no muestran errores, y la prueba se hizo en la preview.
-- Fusione las ramas de trabajo con **Squash and merge**: un commit por PR en `dev`. GitHub conserva las líneas `Co-Authored-By` del agente.
+- Título del PR: el mismo formato. Descripción: requisito, qué cambió, cómo se probó (URL de la preview de Vercel) y qué no se probó. El PR de una rama de feature apunta a `dev`, no a `main`.
+- Abra un PR cuando una parte de la feature funciona. Antes de fusionar: la preview de Vercel compila, `npm run typecheck` y `npm run lint` no muestran errores, y la prueba se hizo en la preview.
+- Fusione las ramas de feature con **Create a merge commit**. Con squash, la rama diverge de `dev` después del primer PR y cada PR siguiente trae conflictos.
 - Si el PR solo toca carpetas de su parte, el autor puede fusionarlo. Si toca carpetas de otra parte, espere la aprobación del dueño.
 
 ### Configuración de GitHub (la hace el dueño del repositorio)
 
 En Settings → Branches, cree una regla para `main` y otra para `dev`:
 
-1. Active «Require a pull request before merging», con 0 aprobaciones obligatorias.
-2. Active «Block force pushes» y no permita borrar la rama.
+1. Solo en `main`: active «Require a pull request before merging», con 0 aprobaciones obligatorias. En `dev` no la active: bloquearía los commits directos de documentación.
+2. En las dos: active «Block force pushes» y no permita borrar la rama.
 3. En Settings → General, deje activos «Allow squash merging» y «Allow merge commits». Desactive «Allow rebase merging».
-4. Deje `main` como rama por defecto. Al abrir un PR de trabajo, cambie la rama base a `dev`.
+4. Deje `main` como rama por defecto. Al abrir un PR de feature, cambie la rama base a `dev`.
 
 No active «Require review from Code Owners»: bloquearía los PR en los que el autor es el único dueño.
 

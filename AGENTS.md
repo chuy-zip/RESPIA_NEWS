@@ -45,9 +45,10 @@ frontend, backend, datos e IA.
     producción comparten la base de datos.
 11. Si tu cambio guarda un dato nuevo del usuario, actualiza `src/app/privacidad/page.tsx` (`RF-06`).
 12. Los commits hechos con un agente llevan la línea `Co-Authored-By` del agente.
-13. **No trabajes en `main` ni en `dev`.** Crea una rama `<parte>/<feature>-<descripcion>` desde `dev`
-    y abre un PR hacia `dev`. Solo un release lleva `dev` a `main`.
-14. **Modifica solo las carpetas de la parte de tu rama.** Si necesitas una carpeta de otra
+13. **No trabajes en `main`.** La documentación (`docs/`, `specs/`, `AGENTS.md`, `README.md`) va
+    directo a `dev`. El código va en la rama de su feature (`chat`, `recomendacion`…), que sale de
+    `dev` y vuelve por PR. No crees una rama por cada cambio pequeño. Solo un release lleva `dev` a `main`.
+14. **Modifica solo las carpetas de tu parte.** Si necesitas una carpeta de otra
     parte, dilo a la persona: el cambio necesita la aprobación del dueño (tabla de la sección
     8 de `PROCESO.md` y `.github/CODEOWNERS`).
 

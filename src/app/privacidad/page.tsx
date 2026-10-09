@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { SiteHeader } from "@/components/layout/SiteHeader";
+import { EditorialShell } from "@/components/layout/EditorialShell";
 
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Privacidad",
   description:
-    "Qué datos guarda RESPIA News, para qué se usan y con quién se comparten.",
+    "Qué datos trata The Meridian Times, la experiencia editorial de RESPIA News.",
 };
 
 /**
@@ -18,20 +18,17 @@ export const metadata: Metadata = {
  * guarde un dato nuevo (ubicación simulada, intereses, noticias leídas…), hay que
  * actualizar esta página y la fecha de abajo en el mismo cambio.
  */
-const LAST_UPDATE = "7 de octubre de 2026";
+const LAST_UPDATE = "9 de octubre de 2026";
 
 export default function PrivacidadPage() {
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        <SiteHeader badge="privacidad" />
-
-        <main className={styles.main}>
+    <EditorialShell>
+        <div className={styles.main}>
           <section className={styles.intro}>
             <p className={styles.eyebrow}>Última actualización: {LAST_UPDATE}</p>
             <h1 className={styles.headline}>Privacidad</h1>
             <p className={styles.lead}>
-              RESPIA News es un proyecto académico del curso Responsible AI: un
+              The Meridian Times es la experiencia editorial de RESPIA News, un proyecto académico del curso Responsible AI: un
               prototipo, no un servicio comercial. Esta página explica qué datos
               guarda, para qué y con quién se comparten.
             </p>
@@ -65,9 +62,8 @@ export default function PrivacidadPage() {
                 No pedimos tu contraseña: el inicio de sesión lo hace Google.
               </li>
               <li>
-                No usamos el GPS ni la ubicación de tu dispositivo. Cuando la
-                app permita elegir una ubicación, será una ubicación simulada
-                que tú escoges.
+                No usamos el GPS ni la ubicación de tu dispositivo. La región
+                de demostración es una opción que tú eliges.
               </li>
               <li>
                 No usamos publicidad, analítica ni cookies de seguimiento.
@@ -102,14 +98,12 @@ export default function PrivacidadPage() {
                 <strong>Vercel</strong>, donde está alojada la aplicación.
               </li>
             </ul>
-            <p className={styles.text}>
-              Para mostrar contenido de ejemplo, el servidor consulta una
-              interfaz externa de chistes sin enviarle ningún dato tuyo.
-            </p>
+            <p className={styles.text}>La interfaz de noticias usa ejemplos locales. No envía tus preguntas a un proveedor de IA ni consulta fuentes externas automáticamente. Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
           </section>
 
           <section className={styles.block}>
             <h2 className={styles.subhead}>En tu dispositivo</h2>
+            <p className={styles.text}>La demo mantiene en memoria la región elegida, las noticias abiertas, la conversación y las publicaciones simuladas. No guarda esos datos en la base, localStorage ni sessionStorage. Se pierden al recargar o cerrar la pestaña. No introduzcas datos personales en los ejemplos.</p>
             <p className={styles.text}>
               Al instalar la app, tu navegador guarda archivos de la propia
               aplicación (imágenes, estilos y una pantalla de aviso sin
@@ -139,8 +133,7 @@ export default function PrivacidadPage() {
           <Link href="/" className={styles.back}>
             ← Volver al inicio
           </Link>
-        </main>
-      </div>
-    </div>
+        </div>
+    </EditorialShell>
   );
 }

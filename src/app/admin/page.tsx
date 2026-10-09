@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SignInButton } from "@/components/auth/SignInButton";
-import { UserBadge } from "@/components/auth/UserBadge";
-import { SiteHeader } from "@/components/layout/SiteHeader";
+import { EditorialShell } from "@/components/layout/EditorialShell";
+import { EditorialDesk } from "@/components/admin/EditorialDesk";
 import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
 
 import styles from "./page.module.css";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Portal administrativo (por ahora, solo la puerta).
+ * El portal conserva la autorización en servidor incluso durante la demo.
  *
  * El control está aquí, en el servidor, y no en el icono de la barra superior:
  *
@@ -38,37 +38,23 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        <SiteHeader badge="administración" />
+    <EditorialShell demo={!!user}>
+      {user ? (
+        <EditorialDesk />
+      ) : (
+        <section className={styles.locked}>
+          <p className={styles.eyebrow}>Acceso restringido</p>
+          <h1 className={styles.headline}>Necesitas iniciar sesión.</h1>
+          <p className={styles.lead}>
+            Esta sección es solo para administradores.
+          </p>
+          <SignInButton />
+        </section>
+      )}
 
-        <main className={styles.main}>
-          {user ? (
-            <section className={styles.intro}>
-              <p className={styles.eyebrow}>Solo administradores</p>
-              <h1 className={styles.headline}>Panel de administración.</h1>
-              <p className={styles.lead}>
-                El servidor confirmó que tu cuenta está en la lista de
-                administradores. Aquí irá la gestión de noticias.
-              </p>
-              <UserBadge user={user} />
-            </section>
-          ) : (
-            <section className={styles.locked}>
-              <p className={styles.eyebrow}>Acceso restringido</p>
-              <h1 className={styles.headline}>Necesitas iniciar sesión.</h1>
-              <p className={styles.lead}>
-                Esta sección es solo para administradores.
-              </p>
-              <SignInButton />
-            </section>
-          )}
-
-          <Link href="/" className={styles.back}>
-            ← Volver al inicio
-          </Link>
-        </main>
-      </div>
-    </div>
+      <Link href="/" className={styles.back}>
+        ← Volver al inicio
+      </Link>
+    </EditorialShell>
   );
 }

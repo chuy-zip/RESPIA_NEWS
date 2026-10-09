@@ -57,9 +57,25 @@ Todavía no existe. El diseño está en «Cambio en curso».
 
 Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `chat` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
+El alcance de la interfaz de demostración se describe en «Cambio en curso». Sus tickets de frontend están pendientes de asignación.
+
 ## Cambio en curso
 
-Diseño acordado el 2026-10-09 (D-24). Todavía no hay código.
+### Interfaz de demostración independiente
+
+2026-10-09: Sergio solicitó una demo editorial con feed y conversación en memoria.
+El registro propio de frontend está en [notion-frontend.md](../notion-frontend.md).
+No adopta los ciclos de IA como hipótesis propias ni modifica el diseño de servidor descrito abajo.
+Los cuatro botones de ejemplo muestran respuestas preparadas con referencias al corpus ficticio.
+Una consulta libre explica que el servicio no está conectado. No se simula una respuesta de modelo.
+La demo solo usa noticias internas, según la petición del usuario. La búsqueda externa de D-24 queda pendiente de integración.
+Se preparan estados de carga, error, desconexión y límite de costo. No se ejecuta ninguna prueba por instrucción del usuario.
+Contrato propuesto: POST `/api/chat`, JSON con respuesta y citas validadas por el servidor.
+La forma definitiva y los límites del contexto se acuerdan con Backend antes de retirar la demo.
+
+### Diseño de servidor
+
+Diseño acordado el 2026-10-09 (D-24). Todavía no hay código de servidor.
 
 ### Flujo de una pregunta
 

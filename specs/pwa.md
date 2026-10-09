@@ -47,4 +47,7 @@ Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1
 
 ## Cambio en curso
 
-Ninguno.
+2026-10-09: adaptar las pantallas a The Meridian Times, con tema automático, áreas seguras y movimiento reducido.
+Se reutilizan las instrucciones de instalación. No se modifica el service worker, el manifiesto ni los iconos.
+El nombre de la PWA instalada sigue pendiente de coordinación con Ricardo.
+No se ejecutan pruebas por instrucción del usuario. La instalación y cada pantalla final quedan pendientes de verificación real.

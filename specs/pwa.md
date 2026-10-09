@@ -56,4 +56,7 @@ Toda pantalla nueva se probó en un iPhone y un Android reales, ya instalada.
 
 ## Cambio en curso
 
-Ninguno.
+2026-10-09: adaptar las pantallas a The Meridian Times, con tema automático, áreas seguras y movimiento reducido.
+Se reutilizan las instrucciones de instalación. No se modifica el service worker, el manifiesto ni los iconos.
+El nombre de la PWA instalada sigue pendiente de coordinación con Ricardo.
+No se ejecutan pruebas por instrucción del usuario. La instalación y cada pantalla final quedan pendientes de verificación real.

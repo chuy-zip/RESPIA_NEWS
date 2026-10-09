@@ -64,10 +64,26 @@ Todavía no existe. El diseño está en «Cambio en curso».
 | ⏳ | Guardrails del servidor | `RF-14`, `RT-04` | |
 | ⏳ | Validar con el modelo de producción | `RF-12` | |
 | ⏳ | Actualizar `/privacidad` | `RF-06` | |
+| En curso | Interfaz de demo: consultas preparadas, citas, memoria y estados visibles | `RF-07`, `RF-12`, `RF-13` | Código escrito. Pruebas pendientes del usuario. Investigación propia en [notion-frontend.md](../notion-frontend.md) |
+| Pendiente | Conectar la pantalla al contrato aprobado y retirar respuestas de ejemplo | `RF-12`, `RF-13`, `RF-14` | Backend e IA pendientes |
 
 ## Cambio en curso
 
-Diseño acordado el 2026-10-09 (D-24). Todavía no hay código.
+### Interfaz de demostración independiente
+
+2026-10-09: Sergio solicitó una demo editorial con feed y conversación en memoria.
+El registro propio de frontend está en [notion-frontend.md](../notion-frontend.md).
+No adopta los ciclos de IA como hipótesis propias ni modifica el diseño de servidor descrito abajo.
+Los cuatro botones de ejemplo muestran respuestas preparadas con referencias al corpus ficticio.
+Una consulta libre explica que el servicio no está conectado. No se simula una respuesta de modelo.
+La demo solo usa noticias internas, según la petición del usuario. La búsqueda externa de D-24 queda pendiente de integración.
+Se preparan estados de carga, error, desconexión y límite de costo. No se ejecuta ninguna prueba por instrucción del usuario.
+Contrato propuesto: POST `/api/chat`, JSON con respuesta y citas validadas por el servidor.
+La forma definitiva y los límites del contexto se acuerdan con Backend antes de retirar la demo.
+
+### Diseño de servidor
+
+Diseño acordado el 2026-10-09 (D-24). Todavía no hay código de servidor.
 
 ### Flujo de una pregunta
 

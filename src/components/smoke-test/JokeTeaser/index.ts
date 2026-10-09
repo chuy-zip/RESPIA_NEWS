@@ -1,1 +1,0 @@
-export { JokeTeaser } from "./JokeTeaser";

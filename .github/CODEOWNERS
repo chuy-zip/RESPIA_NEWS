@@ -33,3 +33,8 @@
 /package.json                     @chuy-zip
 /package-lock.json                @chuy-zip
 /.github/                         @chuy-zip
+/.gitattributes                   @chuy-zip
+/.gitignore                       @chuy-zip
+
+# Skills de agentes · Rodrigo Mansilla (AI Engineering)
+/.claude/                         @Rodrimansidub14

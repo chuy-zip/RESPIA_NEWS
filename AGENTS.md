@@ -51,6 +51,46 @@ frontend, backend, datos e IA.
     parte, dilo a la persona: el cambio necesita la aprobación del dueño (tabla de la sección
     8 de `PROCESO.md` y `.github/CODEOWNERS`).
 
+## Cambios mínimos: sin sobreingeniería
+
+**El diff hace solo lo que pide la tarea.** Si el cambio es de una línea, el diff es de una línea.
+
+1. **No reformatees ni reordenes código que la tarea no toca.** No cambies comillas,
+   sangría, orden de imports ni finales de línea. No renombres ni muevas archivos sin pedirlo.
+2. **Edita, no reescribas.** Para cambiar unas líneas, usa una edición puntual. No
+   sobrescribas el archivo completo.
+3. **No agregues abstracciones por si acaso.** Sin capas, helpers, configuración ni
+   opciones para casos que no existen. Abstrae solo cuando hay tres casos reales.
+   No escribas código para requisitos futuros.
+4. **No agregues dependencias** sin que la persona lo pida. Instala con `npm ci`: no
+   regenera `package-lock.json`. Solo un PR que cambia una dependencia cambia el lockfile.
+5. **No dejes código muerto ni comentado.** Bórralo: Git conserva el historial.
+6. **Los comentarios explican el porqué.** No narran el cambio («cambiado por…», «antes era…»).
+7. **Un PR es un cambio.** Si el diff supera 400 líneas (sin contar `package-lock.json` ni
+   archivos de terceros copiados sin modificar),
+   divídelo o explica en el PR por qué no se puede dividir.
+8. **Antes de cada commit, revisa `git diff --stat`.** Si aparece un archivo que la tarea
+   no menciona, quítalo del commit.
+
+## Documentación y comentarios
+
+Para escribir o editar documentación, comentarios de código, mensajes de error, descripciones
+de PR y prompts, usa las dos skills del repositorio:
+
+| Skill | Para qué | Modo |
+|---|---|---|
+| [`asd-ste100`](.claude/skills/asd-ste100/SKILL.md) | Frases sin ambigüedad: cortas, voz activa, una instrucción por frase, sin punto y coma, listas para pasos | *Strict* para mensajes de error, prompts y procedimientos. *STE-flavored* para README, specs, bitácoras y PR |
+| [`developer-documentation`](.claude/skills/developer-documentation/SKILL.md) | Tipo de documento correcto, procedimientos, ejemplos verificados y validación de Markdown | Documentos de `docs/`, `specs/` y README |
+
+**Reglas del proyecto sobre las skills.** Estas reglas tienen prioridad sobre el texto de las skills:
+
+- Escribe en **español**. Las reglas estructurales de STE aplican al español. Las listas de
+  palabras en inglés y `scripts/ste-lint.py` no aplican: no ejecutes el linter sobre texto en español.
+- La regla de «American English» de `developer-documentation` no aplica.
+- Para validar Markdown, puedes ejecutar
+  `python .claude/skills/developer-documentation/scripts/validate_docs.py <archivo>`.
+- Si tu agente no carga skills automáticamente, lee el `SKILL.md` antes de escribir.
+
 ## Dónde trabaja cada parte
 
 | Parte | Trabaja en | Regla |
@@ -95,5 +135,5 @@ npm run lint
 
 ## Al terminar
 
-Resume a la persona qué cambiaste, qué probaste, qué **no** pudiste probar y dónde
-quedó el registro.
+Revisa `git diff --stat`. Resume a la persona qué cambiaste, qué probaste, qué **no**
+pudiste probar y dónde quedó el registro.

@@ -78,6 +78,8 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 ## 5. Límites
 
 > **Regla:** antes de crear un archivo, verifique si el dato cabe en un archivo existente.
+>
+> **Regla:** el diff hace solo lo que pide la tarea. Sin reformateos, abstracciones ni código "por si acaso". Reglas completas en [AGENTS.md](../AGENTS.md), sección «Cambios mínimos».
 
 | Tipo | Límite |
 |---|---|
@@ -87,8 +89,9 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 | Test de lógica | 1 archivo por módulo con riesgo: costo de IA, roles, validaciones, feed. 1 test por criterio. Al lado del módulo (`*.test.ts`) |
 | Test e2e | 5 como máximo, con Playwright, en `e2e/`. Solo el camino principal del flujo. Sin estilos ni snapshots |
 | UI sin e2e | Prueba manual en Vercel y en un teléfono real. Pruebe carga, vacío, error, sin conexión y cada rol |
-| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más |
+| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más. Hoy hay 2: `asd-ste100` y `developer-documentation` (ver [AGENTS.md](../AGENTS.md)) |
 | Capturas | 0 por defecto. Si hace falta una: `docs/features/<feature>/evidencia/AAAA-MM-DD-descripcion.ext`, sin llaves, tokens, cookies ni correos |
+| Tamaño de un PR | Un cambio por PR. 400 líneas como máximo, sin contar `package-lock.json` ni archivos de terceros copiados sin modificar. Si es mayor, divídalo o explique en el PR por qué no se puede dividir |
 
 ## 6. Definición de Done
 
@@ -191,6 +194,19 @@ En Settings → Branches, cree una regla para `main` y otra para `dev`:
 4. Deje `main` como rama por defecto. Al abrir un PR de trabajo, cambie la rama base a `dev`.
 
 No active «Require review from Code Owners»: bloquearía los PR en los que el autor es el único dueño.
+
+### Configuración de Vercel (la hace el dueño de la cuenta)
+
+| Ajuste | Valor | Razón |
+|---|---|---|
+| Settings → Environments → Production | Rama `main` | Solo `main` publica en <https://respia-news.vercel.app> |
+| Settings → Git → Ignored Build Step | **Automatic** | Vercel construye una preview de `dev` y de cada PR. No use «Only build production»: apaga esas previews y el trabajo integrado se probaría por primera vez en producción |
+| Settings → Deployment Protection | El equipo puede abrir la preview de `dev` | Si «Vercel Authentication» está activo, solo el dueño de la cuenta ve las previews |
+
+> **Atención:** en el plan Hobby, Vercel puede bloquear el despliegue de un commit cuyo autor no
+> es el dueño de la cuenta ([INFRA_HANDOFF.md](INFRA_HANDOFF.md), sección 6.1). Si una preview sale
+> «blocked», pruebe en local con `npm run dev`. Si el release a `main` se bloquea, el dueño de la
+> cuenta hace el merge del PR de release.
 
 ## 9. Plantillas
 

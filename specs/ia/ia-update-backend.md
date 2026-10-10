@@ -1,5 +1,14 @@
 # Conectar la parte de IA con el backend
 
+> **Obsoleto desde el 2026-10-10 (D-35).** Es una nota de traspaso de Backend y ya no se actualiza. Se conserva como
+> rastro. Lo vigente está en otros lugares:
+>
+> - Contrato del chat y acuerdos de la sección 2.7: [chat.md](chat.md) y D-34.
+> - Recomendador y relacionadas: [recomendacion.md](recomendacion.md).
+> - Gasto de IA: [costos-ia.md](costos-ia.md).
+> - Imágenes: [imagenes.md](imagenes.md) y D-33.
+> - Tareas pendientes: tickets TKT-1, TKT-2, TKT-3 y TKT-4 de Notion.
+
 Este documento explica qué ofrece el backend a la parte de IA y qué falta del lado de IA para que el chat, el feed,
 las imágenes y el registro de gasto funcionen. Cubre el modelo del chat, el recomendador, las imágenes y el gasto de IA.
 
@@ -21,11 +30,11 @@ El detalle de cada endpoint está en la sección «Backend» de cada spec:
 
 | Endpoint | Spec | Estado |
 |---|---|---|
-| `POST /api/chat` | [chat](specs/chat.md) | Hecho. Responde `unavailable` hasta que exista el módulo del modelo |
-| `GET /api/feed` | [feed-y-lector](specs/feed-y-lector.md) | Hecho. Usa `buildFeed` y `topicWeights` de `src/lib/recomendacion/feed.ts` |
-| `POST /api/interactions` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | Hecho. Solo acepta `open` |
-| `GET /api/admin/ai-usage` | Ficha 11 de [notion-frontend.md](notion-frontend.md) | No existe. Depende del registro de gasto (sección 4) |
-| `POST /api/admin/images/preview` | Ficha 10 de [notion-frontend.md](notion-frontend.md) | No existe. Depende del banco y de la función de IA (sección 5) |
+| `POST /api/chat` | [chat](chat.md) | Hecho. Responde `unavailable` hasta que exista el módulo del modelo |
+| `GET /api/feed` | [feed-y-lector](../front/feed-y-lector.md) | Hecho. Usa `buildFeed` y `topicWeights` de `src/lib/recomendacion/feed.ts` |
+| `POST /api/interactions` | [ubicacion-y-perfil](../front/ubicacion-y-perfil.md) | Hecho. Solo acepta `open` |
+| `GET /api/admin/ai-usage` | Ficha 11 de [notion-frontend.md](../front/notion-frontend.md) | No existe. Depende del registro de gasto (sección 4) |
+| `POST /api/admin/images/preview` | Ficha 10 de [notion-frontend.md](../front/notion-frontend.md) | No existe. Depende del banco y de la función de IA (sección 5) |
 
 ## 1. Reglas comunes
 
@@ -51,7 +60,7 @@ export const responderChat: ChatModel = async (input) => {
 };
 ```
 
-El tipo sale del «Incremento 2» de [specs/chat.md](specs/chat.md). Si necesita otra forma, avise antes de escribir
+El tipo sale del «Incremento 2» de [specs/ia/chat.md](chat.md). Si necesita otra forma, avise antes de escribir
 el módulo: el backend y la pantalla dependen de ella.
 
 ### 2.2 Qué recibe la función (`ChatModelInput`)
@@ -145,7 +154,7 @@ elegido. `topicWeights` normaliza al máximo: una apertura vale 1 y un tema eleg
 La ficha 11 pide `GET /api/admin/ai-usage`: gasto, saldo, reserva, tope, costo por función y disponibilidad. Para
 construirlo falta:
 
-1. **La tabla `ai_usage`** (función, modelo, entorno, tokens y costo, según `specs/costos-ia.md`). Es una migración
+1. **La tabla `ai_usage`** (función, modelo, entorno, tokens y costo, según `specs/ia/costos-ia.md`). Es una migración
    nueva. Defina las columnas y se escribe el script.
 2. **El módulo de costo** en `src/lib/ia/`: registra cada llamada y aplica el tope (CIC-15).
 3. **Una función que devuelva el resumen**, por ejemplo `getAiUsageSummary()`, con los campos de `AiUsageSummary`.
@@ -180,7 +189,7 @@ función se acuerda antes de escribirla.
 ## 6. Privacidad
 
 `/privacidad` todavía no dice que se guardan la región, los temas elegidos y las noticias que abre cada lector. El
-texto de «Cómo se ordena tu feed» está en [specs/recomendacion.md](specs/recomendacion.md). Cuando el chat use el
+texto de «Cómo se ordena tu feed» está en [specs/ia/recomendacion.md](recomendacion.md). Cuando el chat use el
 modelo, `/privacidad` también debe nombrar al proveedor del modelo, porque recibe las preguntas (`RF-06`).
 
 ## 7. Probar
@@ -205,4 +214,4 @@ await ask("¿Qué pasa en Guatemala?");
 | Con el módulo conectado | `200` con `status: "answered"` y citas con su estado |
 | Pregunta sin noticias que la respondan | `200` con `status: "no_coverage"` |
 
-Las pruebas del feed están en «Probar el feed» de [specs/feed-y-lector.md](specs/feed-y-lector.md).
+Las pruebas del feed están en «Probar el feed» de [specs/front/feed-y-lector.md](../front/feed-y-lector.md).

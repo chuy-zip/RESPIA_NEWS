@@ -1,8 +1,8 @@
 # Imágenes: interfaz
 
 **Requisitos:** RF-17, RF-18, RT-05. **Responsable de interfaz:** Sergio Orellana.
-**Bitácora existente:** [imágenes](../docs/features/imagenes/bitacora.md).
-**Investigación de frontend:** [traslado](../notion-frontend.md).
+**Bitácora existente:** [imágenes](../../docs/features/imagenes/bitacora.md).
+**Investigación de frontend:** [traslado](../front/notion-frontend.md).
 
 ## Comportamiento actual
 

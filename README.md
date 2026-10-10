@@ -61,7 +61,7 @@ npm run build && npm start
 | 1 | [AGENTS.md](AGENTS.md) | Dónde trabaja cada parte, qué infraestructura no se toca y las reglas para agentes | 5 min |
 | 2 | [docs/PROCESO.md](docs/PROCESO.md) | Ciclo de trabajo, registro del uso de agentes, límites y Definición de Done | 10 min |
 | 3 | [docs/ALCANCE.md](docs/ALCANCE.md) | Requisitos con ID. Busque los de su feature | 5 min |
-| 4 | `specs/<su-feature>.md` | Qué hace hoy la feature y qué cambio está en curso. Lista en [docs/README.md](docs/README.md) | 5 min |
+| 4 | `specs/<parte>/<su-feature>.md` | Qué hace hoy la feature y qué cambio está en curso. Lista en [docs/README.md](docs/README.md) | 5 min |
 | 5 | [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) (Notion) | El ticket de su funcionalidad: sus tareas y de qué áreas depende | 5 min |
 | 6 | [docs/DECISIONES.md](docs/DECISIONES.md) | Qué ya se decidió. No lo contradiga sin proponerlo | 5 min |
 
@@ -98,7 +98,7 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
    ```
 
    La rama se llama como la feature de [docs/README.md](docs/README.md). La documentación no necesita rama: va directo a `dev`.
-3. Abra `specs/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
+3. Abra `specs/<parte>/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
    cree `docs/features/<feature>/bitacora.md`.
 4. Escriba el cambio en la sección «Cambio en curso»: requisitos y criterios de
    aceptación. Hágalo **antes** del código.
@@ -125,7 +125,7 @@ Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 
 
 El agente (Claude Code, Codex, Copilot u otro) lee `AGENTS.md` al empezar. Usted:
 
-1. Dele el requisito y el spec. Ejemplo: «Implementa la tarea 2 de `specs/chat.md` (`RF-12`)».
+1. Dele el requisito y el spec. Ejemplo: «Implementa la tarea 2 de `specs/ia/chat.md` (`RF-12`)».
 2. Lea lo que propone antes de aceptarlo.
 3. Verifique el resultado con una prueba, con la lectura del código o con la documentación oficial.
 4. Si el ciclo cambió una decisión, registre en la bitácora los cinco campos:
@@ -185,7 +185,7 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 | Necesita | Vaya a |
 |---|---|
 | El porqué de una feature: investigación e hipótesis | [Notion: Investigación (R&D)](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) |
-| Qué hace una feature y sus tareas | `specs/<feature>.md` |
+| Qué hace una feature y sus tareas | `specs/<parte>/<feature>.md` |
 | Qué se decidió y por qué | [docs/DECISIONES.md](docs/DECISIONES.md) |
 | Cómo funciona la sesión, la seguridad o la base | [docs/INFRA_HANDOFF.md](docs/INFRA_HANDOFF.md) |
 | Qué pide el curso | [Enunciado](docs/Proyecto%202%20AI%20Assisted%20News%20App.pdf) |

@@ -1,5 +1,11 @@
 # Conectar el frontend con el backend
 
+> **Obsoleto desde el 2026-10-10 (D-35).** Es una nota de traspaso de Backend y ya no se actualiza. Se conserva como
+> rastro. El detalle vigente de cada endpoint está en la sección «Backend» de cada spec:
+> [portal-admin.md](../backend/portal-admin.md), [feed-y-lector.md](feed-y-lector.md),
+> [ubicacion-y-perfil.md](ubicacion-y-perfil.md) y [chat.md](../ia/chat.md). Las tareas de Frontend van en sus
+> tickets de Notion.
+
 Este documento explica qué cambiar en el frontend para usar los endpoints reales en lugar de la demo. Empieza
 por el portal administrativo (`/admin`) y después cubre el lector, el perfil y el feed.
 
@@ -7,15 +13,15 @@ El detalle de cada endpoint (campos, reglas y códigos) está en la sección «B
 
 | Endpoint | Spec | Disponible en |
 |---|---|---|
-| `GET /api/catalogs` | [portal-admin](specs/portal-admin.md) | `dev` |
-| `POST /api/admin/articles` | [portal-admin](specs/portal-admin.md) | `dev` |
-| `GET /api/admin/articles` | [portal-admin](specs/portal-admin.md) | `dev` |
-| `GET /api/articles/[id]` | [portal-admin](specs/portal-admin.md) | `dev` |
-| `POST /api/admin/images` | [portal-admin](specs/portal-admin.md) | `feat/back-chat`. Llega a `dev` con su PR |
-| `GET` y `PATCH /api/profile` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
-| `POST /api/interactions` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
-| `GET /api/feed` | [feed-y-lector](specs/feed-y-lector.md) | `feat/back-chat`. Llega a `dev` con su PR |
-| `POST /api/chat` | [chat](specs/chat.md) | `feat/back-chat`. Responde `unavailable` hasta que se conecte el modelo |
+| `GET /api/catalogs` | [portal-admin](../backend/portal-admin.md) | `dev` |
+| `POST /api/admin/articles` | [portal-admin](../backend/portal-admin.md) | `dev` |
+| `GET /api/admin/articles` | [portal-admin](../backend/portal-admin.md) | `dev` |
+| `GET /api/articles/[id]` | [portal-admin](../backend/portal-admin.md) | `dev` |
+| `POST /api/admin/images` | [portal-admin](../backend/portal-admin.md) | `feat/back-chat`. Llega a `dev` con su PR |
+| `GET` y `PATCH /api/profile` | [ubicacion-y-perfil](ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
+| `POST /api/interactions` | [ubicacion-y-perfil](ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
+| `GET /api/feed` | [feed-y-lector](feed-y-lector.md) | `feat/back-chat`. Llega a `dev` con su PR |
+| `POST /api/chat` | [chat](../ia/chat.md) | `feat/back-chat`. Responde `unavailable` hasta que se conecte el modelo |
 
 Los tipos están en `src/types/news.ts`, `src/types/profile.ts` y `src/types/feed.ts`. Importe esos tipos. No copie
 las formas a mano.
@@ -66,7 +72,7 @@ Archivo principal: `src/components/admin/EditorialDesk/EditorialDesk.tsx`. Hoy p
 Los apartados 2.1 a 2.8 explican cada cambio.
 
 El frontend no calcula el orden del feed ni decide qué es importante. Solo envía lo que el editor marcó. Las dudas
-sobre cómo se usa `important` en el orden del feed son de la parte de IA (`specs/recomendacion.md`).
+sobre cómo se usa `important` en el orden del feed son de la parte de IA (`specs/ia/recomendacion.md`).
 
 ### 2.1 Cargar el catálogo
 
@@ -286,7 +292,7 @@ Pantalla: `/edicion`. Hoy usa escenarios preparados.
 7. La región sale del perfil guardado. No la envíe en la URL.
 
 El orden, la prominencia y el motivo los decide el servidor. La pantalla no los cambia ni los calcula. Las dudas
-sobre por qué una noticia quedó en su lugar son de la parte de IA (`specs/recomendacion.md`).
+sobre por qué una noticia quedó en su lugar son de la parte de IA (`specs/ia/recomendacion.md`).
 
 `components` no estaba en el contrato. Sirve para explicar el puntaje si la pantalla lo necesita.
 
@@ -311,7 +317,7 @@ Pantalla: `/chat`. Hoy muestra respuestas preparadas.
 
 Antes de publicar el perfil, las señales o el feed para otros lectores, actualice `src/app/privacidad/page.tsx`. La
 app guarda la región elegida, los temas elegidos y las noticias que abre cada lector (regla 11 de `AGENTS.md`,
-`RF-06`). El texto de «Cómo se ordena tu feed» está en [specs/recomendacion.md](specs/recomendacion.md).
+`RF-06`). El texto de «Cómo se ordena tu feed» está en [specs/ia/recomendacion.md](../ia/recomendacion.md).
 
 ## 9. Probar la integración
 

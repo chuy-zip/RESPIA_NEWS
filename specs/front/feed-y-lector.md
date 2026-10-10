@@ -2,8 +2,8 @@
 
 **Requisitos:** RF-01, RF-08, RF-09, RF-11, RF-18, RT-01, RT-02, RT-06.
 **Responsable:** Sergio Orellana (interfaz). Datos: Backend. Recomendación: IA (D-20).
-**Bitácora:** [registro](../docs/features/feed-y-lector/bitacora.md).
-**Investigación:** [documento de traslado](../notion-frontend.md). ID de Notion pendiente.
+**Bitácora:** [registro](../../docs/features/feed-y-lector/bitacora.md).
+**Investigación:** [documento de traslado](notion-frontend.md). ID de Notion pendiente.
 
 ## Comportamiento actual
 
@@ -15,11 +15,11 @@ El lector incluye bloques tipados, firma ficticia, compartir y relacionados de d
 ### Backend
 
 Responsable: Gerardo Pineda. El código está en la rama `feat/back-chat`. Todavía no llega a `dev`: la pantalla no
-lo usa. El lector usa `GET /api/articles/[id]`, documentado en [portal-admin](portal-admin.md).
+lo usa. El lector usa `GET /api/articles/[id]`, documentado en [portal-admin](../backend/portal-admin.md).
 
 #### `GET /api/feed`
 
-Feed personalizado del lector (ficha 4 de [notion-frontend.md](../notion-frontend.md)). Cualquier cuenta con sesión.
+Feed personalizado del lector (ficha 4 de [notion-frontend.md](notion-frontend.md)). Cualquier cuenta con sesión.
 El servicio lee las noticias, el perfil y las señales del lector. El orden, la prominencia, el motivo y los pesos de
 los temas los calcula el recomendador (`buildFeed` y `topicWeights` de `src/lib/recomendacion/feed.ts`, D-20, D-31).
 No llama a ningún modelo (`RP-03`). La región sale del perfil guardado, nunca de la URL (`RF-04`).
@@ -149,10 +149,10 @@ Probar con iPhone y Android instalados. Integrar el contrato aprobado y retirar 
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Identidad editorial, navegación y cuatro variantes de tarjeta | RF-01, RF-08 | Código escrito. [Verificación local](../notion-frontend.md#registro-honesto). Pruebas con sesión y móviles pendientes |
+| En curso | Identidad editorial, navegación y cuatro variantes de tarjeta | RF-01, RF-08 | Código escrito. [Verificación local](notion-frontend.md#registro-honesto). Pruebas con sesión y móviles pendientes |
 | En curso | Lector, fuentes, estados e ilustraciones identificadas | RF-09, RF-18, RT-02, RT-06 | Código escrito. Acceso anónimo comprobado. Lectura con sesión pendiente |
 | Pendiente | Conectar feed y lector a Backend | RF-08, RF-09, RF-11, RT-01 | Endpoints pendientes |
-| En curso | Separar edición, temas y chat con navegación común | RF-01, RF-07, RF-08 | Rutas implementadas. [Evidencia local](../notion-frontend.md#registro-honesto). Navegación con sesión pendiente |
+| En curso | Separar edición, temas y chat con navegación común | RF-01, RF-07, RF-08 | Rutas implementadas. [Evidencia local](notion-frontend.md#registro-honesto). Navegación con sesión pendiente |
 | En curso | Ampliar lectura, compartir y estados de ruta accesibles | RF-09, RF-05 | Código implementado. Compartir y recorrer con sesión pendientes |
 | En curso | Búsqueda de demo y pantalla de Guardados sin persistencia | Ampliación solicitada, ID pendiente | Código implementado. Pruebas con sesión y requisito formal pendientes |
 
@@ -183,7 +183,7 @@ La privacidad explica que sus parámetros pueden quedar en el historial del nave
 El frontend no calcula recomendaciones reales ni llama a endpoints inexistentes.
 Cada subagente recibe archivos exclusivos. La documentación de contratos vive en `notion-frontend.md`.
 La fase de implementación quedó sin staging ni commits. La entrega posterior autoriza commits locales separados, sin push ni merge automático.
-El código y los resultados técnicos se registran en [Verificación y presentación](../notion-frontend.md#registro-honesto).
+El código y los resultados técnicos se registran en [Verificación y presentación](notion-frontend.md#registro-honesto).
 El usuario pidió dejar todas las pruebas con sesión pendientes. Ninguna tarea funcional se marca Done.
 
 ### Preparación de entrega local

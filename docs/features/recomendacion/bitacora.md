@@ -73,7 +73,7 @@ De lo más reciente a lo más antiguo.
 - **Comprensión:** la propuesta del 2026-10-09 tenía 3 niveles por franjas de puntaje y cupos reservados para las
   noticias importantes (`RF-11`).
 - **Hipótesis:** el recomendador debe entregar lo que la pantalla del feed ya muestra.
-- **Construcción:** lectura de `specs/feed-y-lector.md` y del contrato `GET /api/feed` en `notion-frontend.md`.
+- **Construcción:** lectura de `specs/front/feed-y-lector.md` y del contrato `GET /api/feed` en `notion-frontend.md`.
 - **Prueba:** comparación de la propuesta con ese contrato. No hubo prueba de código.
 - **Observación:**
   - La pantalla tiene cuatro variantes de tarjeta: `hero`, `large`, `standard` y `compact`.

@@ -2,8 +2,8 @@
 
 **Requisitos:** RF-04, RF-06. Señales de RF-10: dependencia de recomendación (D-20).
 **Responsable:** Sergio Orellana (interfaz).
-**Bitácora:** [registro](../docs/features/ubicacion-y-perfil/bitacora.md).
-**Investigación:** [traslado a Notion](../notion-frontend.md).
+**Bitácora:** [registro](../../docs/features/ubicacion-y-perfil/bitacora.md).
+**Investigación:** [traslado a Notion](notion-frontend.md).
 
 ## Comportamiento actual
 
@@ -14,7 +14,7 @@ No permite editar la identidad de Google. El tema sigue la configuración del di
 ### Backend
 
 Responsable: Gerardo Pineda. El código está en la rama `feat/back-chat`. Todavía no llega a `dev`: la pantalla no
-lo usa. Los tipos están en `src/types/profile.ts`. Siguen las fichas 2 y 3 de [notion-frontend.md](../notion-frontend.md),
+lo usa. Los tipos están en `src/types/profile.ts`. Siguen las fichas 2 y 3 de [notion-frontend.md](notion-frontend.md),
 más los temas elegidos de D-32: `topicIds` no estaba en el contrato.
 
 Las tablas están en `supabase/migrations/004_reader_profile.sql`: `profiles`, `reader_topics` e `interactions`. El
@@ -155,7 +155,7 @@ Comprobar cambio de región con dos cuentas y datos reales después de integrar 
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Selector, perfil y explicación de datos temporales | RF-04, RF-06 | Código unificado. [Verificación local](../notion-frontend.md#registro-honesto). Pruebas con sesión pendientes |
+| En curso | Selector, perfil y explicación de datos temporales | RF-04, RF-06 | Código unificado. [Verificación local](notion-frontend.md#registro-honesto). Pruebas con sesión pendientes |
 | Pendiente | Guardar región y enviar señales según contrato aprobado | RF-04, RF-10 | Backend y recomendación pendientes |
 
 ## Cambio en curso
@@ -169,4 +169,4 @@ Agrupar cuenta, región, instalación y enlace a Guardados. No crear edición de
 Los formularios conservan etiquetas, foco y estados accesibles. El usuario autoriza verificaciones locales.
 No se guarda ningún dato nuevo en el servidor ni se modifica la autenticación. La implementación quedó sin commits. La entrega posterior autoriza commits locales separados.
 El acceso anónimo se comprobó en producción local. La región, la cuenta y la instalación con sesión quedan pendientes por petición del usuario.
-La evidencia de esta revisión se conserva en [el registro local](../notion-frontend.md#registro-honesto).
+La evidencia de esta revisión se conserva en [el registro local](notion-frontend.md#registro-honesto).

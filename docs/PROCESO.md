@@ -23,7 +23,7 @@ vive en la documentación; Git evita que dos partes se pisen.
 | Archivo | Contenido |
 |---|---|
 | [ALCANCE.md](ALCANCE.md) | Requisitos con ID, criterios de aceptación y matriz de estado |
-| `specs/<feature>.md` | Spec de la feature: comportamiento actual, criterios y cambio en curso |
+| `specs/<parte>/<feature>.md` | Spec de la feature: comportamiento actual, criterios y cambio en curso. La parte es la del responsable: `ia`, `front`, `backend` o `infra` (D-35) |
 | `docs/features/<feature>/bitacora.md` | Ciclos que cambiaron una decisión, con el registro del agente |
 | [DECISIONES.md](DECISIONES.md) | Todas las decisiones duraderas, una fila por decisión |
 
@@ -31,7 +31,7 @@ vive en la documentación; Git evita que dos partes se pisen.
 
 **Comprensión → Hipótesis → Construcción → Prueba → Observación → Corrección**
 
-1. Escriba el cambio en `specs/<feature>.md`, sección «Cambio en curso»: requisitos y
+1. Escriba el cambio en `specs/<parte>/<feature>.md`, sección «Cambio en curso»: requisitos y
    criterios de aceptación. Si la funcionalidad no tiene ticket, créelo y escriba sus tareas en él.
 2. Construya con el agente. El agente lee [AGENTS.md](../AGENTS.md) y el spec.
 3. Ejecute la prueba. Registre la fecha, el entorno, lo observado y el resultado.
@@ -68,7 +68,7 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 | Framework | Qué demuestra | Dónde se ve |
 |---|---|---|
 | First principles, Lean, Systems thinking | El problema se analizó antes de elegir la solución | Notion (hechos base); spec («No incluido», «Dependencias») |
-| SDD (spec-driven) | El plan existe antes del código | `specs/<feature>.md` |
+| SDD (spec-driven) | El plan existe antes del código | `specs/<parte>/<feature>.md` |
 | TDD (test-driven) | El criterio de aceptación existe antes del código | Criterios del spec, `*.test.ts`, `e2e/` |
 | EDD (evidence-driven) | Cada cierre y cada decisión tienen evidencia | Bitácora, `DECISIONES.md` |
 | Context engineering | Qué información recibe el agente | `AGENTS.md`, spec |
@@ -168,7 +168,7 @@ Cada persona modifica solo las carpetas de su parte, aunque comparta la rama de 
 | `src/app/api/`, `src/app/actions/` (excepto `auth.ts`), `src/lib/services/`, `src/lib/http/`, `src/types/` | Backend · Gerardo Pineda |
 | `src/lib/ia/`, `src/lib/recomendacion/` | IA · Rodrigo Mansilla |
 | `supabase/migrations/`, `src/lib/supabase/`, `src/lib/auth/`, `src/proxy.ts`, `src/app/auth/`, `src/app/actions/auth.ts`, `public/sw.js`, `src/app/manifest.ts`, `next.config.ts`, `.env.example`, `package.json` | Infra · Ricardo Chuy |
-| `specs/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
+| `specs/<parte>/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
 | `AGENTS.md`, `docs/PROCESO.md`, `docs/ALCANCE.md`, `docs/DECISIONES.md` | Todo el equipo |
 
 ### Archivos compartidos: reglas para evitar conflictos
@@ -214,12 +214,12 @@ No active «Require review from Code Owners»: bloquearía los PR en los que el 
 
 ## 9. Plantillas
 
-### Spec (`specs/<feature>.md`)
+### Spec (`specs/<parte>/<feature>.md`)
 
 ```markdown
 # <Feature>
 
-**Requisitos:** `RF-xx` · **Bitácora:** [bitacora.md](../docs/features/<feature>/bitacora.md) ·
+**Requisitos:** `RF-xx` · **Bitácora:** [bitacora.md](../../docs/features/<feature>/bitacora.md) ·
 **Investigación:** <enlace a Notion> · **Responsable:** <nombre>
 
 ## Comportamiento actual

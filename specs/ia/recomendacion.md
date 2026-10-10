@@ -3,7 +3,7 @@
 Orden, niveles de prominencia e intereses del feed de cada usuario. El diseño es de IA. El endpoint del feed es
 de Backend y llama al recomendador (D-20).
 
-**Requisitos:** `RF-08`, `RF-10`, `RF-11`, `RT-01` · **Bitácora:** [bitacora.md](../docs/features/recomendacion/bitacora.md) ·
+**Requisitos:** `RF-08`, `RF-10`, `RF-11`, `RT-01` · **Bitácora:** [bitacora.md](../../docs/features/recomendacion/bitacora.md) ·
 **Decisiones:** D-20, D-31, D-32 · **Investigación (Notion):** [CIC-28](https://app.notion.com/p/3f4f573ce6df813fb993ea21c9aa29db) ·
 **Teoría y fuentes:** [Recomendación de noticias](https://app.notion.com/p/3f5f573ce6df81e4b04aca2eebe95d10) ·
 **Responsable:** Rodrigo Mansilla (IA). Endpoint: Gerardo Pineda. Pantalla: Sergio Orellana.

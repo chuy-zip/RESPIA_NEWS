@@ -17,7 +17,7 @@ frontend, backend, datos e IA.
 
 1. Lee [docs/ALCANCE.md](docs/ALCANCE.md): requisitos con ID y criterios de aceptación.
 2. Lee [docs/PROCESO.md](docs/PROCESO.md): ciclo, registro del uso de agentes, límites y Done.
-3. Lee el spec de la feature (`specs/<feature>.md`), su bitácora
+3. Lee el spec de la feature (`specs/<parte>/<feature>.md`, con la parte `ia`, `front`, `backend` o `infra`), su bitácora
    (`docs/features/<feature>/bitacora.md`) y [docs/DECISIONES.md](docs/DECISIONES.md).
 4. Pide a la persona el ticket de la funcionalidad (`TKT-NN`). Hay un ticket por funcionalidad
    en la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion.

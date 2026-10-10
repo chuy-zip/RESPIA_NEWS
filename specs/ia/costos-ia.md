@@ -2,7 +2,7 @@
 
 Registro de cada llamada a un modelo, tope de gasto y reserva para la demo.
 
-**Requisitos:** `RP-01`, `RP-02`, `RP-03` · **Bitácora:** [bitacora.md](../docs/features/costos-ia/bitacora.md) ·
+**Requisitos:** `RP-01`, `RP-02`, `RP-03` · **Bitácora:** [bitacora.md](../../docs/features/costos-ia/bitacora.md) ·
 **Decisiones:** D-23 a D-25, D-30 · **Investigación (Notion):** [CIC-14](https://app.notion.com/p/3f4f573ce6df81c0a2fdef4150ce5938),
 [CIC-15](https://app.notion.com/p/3f4f573ce6df8133b74ac33fb3932d13), [CIC-16](https://app.notion.com/p/3f4f573ce6df813eaee5d41ff0675832) ·
 **Estimación por proveedor y por pregunta:** [Arquitectura y costo del chat](https://app.notion.com/p/3f4f573ce6df8168a4e8d347d5b4c749) ·

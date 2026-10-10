@@ -2,7 +2,7 @@
 
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
-**Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../docs/features/chat/bitacora.md) ·
+**Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../../docs/features/chat/bitacora.md) ·
 **Decisiones:** D-24, D-25, D-26, D-30 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
@@ -21,7 +21,7 @@ La conversación vive en memoria y tiene desplazamiento propio. El diseño de se
 Responsable: Gerardo Pineda. El código está en la rama `feat/back-chat`. Todavía no llega a `dev`: la pantalla no
 lo usa. El modelo no está conectado: `POST /api/chat` responde `unavailable` hasta que exista `src/lib/ia/chat.ts`.
 
-Los tipos están en `src/types/chat.ts`. La primera parte sigue la ficha 7 de [notion-frontend.md](../notion-frontend.md).
+Los tipos están en `src/types/chat.ts`. La primera parte sigue la ficha 7 de [notion-frontend.md](../front/notion-frontend.md).
 La segunda es el contrato con el módulo del modelo, tomado del «Incremento 2» de este spec:
 
 | Tipo | Contenido |
@@ -147,7 +147,7 @@ El alcance de la interfaz de demostración se describe en «Cambio en curso». S
 ### Interfaz de demostración independiente
 
 2026-10-09: Sergio solicitó una demo editorial con feed y conversación en memoria.
-El registro propio de frontend está en [notion-frontend.md](../notion-frontend.md).
+El registro propio de frontend está en [notion-frontend.md](../front/notion-frontend.md).
 No adopta los ciclos de IA como hipótesis propias ni modifica el diseño de servidor descrito abajo.
 Los cuatro botones de ejemplo muestran respuestas preparadas con referencias al corpus ficticio.
 Una consulta libre explica que el servicio no está conectado. No se simula una respuesta de modelo.
@@ -160,7 +160,7 @@ La edición completa queda en `/edicion`. Se conservan las citas, el estado temp
 No se cambia el servicio de IA ni sus límites. No se hacen commits ni operaciones de escritura en Git.
 Contrato propuesto: POST `/api/chat`, JSON con respuesta y citas validadas por el servidor.
 La forma definitiva y los límites del contexto se acuerdan con Backend antes de retirar la demo.
-Las verificaciones técnicas y anónimas están en [el registro local](../notion-frontend.md#registro-honesto).
+Las verificaciones técnicas y anónimas están en [el registro local](../front/notion-frontend.md#registro-honesto).
 El usuario pidió no ejecutar las pruebas con sesión. No se acredita todavía el recorrido de preguntas, citas ni reapertura.
 
 ### Diseño de servidor

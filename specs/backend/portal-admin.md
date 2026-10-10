@@ -2,8 +2,8 @@
 
 **Requisitos:** RF-03, RF-15, RF-16, RT-03, RT-04, RP-02.
 **Responsable:** Sergio Orellana (pantalla). Publicación y validación: Gerardo Pineda.
-**Bitácora:** [registro](../docs/features/portal-admin/bitacora.md).
-**Investigación:** [traslado](../notion-frontend.md).
+**Bitácora:** [registro](../../docs/features/portal-admin/bitacora.md).
+**Investigación:** [traslado](../front/notion-frontend.md).
 
 ## Comportamiento actual
 
@@ -14,7 +14,7 @@ El contenido publicado usa bloques tipados para el lector. No hay publicación r
 ### Backend
 
 Responsable: Gerardo Pineda. El código está en la rama `feat/backend`. Todavía no llega a `dev`: el portal no
-lo usa. Los tipos están en `src/types/news.ts`. Siguen el contrato de [notion-frontend.md](../notion-frontend.md),
+lo usa. Los tipos están en `src/types/news.ts`. Siguen el contrato de [notion-frontend.md](../front/notion-frontend.md),
 fichas 1 y 9, con estas diferencias: `important`, `reviewNote` en la publicación, `image` en lugar de `imageCandidateId`
 y los orígenes de imagen `event_photo` e `illustrative`.
 
@@ -264,7 +264,7 @@ Verificar con administrador y usuario común. Publicar y comprobar la noticia en
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Editor por pasos, revisión y publicación temporal | RF-15, RF-16, RT-03, RT-04 | Código actualizado. [Verificación local](../notion-frontend.md#registro-honesto). Pruebas con administrador pendientes |
+| En curso | Editor por pasos, revisión y publicación temporal | RF-15, RF-16, RT-03, RT-04 | Código actualizado. [Verificación local](../front/notion-frontend.md#registro-honesto). Pruebas con administrador pendientes |
 | En curso | Mostrar consumo no disponible y dependencia del servidor | RP-02 | Código conservado. Prueba con sesión pendiente |
 | Pendiente | Integración y validación editorial en servidor | RF-03, RF-15, RT-03 | Contratos pendientes |
 
@@ -283,4 +283,4 @@ El usuario autoriza verificaciones locales. No se conectan servicios nuevos ni s
 Se retiró la carga global de la raíz para evitar que el streaming anticipe HTTP 200 antes de `notFound()`.
 La carga de ruta se limita a chat, edición y búsqueda. El control administrativo sigue en servidor.
 El acceso anónimo se comprobó. La respuesta 404 con cuenta común y la publicación con administrador siguen pendientes por petición del usuario.
-La evidencia está en [el registro local](../notion-frontend.md#registro-honesto). La inspección estática no demuestra esas pruebas de roles.
+La evidencia está en [el registro local](../front/notion-frontend.md#registro-honesto). La inspección estática no demuestra esas pruebas de roles.

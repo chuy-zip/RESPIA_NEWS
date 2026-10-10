@@ -3,7 +3,7 @@
 Orden, niveles de prominencia e intereses del feed de cada usuario. El diseño es de IA. El endpoint del feed es
 de Backend y llama al recomendador (D-20).
 
-**Requisitos:** `RF-08`, `RF-10`, `RF-11`, `RT-01` · **Bitácora:** se crea con el primer ciclo que cambie una decisión ·
+**Requisitos:** `RF-08`, `RF-10`, `RF-11`, `RT-01` · **Bitácora:** [bitacora.md](../docs/features/recomendacion/bitacora.md) ·
 **Decisiones:** D-20 · **Investigación (Notion):** [CIC-28](https://app.notion.com/p/3f4f573ce6df813fb993ea21c9aa29db) ·
 **Responsable:** Rodrigo Mansilla (IA). Endpoint: Gerardo Pineda. Pantalla: Sergio Orellana.
 
@@ -30,8 +30,9 @@ Todavía no existe. El diseño propuesto está en «Cambio en curso».
 - Datos: regiones, temas y fecha de cada noticia (`RF-16`), un campo de importancia, una tabla de señales y la
   región del perfil. La cobertura es Centroamérica más noticias internacionales (D-26).
 - `portal-admin`: el administrador marca la importancia.
-- Backend: el endpoint del feed devuelve el nivel y la explicación de cada noticia.
-- Frontend: los niveles visuales y el registro de la señal al abrir una noticia.
+- Backend: `GET /api/feed` devuelve la prominencia y el motivo de cada noticia, y `POST /api/interactions`
+  guarda las aperturas. Los contratos los propuso Frontend en `notion-frontend.md`.
+- Frontend: las cuatro variantes de tarjeta, el bloque importante y el envío de la señal al abrir una noticia.
 - Acceso: las señales son datos del usuario y van en `/privacidad` (`RF-06`).
 - `chat`: usa las primeras recomendaciones.
 
@@ -49,27 +50,44 @@ Están en el ticket [TKT-2](https://app.notion.com/p/3f5f573ce6df814ba4fcf0fa30b
 
 ## Cambio en curso
 
-Propuesta del 2026-10-09 (CIC-28). Todavía no hay código.
+### Incremento 1: puntaje, prominencia y bloque importante (rama `recomendacion`)
 
-### Puntaje
+Requisitos: `RF-08`, `RF-10`, `RF-11`, `RT-01`, `RP-03`. Decisión: D-20. Ticket: TKT-2. Ciclo: CIC-28.
 
-Cada noticia recibe un puntaje con cuatro componentes con nombre:
+El incremento se alinea con el contrato que Frontend propuso para `GET /api/feed`: cuatro prominencias, un motivo
+por noticia y un bloque `importantItems` que no depende del filtro.
 
-| Componente | Valor | De dónde sale |
-|---|---|---|
-| Región | Alto si la noticia es de la región simulada del usuario. Menor si es nacional o internacional | Región del perfil (`RF-04`) y regiones de la noticia |
-| Interés | Peso de los temas de la noticia en el perfil, de 0 a 1 | Señales del usuario (`RF-10`) |
-| Recencia | Baja con las horas desde la publicación | Fecha de la noticia |
-| Importancia | Marcada por una persona en el portal | Portal administrativo |
+- `src/lib/recomendacion/feed.ts` tiene funciones puras, sin base de datos ni modelos. El servicio del feed las llama.
+- **Entrada:** noticias con `id`, `topicIds`, `regionIds`, `publishedAt` e `important`. Perfil con `regionId` y un
+  peso de 0 a 1 por tema.
+- **Puntaje:** suma de cuatro componentes con nombre.
 
-Los pesos de cada componente se fijan en el código y se ajustan con la prueba de dos cuentas.
+  | Componente | Peso | Valor |
+  |---|---|---|
+  | Región | 0.35 | 1 si la noticia es de la región del lector, 0 si no |
+  | Interés | 0.30 | El mayor peso del perfil entre los temas de la noticia |
+  | Recencia | 0.20 | Se reduce a la mitad cada 24 horas desde la publicación |
+  | Importancia | 0.15 | 1 si la redacción la marcó como importante |
 
-### Reglas
+- **Prominencia (`RF-08`):** sale de la posición en el orden. La 1.ª es `hero`, la 2.ª y la 3.ª son `large`, de la 4.ª
+  a la 9.ª son `standard` y el resto `compact`. Con 10 noticias o más, el feed tiene las cuatro variantes.
+- **Motivo (`RT-01`):** una frase con los componentes que más aportaron. Ejemplo: «Destacada porque es de tu región
+  y es reciente.» Cada noticia trae además el aporte de cada componente.
+- **Lo importante no se oculta (`RF-11`):** `importantItems` lleva hasta 3 noticias importantes que no quedaron
+  como `hero` ni `large`. El filtro por tema no las quita.
+- **Intereses (`RF-10`):** `topicWeightsFromOpens` convierte las aperturas del lector en pesos de 0 a 1. Cada
+  apertura pierde la mitad de su valor cada 7 días.
+- **Prueba:** `src/lib/recomendacion/feed.test.mjs`, un test por criterio con noticias ficticias (D-15). Usa el
+  runner incluido en Node, sin dependencias:
 
-1. **Niveles (`RF-08`):** las franjas del puntaje dan el nivel 1 (destacada), el 2 (mediana) y el 3 (lista).
-2. **Lo importante no se oculta (`RF-11`):** el feed reserva un lugar en el nivel 1 o 2 para la noticia
-   importante más reciente de cada ámbito (local, nacional e internacional), aunque no coincida con la región
-   ni con los intereses.
-3. **Intereses (`RF-10`):** abrir una noticia suma al peso de sus temas. Los pesos bajan con el tiempo para que
-   un interés viejo no domine.
-4. **Explicación (`RT-01`):** cada noticia trae sus componentes. Ejemplo: «Destacada: es de tu región y es importante».
+  ```bash
+  node --test src/lib/recomendacion/feed.test.mjs
+  ```
+
+### Pendiente
+
+- Guardar las aperturas: tabla de señales (Datos) y `POST /api/interactions` (Backend).
+- El campo de importancia en la tabla de noticias (Datos y `portal-admin`).
+- Región: hoy solo cuenta si la noticia es de la región del lector. Una región vecina puede sumar cuando
+  `ubicacion-y-perfil` defina la lista de regiones (D-26).
+- La prueba con dos cuentas reales (`RF-08`), cuando exista el endpoint.

@@ -3,8 +3,9 @@
 Registro de cada llamada a un modelo, tope de gasto y reserva para la demo.
 
 **Requisitos:** `RP-01`, `RP-02`, `RP-03` · **Bitácora:** [bitacora.md](../docs/features/costos-ia/bitacora.md) ·
-**Decisiones:** D-22, D-23, D-24 · **Investigación (Notion):** [CIC-14](https://app.notion.com/p/3f4f573ce6df81c0a2fdef4150ce5938),
+**Decisiones:** D-22 a D-25 · **Investigación (Notion):** [CIC-14](https://app.notion.com/p/3f4f573ce6df81c0a2fdef4150ce5938),
 [CIC-15](https://app.notion.com/p/3f4f573ce6df8133b74ac33fb3932d13), [CIC-16](https://app.notion.com/p/3f4f573ce6df813eaee5d41ff0675832) ·
+**Estimación por proveedor y por pregunta:** [Arquitectura y costo del chat](https://app.notion.com/p/3f4f573ce6df8168a4e8d347d5b4c749) ·
 **Responsable:** Rodrigo Mansilla (IA). Tabla del registro: Ricardo Chuy.
 
 ## Comportamiento actual
@@ -19,6 +20,9 @@ Todavía no hay llamadas a modelos. Gasto acumulado: USD 0.
 | Reserva para la demo | USD 6 (30 %) | Chat en vivo, validación con compañeros e imágenes en vivo |
 
 Estimación de la demo: 300 preguntas × USD 0.001 = USD 0.30 de chat (CIC-16). No se generan imágenes (D-23).
+
+La búsqueda externa no gasta presupuesto: el RSS es gratis y Tavily queda en su plan gratis de 1 000 créditos por
+mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vigilar ese límite.
 
 ### Modelos (D-22)
 
@@ -47,7 +51,7 @@ Estimación de la demo: 300 preguntas × USD 0.001 = USD 0.30 de chat (CIC-16). 
 
 - Datos: la tabla `ai_usage` con función, modelo, entorno, tokens y costo. Sin `user_id` mientras no haya un
   límite por usuario (CIC-15).
-- Infra: las variables de servidor del modelo y del buscador, sin `NEXT_PUBLIC_`.
+- Infra: las variables de servidor del modelo y de Tavily (`TAVILY_API_KEY`), sin `NEXT_PUBLIC_`.
 
 ## Uso de IA en el producto
 
@@ -56,7 +60,7 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 | Función | Feature | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|---|
 | `responderChat` | `chat` | Haiku 5.5 o GPT de gama baja | Entender la pregunta, pedir datos con tools y redactar | Plantillas o router con reglas (CIC-24) | USD 0.001 a 0.002 por pregunta |
-| `buscar_externo` | `chat` | Proveedor de búsqueda, pendiente | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | Pendiente |
+| `buscar_externo` | `chat` | Ninguno: RSS y Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0 dentro de los 1 000 créditos gratis de Tavily por mes |
 | `elegirImagen` | `imagenes` | El mismo modelo del chat | Proponer una imagen del banco leyendo descripciones | El administrador elige sin sugerencia (CIC-27) | Menos de USD 0.0002 por noticia |
 | Recomendador | `recomendacion` | Ninguno | Ordenar el feed | No aplica | USD 0 |
 
@@ -66,13 +70,7 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Módulo de costo en `src/lib/ia/`: tabla de precios, cálculo y tope que falla cerrado | `RP-02` | |
-| ⏳ | Pedir a Datos la tabla `ai_usage` | `RP-02` | |
-| ⏳ | Elegir el modelo y el proveedor de producción con el conjunto fijo | `RP-01` | |
-| ⏳ | Consulta de gasto, saldo y costo por función | `RP-02` | |
-| ⏳ | Forzar el tope y comprobar que no se llama al modelo | `RP-02` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `costos-ia` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

@@ -45,16 +45,7 @@ Toda pantalla nueva se probó en un iPhone y un Android reales, ya instalada.
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ✅ | Manifiesto, iconos y service worker | `RF-01` | Commit `1fdcb81`; ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Instalación y apertura a pantalla completa en Android e iOS | `RF-01` | Tabla de pruebas de [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Botón de instalación en Android | `RF-05` | Bitácora 2026-09-10, commit `84ce854` |
-| ✅ | Instrucciones de instalación para iPhone | `RF-05` | Bitácora 2026-09-10, commit `e3567fd` |
-| ✅ | Pantalla de aviso sin conexión | `RF-01` | Bitácora 2026-09-23 (prueba con el servidor detenido): `/contenido` cae en `offline.html` |
-| ✅ | El service worker no guarda contenido privado | `RF-02` | Bitácora 2026-09-23, commit `3df4657` |
-| ⏳ | Revisar que las pantallas definitivas se vean bien en teléfono (las construye frontend) | `RF-01` | Código actualizado. [Verificación local](../notion-frontend.md#registro-honesto). Teléfonos reales pendientes |
-| ⏳ | Probar `RF-05` con una persona ajena al equipo | `RF-05` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `pwa` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

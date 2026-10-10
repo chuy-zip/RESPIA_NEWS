@@ -3,7 +3,7 @@
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
 **Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../docs/features/chat/bitacora.md) ·
-**Decisiones:** D-22, D-24 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
+**Decisiones:** D-22, D-24, D-25, D-26 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
 [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2), [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62),
@@ -39,35 +39,27 @@ La conversación vive en memoria y tiene desplazamiento propio. El diseño de se
 - Datos: la tabla de noticias con regiones, temas y estado (`RF-16`), el índice de texto completo (CIC-18) y la tabla `ai_usage`.
 - Frontend: la pantalla, el historial en memoria y las etiquetas.
 - `costos-ia`: el registro y el tope de cada llamada.
-- Un proveedor de búsqueda externa con filtro por dominio. Pendiente.
+- Búsqueda externa (D-25): el RSS de los sitios permitidos y Tavily. Leer RSS necesita un lector de XML, que es una
+  dependencia nueva: se pide al equipo en su propio PR.
 
 ## Uso de IA en el producto
 
 | Función | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|
 | `responderChat` | Haiku 5.5 o GPT de gama baja (D-22). Pruebas: modelos `:free` de OpenRouter | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
-| `buscar_externo` | Proveedor de búsqueda, pendiente | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | Se mide con el proveedor elegido |
+| `buscar_externo` | Ninguno: RSS de los sitios permitidos y, si no hay resultados, Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0: el RSS no cobra y Tavily queda dentro de sus 1 000 créditos gratis por mes |
 
 ## Done específico
 
 - El conjunto fijo (CIC-17) pasa con el modelo de producción, no solo con el modelo `:free`.
 - El costo de cada pregunta aparece en el registro (`RP-02`).
-- `/privacidad` nombra al proveedor del modelo y al buscador, porque reciben las preguntas (`RF-06`).
+- `/privacidad` nombra al proveedor del modelo y a Tavily, porque reciben las preguntas (`RF-06`).
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Escribir el conjunto fijo: cuatro tipos, preguntas mixtas, sin cobertura y casos adversariales | `RF-12` | |
-| ⏳ | Prompt y salida estructurada, probados con modelos `:free` | `RF-12`, `RF-13` | |
-| ⏳ | Tools `recomendaciones_del_usuario` y `buscar_noticias`, con SQL y sin modelo | `RF-12`, `RP-03` | |
-| ⏳ | Elegir el proveedor de búsqueda externa y la lista de sitios por tema | `RF-14` | |
-| ⏳ | Tool `buscar_externo`, que corre solo con 0 resultados internos | `RF-14` | |
-| ⏳ | Guardrails del servidor | `RF-14`, `RT-04` | |
-| ⏳ | Validar con el modelo de producción | `RF-12` | |
-| ⏳ | Actualizar `/privacidad` | `RF-06` | |
-| En curso | Interfaz de demo: consultas preparadas, citas, memoria y estados visibles | `RF-07`, `RF-12`, `RF-13` | Código escrito en `/chat`. [Verificación local](../notion-frontend.md#registro-honesto). Todas las pruebas con sesión siguen pendientes por petición del usuario |
-| Pendiente | Conectar la pantalla al contrato aprobado y retirar respuestas de ejemplo | `RF-12`, `RF-13`, `RF-14` | Backend e IA pendientes |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `chat` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
+
+El alcance de la interfaz de demostración se describe en «Cambio en curso». Sus tickets de frontend están pendientes de asignación.
 
 ## Cambio en curso
 
@@ -108,7 +100,7 @@ Diseño acordado el 2026-10-09 (D-24). Todavía no hay código de servidor.
 |---|---|---|
 | `recomendaciones_del_usuario()` | Las primeras noticias del feed del usuario | Ya va en el contexto. Tipo (b) |
 | `buscar_noticias(texto, tema, region, desde)` | Noticias publicadas que coinciden, por SQL (CIC-18) | Tipos (a), (c) y (d) |
-| `buscar_externo(consulta, tema)` | Resultados de los sitios permitidos para el tema | Solo si `buscar_noticias` devolvió 0 resultados. Lo controla el servidor |
+| `buscar_externo(consulta)` | Noticias de los sitios permitidos: primero de su RSS y, si no hay, de Tavily (D-25) | Solo si `buscar_noticias` devolvió 0 resultados. Lo controla el servidor |
 
 ### Formato de la respuesta
 
@@ -137,13 +129,32 @@ Fuentes externas mencionan (no verificadas por la redacción):
 3. **Sin código:** si el texto trae bloques de código, el servidor los reemplaza por la respuesta fija.
 4. **Solo fuentes reales:** el servidor descarta los IDs y las URLs que no vinieron de las tools.
 5. **Búsqueda externa controlada:** solo con 0 resultados internos, solo en dominios permitidos, y el servidor
-   comprueba el dominio de cada resultado.
+   comprueba el dominio de cada resultado. Tavily solo corre si el RSS no tiene resultados. Si Tavily falla o se
+   acaban sus créditos, el chat responde el texto fijo de «sin cobertura».
 6. **Contenido como dato:** el texto de las noticias y de las páginas externas no da instrucciones al modelo.
 7. **Límites:** largo máximo de la pregunta, últimos 4 turnos y tope de tokens de salida.
 
+### Incremento 1: lector RSS (rama `chat`)
+
+Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
+
+- `src/lib/ia/rss.ts` guarda la lista de sitios permitidos y la función de búsqueda.
+- La lista cubre los 7 países de Centroamérica, un medio regional y medios internacionales en español (D-26).
+  Los medios de Belice publican en inglés. Un sitio entra en la lista solo si su feed respondió con el user agent
+  de la app.
+- La búsqueda compara las palabras de la pregunta con el título y el resumen de cada noticia. No llama a ningún
+  modelo (`RP-03`). Devuelve como máximo 5 noticias.
+- Solo se aceptan enlaces del dominio del sitio. El resumen se guarda sin HTML y con un largo máximo.
+- Cada feed tiene 5 s para responder. Un feed que falla se ignora y no detiene la búsqueda.
+- Next guarda cada feed 15 minutos, para no descargarlo en cada pregunta.
+- Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
+- Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
+
 ### Pendiente
 
-- Proveedor de búsqueda externa: filtro por dominio, costo por búsqueda y condiciones de uso. Necesita una
-  variable de servidor nueva y una fila en `DECISIONES.md`.
-- Lista de sitios permitidos por tema: decisión editorial del equipo.
+- Tavily como respaldo del RSS y la tool `buscar_externo` dentro del flujo del chat.
+- El guardrail de alcance actúa antes de cualquier búsqueda externa. En la prueba del incremento 1, «receta de
+  pastel de chocolate» encontró una receta en Infobae: sin ese filtro, el chat respondería temas ajenos a las noticias.
+- Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Rodrigo carga el valor en `.env.local` y en Vercel.
+  El nombre se agrega a `.env.example` junto con el código que la usa.
 - Límite diario de preguntas por usuario: guarda el `user_id`, así que obliga a actualizar `/privacidad`.

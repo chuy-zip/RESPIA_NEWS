@@ -12,17 +12,18 @@ vive en la documentación; Git evita que dos partes se pisen.
 
 | Lugar | Contenido |
 |---|---|
-| **Notion** | El porqué: investigación (R&D) por área, teoría, alternativas e hipótesis completas. [Página del proyecto](https://app.notion.com/p/3f3f573ce6df81b8bf09c7294f924875) · [Investigación (R&D)](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) · [Frameworks](https://app.notion.com/p/3f3f573ce6df8157b385d2313b050874) |
-| **Repositorio** | El qué, el cómo, el resultado y las pruebas |
+| **Notion** | El porqué: investigación (R&D) por área, teoría, alternativas e hipótesis completas. [Página del proyecto](https://app.notion.com/p/3f3f573ce6df81b8bf09c7294f924875) · [Investigación (R&D)](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) · [Frameworks](https://app.notion.com/p/3f3f573ce6df8157b385d2313b050874). Las tareas: [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f), con responsable, estado, bloqueos y evidencia (D-27) |
+| **Repositorio** | El qué y el cómo: specs, bitácoras, decisiones y código |
 
 - Registre cada dato en un solo lugar. Use enlaces; no copie.
 - Use el mismo ID de ciclo (`CIC-NNN`) en Notion y en la bitácora. Notion asigna el número al crear la fila.
+- Cite el ID del ticket (`TKT-NN`) en el commit, el PR y la bitácora.
 - Cite los requisitos por su ID (`RF-08`). No copie su texto.
 
 | Archivo | Contenido |
 |---|---|
 | [ALCANCE.md](ALCANCE.md) | Requisitos con ID, criterios de aceptación y matriz de estado |
-| `specs/<feature>.md` | Spec de la feature: comportamiento actual, criterios, tareas y cambio en curso |
+| `specs/<feature>.md` | Spec de la feature: comportamiento actual, criterios y cambio en curso |
 | `docs/features/<feature>/bitacora.md` | Ciclos que cambiaron una decisión, con el registro del agente |
 | [DECISIONES.md](DECISIONES.md) | Todas las decisiones duraderas, una fila por decisión |
 
@@ -30,14 +31,14 @@ vive en la documentación; Git evita que dos partes se pisen.
 
 **Comprensión → Hipótesis → Construcción → Prueba → Observación → Corrección**
 
-1. Escriba el cambio en `specs/<feature>.md`, sección «Cambio en curso»: requisitos,
-   criterios de aceptación y tareas.
+1. Escriba el cambio en `specs/<feature>.md`, sección «Cambio en curso»: requisitos y
+   criterios de aceptación. Cree sus tickets en Notion, con responsable y bloqueos.
 2. Construya con el agente. El agente lee [AGENTS.md](../AGENTS.md) y el spec.
 3. Ejecute la prueba. Registre la fecha, el entorno, lo observado y el resultado.
 4. Si la evidencia cambia una decisión, registre el ciclo en la bitácora. Si la
    decisión es duradera, agregue una fila en [DECISIONES.md](DECISIONES.md).
-5. Cierre el cambio: actualice «Comportamiento actual», marque las tareas y borre
-   «Cambio en curso». Git conserva el historial.
+5. Cierre el cambio: actualice «Comportamiento actual», cierre los tickets con su evidencia
+   y borre «Cambio en curso». Git conserva el historial.
 
 No todo cambio es un ciclo. Registre solo los ciclos que cambiaron una decisión o
 descartaron una hipótesis.
@@ -102,7 +103,8 @@ Una tarea está terminada cuando todo esto es cierto:
 3. Está en Vercel y se probó allí. Si el requisito exige un dispositivo, se probó en uno real.
 4. `npm run typecheck` y `npm run lint` no muestran errores.
 5. No contiene secretos, llaves ni correos reales.
-6. El spec, la bitácora y la matriz de estado de `ALCANCE.md` están actualizados.
+6. El ticket tiene su evidencia y está en «Hecho».
+7. El spec, la bitácora y la matriz de estado de `ALCANCE.md` están actualizados.
 
 Cada spec puede agregar un **Done específico**.
 
@@ -115,9 +117,9 @@ La evidencia es un **registro escrito de la prueba**. Debe decir:
 - **Qué se hizo y qué se vio.** Lo observado, no solo «funciona».
 - **Resultado:** pasó o falló.
 
-Escríbala en la columna «Evidencia» de la tabla de tareas del spec. Si la prueba
-enseñó algo, escriba una entrada en la bitácora y enlácela. Una tarea no se da por
-hecha sin su registro.
+Escríbala en el campo «Evidencia» del ticket. Si la prueba enseñó algo, escriba una
+entrada en la bitácora y enlácela en el campo «Enlace». Un ticket no pasa a «Hecho» sin
+su registro.
 
 ## 8. Git y propiedad de carpetas
 
@@ -180,7 +182,7 @@ Cada persona modifica solo las carpetas de su parte, aunque comparta la rama de 
 
 ### Commits y pull requests
 
-- Mensaje de commit: `<parte>(<feature>): descripción`. Ejemplo: `ia(chat): cita las fuentes en la respuesta [RF-13]`.
+- Mensaje de commit: `<parte>(<feature>): descripción [requisito, ticket]`. Ejemplo: `ia(chat): cita las fuentes en la respuesta [RF-13, TKT-56]`.
 - Título del PR: el mismo formato. Descripción: requisito, qué cambió, cómo se probó (URL de la preview de Vercel) y qué no se probó. El PR de una rama de feature apunta a `dev`, no a `main`.
 - Abra un PR cuando una parte de la feature funciona. Antes de fusionar: la preview de Vercel compila, `npm run typecheck` y `npm run lint` no muestran errores, y la prueba se hizo en la preview.
 - Fusione las ramas de feature con **Create a merge commit**. Con squash, la rama diverge de `dev` después del primer PR y cada PR siguiente trae conflictos.
@@ -239,8 +241,7 @@ Función, modelo, para qué, alternativa más barata considerada y costo. «Ning
 Condiciones adicionales a la definición de Done, si hay.
 
 ## Tareas
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `<feature>`.
 
 ## Cambio en curso
 Vacío si no hay un cambio abierto.

@@ -28,7 +28,7 @@ Todavía no existe. El diseño propuesto está en «Cambio en curso».
 ## Dependencias
 
 - Datos: regiones, temas y fecha de cada noticia (`RF-16`), un campo de importancia, una tabla de señales y la
-  región del perfil.
+  región del perfil. La cobertura es Centroamérica más noticias internacionales (D-26).
 - `portal-admin`: el administrador marca la importancia.
 - Backend: el endpoint del feed devuelve el nivel y la explicación de cada noticia.
 - Frontend: los niveles visuales y el registro de la señal al abrir una noticia.
@@ -45,13 +45,7 @@ Ninguno: el recomendador no llama a ningún modelo (`RP-03`).
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Proponer a Datos y a `portal-admin` el campo de importancia y la tabla de señales | `RF-10`, `RF-11` | |
-| ⏳ | Puntaje con componentes y franjas de nivel | `RF-08`, `RT-01` | |
-| ⏳ | Pesos de temas a partir de las señales | `RF-10` | |
-| ⏳ | Cupos de noticias importantes locales, nacionales e internacionales | `RF-11` | |
-| ⏳ | Prueba con dos cuentas | `RF-08` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `recomendacion` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

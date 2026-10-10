@@ -98,7 +98,7 @@ criterio señala dónde se demuestra.
 | ID | Requisito | Criterio de aceptación | Prueba |
 |---|---|---|---|
 | RPR-01 | Desarrollo asistido por IA observable, con ciclos de comprensión, hipótesis, construcción, prueba, observación y corrección | Hay al menos 5 ciclos documentados donde la evidencia cambió una decisión o implementación, cada uno con fecha, evidencia y registro del uso de IA | Revisar las bitácoras de `docs/features/` |
-| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, las tablas de tareas de cada spec en `specs/` (cada tarea cita un ID de requisito) y la [definición de Done](PROCESO.md#6-definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
+| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion (cada ticket cita un ID de requisito y tiene responsable) y la [definición de Done](PROCESO.md#6-definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
 | RPR-03 | Flujo de trabajo documentado y evidencia de por qué cada tarea concreta se consideró terminada | [PROCESO.md](PROCESO.md) describe el flujo. Cada tarea hecha tiene su evidencia o la referencia a dónde está | Tomar 3 tareas al azar y seguir su evidencia |
 
 ---
@@ -138,7 +138,7 @@ tienen que estar probados y con evidencia lista para cada parte.
 
 ## Estado
 
-Estado a 7-oct-2026. Es lo único de este documento que se actualiza sin pasar
+Estado a 7-oct-2026. Las filas de IA se actualizaron el 9-oct-2026. Es lo único de este documento que se actualiza sin pasar
 por el registro de cambios.
 
 | ID | Estado | Nota |
@@ -149,9 +149,12 @@ por el registro de cambios.
 | RF-04 | Pendiente | |
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
 | RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
-| RF-07 a RF-18 | Pendiente | |
+| RF-07 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
+| RF-08 a RF-11 | Pendiente | Diseño propuesto del recomendador en `specs/recomendacion.md` (D-20) |
+| RF-12 a RF-14 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
+| RF-15 a RF-18 | Pendiente | Imágenes de banco elegidas por el modelo (D-23). Sin código |
 | RT-01 a RT-06 | Pendiente | |
-| RP-01 a RP-03 | Pendiente | |
+| RP-01 a RP-03 | En curso | Modelos y reserva del 30 % decididos (D-22). Faltan el registro y el tope |
 | RP-04 | Hecho | |
 | RPR-01 a RPR-03 | En curso | Hay bitácora reconstruida de las features de infraestructura; faltan las demás |
 
@@ -167,3 +170,4 @@ por el registro de cambios.
 | 8-oct-2026 | Se adopta un flujo de Git: ramas por cambio, PR hacia `main` y dueño por carpeta. Reemplaza la fila del 7-oct-2026 sobre no imponer control de versiones. Las tareas siguen en los specs, no en issues | Cuatro partes comparten el repositorio y `main` se publica en producción (D-16) |
 | 9-oct-2026 | Flujo de Git por feature: la documentación sube directo a `dev` y el código va en una rama por feature mayor. Reemplaza las ramas por cambio de la fila anterior | Una rama y un PR por cada cambio pequeño multiplicaban ramas y merges (D-21) |
 | 9-oct-2026 | `RF-14`: si la app no tiene noticias sobre la pregunta, el chat puede citar fuentes externas de sitios permitidos, separadas y con etiqueta. Antes se limitaba a las noticias de la app | Responder solo «no hay noticias» deja sin respuesta preguntas legítimas. Se mantiene la regla de no inventar: cada frase lleva su fuente (D-24) |
+| 9-oct-2026 | `RPR-02`: las tareas pasan de las tablas de los specs a la base Tickets de Notion, con responsable, estado, bloqueos y evidencia | Con las tareas repartidas en los specs no se veía qué hace cada persona ni qué bloquea a qué área (D-27) |

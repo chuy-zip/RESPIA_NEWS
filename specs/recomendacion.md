@@ -10,7 +10,10 @@ de Backend y llama al recomendador (D-20).
 
 ## Comportamiento actual
 
-Todavía no existe. El diseño propuesto está en «Cambio en curso».
+`src/lib/recomendacion/feed.ts` ordena el feed con funciones puras ([PR #5](https://github.com/chuy-zip/RESPIA_NEWS/pull/5)):
+puntaje, prominencia por posición, motivo y bloque importante por ámbito. El cálculo de intereses está en revisión
+([PR #8](https://github.com/chuy-zip/RESPIA_NEWS/pull/8)). Ningún endpoint llama todavía al recomendador: falta
+`GET /api/feed` (Backend).
 
 ## Criterios de aceptación
 

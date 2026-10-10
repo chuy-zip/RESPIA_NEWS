@@ -62,7 +62,7 @@ npm run build && npm start
 | 2 | [docs/PROCESO.md](docs/PROCESO.md) | Ciclo de trabajo, registro del uso de agentes, límites y Definición de Done | 10 min |
 | 3 | [docs/ALCANCE.md](docs/ALCANCE.md) | Requisitos con ID. Busque los de su feature | 5 min |
 | 4 | `specs/<su-feature>.md` | Qué hace hoy la feature y qué cambio está en curso. Lista en [docs/README.md](docs/README.md) | 5 min |
-| 5 | [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) (Notion) | Sus tareas, qué las bloquea y cuáles puede empezar ya | 5 min |
+| 5 | [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) (Notion) | El ticket de su funcionalidad: sus tareas y de qué áreas depende | 5 min |
 | 6 | [docs/DECISIONES.md](docs/DECISIONES.md) | Qué ya se decidió. No lo contradiga sin proponerlo | 5 min |
 
 Consulte [docs/INFRA_HANDOFF.md](docs/INFRA_HANDOFF.md) solo cuando toque sesión,
@@ -87,8 +87,8 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 
 ## 4. Su primer cambio
 
-1. Elija su ticket en la vista «Listos para empezar» de [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f)
-   y cámbielo a «En curso». Cada ticket cita su requisito de `ALCANCE.md`. Si no hay un requisito, no hay tarea.
+1. Abra el ticket de su funcionalidad en [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c).
+   Si no existe, créelo: un ticket por funcionalidad. Cada ticket cita sus requisitos de `ALCANCE.md`. Si no hay un requisito, no hay tarea.
 2. Si el cambio es de código, trabaje en la rama de su feature. Si la rama no existe, créela desde `dev` actualizado:
 
    ```bash
@@ -104,10 +104,10 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
    aceptación. Hágalo **antes** del código.
 5. Construya el cambio, solo o con un agente (sección 5). Modifique solo las carpetas de su parte.
 6. Cuando una parte de la feature funciona, abra un PR hacia **`dev`** (no hacia `main`). Vercel crea una preview del PR. Ejecute la prueba en la preview.
-   Escriba la evidencia en el ticket: fecha, dónde, qué vio y resultado.
+   Escriba la evidencia junto a la tarea, en el ticket: fecha, dónde, qué vio y resultado.
 7. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
 8. Verifique la Definición de Done (sección 6).
-9. Cierre el cambio: pase el ticket a «Hecho», actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
+9. Cierre el cambio: marque la tarea en el ticket, actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
    **Create a merge commit**. Si el PR toca carpetas de otra parte, espere la aprobación del dueño.
 
 Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 8 de

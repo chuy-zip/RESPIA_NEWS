@@ -19,8 +19,9 @@ frontend, backend, datos e IA.
 2. Lee [docs/PROCESO.md](docs/PROCESO.md): ciclo, registro del uso de agentes, límites y Done.
 3. Lee el spec de la feature (`specs/<feature>.md`), su bitácora
    (`docs/features/<feature>/bitacora.md`) y [docs/DECISIONES.md](docs/DECISIONES.md).
-4. Pide a la persona el ticket de la tarea (`TKT-NN`). Las tareas están en la base
-   [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion.
+4. Pide a la persona el ticket de la funcionalidad (`TKT-NN`). Hay un ticket por funcionalidad
+   en la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion.
+   Si la funcionalidad no tiene ticket, sus tareas están en la tabla del spec.
 
 ## Reglas
 
@@ -34,8 +35,8 @@ frontend, backend, datos e IA.
    (agente, pedido, propuesta, decisión, verificación). Usa la fecha real. No inventes
    fechas ni resultados.
 5. **Si propusiste algo incorrecto y eso cambió una decisión, regístralo.** Es evidencia.
-6. **No marques una tarea como hecha sin ejecutar su prueba** y dejar el registro en el campo
-   «Evidencia» del ticket. Si no tienes acceso a Notion, da el registro a la persona. Si no
+6. **No marques una tarea como hecha sin ejecutar su prueba** y dejar el registro junto a la
+   tarea, en el ticket o en la tabla del spec. Si no tienes acceso a Notion, da el registro a la persona. Si no
    puedes probarla (cuenta real, teléfono, acceso), dilo y déjala pendiente.
 7. **Respeta los límites de archivos** de `PROCESO.md`. Antes de crear un archivo,
    verifica si el dato cabe en uno existente.

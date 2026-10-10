@@ -33,6 +33,8 @@ Integrar candidatas reales y verificar etiquetas con la política editorial del 
 
 ## Tareas
 
+La parte de IA (el modelo propone la imagen) está en el ticket [TKT-4](https://app.notion.com/p/3f5f573ce6df81feb6e3fb92c207a067) (D-28).
+
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
 | En curso | Previsualizar ilustraciones locales identificadas como demo | RF-17, RF-18, RT-05 | Pruebas pendientes |

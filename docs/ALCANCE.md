@@ -150,7 +150,7 @@ por el registro de cambios.
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
 | RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
 | RF-07 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
-| RF-08 a RF-11 | Pendiente | Diseño propuesto del recomendador en `specs/recomendacion.md` (D-20) |
+| RF-08 a RF-11 | Pendiente | Diseño del recomendador en `specs/recomendacion.md` (D-20, D-31, D-32) |
 | RF-12 a RF-14 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
 | RF-15 a RF-18 | Pendiente | Imágenes de banco elegidas por el modelo (D-23). Sin código |
 | RT-01 a RT-06 | Pendiente | |

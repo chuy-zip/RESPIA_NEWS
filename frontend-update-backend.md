@@ -58,7 +58,7 @@ Archivo principal: `src/components/admin/EditorialDesk/EditorialDesk.tsx`. Hoy p
 | 2 | Tomar los temas y las regiones de `GET /api/catalogs` | La lista real no es la de la demo. El servidor rechaza un tema o una región que no existe |
 | 3 | Enviar los **ids** de tema y región, no los nombres | El servidor guarda ids |
 | 4 | Enviar el tipo de contenido como `original`, `summary` o `ai_contribution` | Son los valores que acepta el servidor. La pantalla sigue mostrando «Original», «Resumen» y «Aporte de IA» |
-| 5 | **Cambiar la ilustración de la demo por la subida de una foto**, con su texto alternativo, autor, licencia y origen | El servidor guarda la foto y su procedencia. No se publica una imagen sin origen declarado |
+| 5 | **Agregar la subida de fotos.** Un campo nuevo para subir la imagen, con su texto alternativo, autor, licencia y origen. Reemplaza las ilustraciones de la demo | Hoy el portal no puede subir archivos. El servidor guarda la foto y su procedencia, y no publica una imagen sin origen declarado |
 | 6 | Enviar la fecha con hora | Sin hora, la fecha puede aparecer un día antes |
 | 7 | Exigir dos fuentes para «Confirmado» | El servidor rechaza «Confirmado» con una sola fuente |
 | 8 | Mostrar los errores que devuelve el servidor junto a cada campo | El servidor valida todo otra vez y dice qué campo falló |
@@ -146,7 +146,10 @@ La validación de la pantalla mejora la experiencia. El servidor valida todo otr
 
 5. Quite la llamada a `publish(article)` de `useDemoSession`.
 
-### 2.5.1 Subir una foto
+### 2.5.1 Agregar la subida de fotos
+
+Hoy el portal no tiene un campo para subir archivos: solo deja elegir una de las tres ilustraciones de la demo.
+Hay que agregar la subida y quitar esas ilustraciones.
 
 1. Agregue en el paso 1 un campo de archivo que acepte PNG, JPEG o WebP de 4 MB como máximo.
 2. Al elegir el archivo, envíelo antes de publicar:

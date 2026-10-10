@@ -63,8 +63,11 @@ const RECENCY_HALF_LIFE_HOURS = 24;
 const INTEREST_HALF_LIFE_DAYS = 7;
 /** Preguntar al chat desde una noticia vale 1 más que abrirla (D-31). */
 const SIGNAL_VALUES: Record<SignalType, number> = { open: 1, chat: 1 };
-/** Peso inicial de un tema elegido en el onboarding. Las señales lo suben hasta 1 (D-32). */
-const CHOSEN_TOPIC_WEIGHT = 0.5;
+/**
+ * Señales que llevan un tema a peso 0.5. Un tema elegido en el onboarding cuenta como esa
+ * cantidad de señales: empieza en 0.5 y las señales lo suben hacia 1 (D-32).
+ */
+const SIGNALS_FOR_HALF_WEIGHT = 2;
 
 /** Ámbito de una noticia para un lector. El bloque importante lleva una por ámbito (D-31). */
 type Scope = "country" | "centralAmerica" | "international";
@@ -191,11 +194,12 @@ export function buildFeed(
 }
 
 /**
- * Convierte las señales del lector en pesos por tema (RF-10). El tema con más
- * señales vale 1. Cada tipo de señal cuenta una vez por noticia, para que
- * recargar o volver atrás no infle un tema (D-31). Cada señal pierde la mitad de
- * su valor cada 7 días, para que un interés viejo no domine el feed. Un tema
- * elegido en el onboarding vale al menos 0.5 (D-32).
+ * Convierte las señales del lector en pesos por tema (RF-10). El peso crece con
+ * cada señal y se acerca a 1, sin compararse con el tema más leído: así un solo
+ * clic no le gana a un tema elegido. Cada tipo de señal cuenta una vez por
+ * noticia, para que recargar o volver atrás no infle un tema (D-31). Cada señal
+ * pierde la mitad de su valor cada 7 días, para que un interés viejo no domine
+ * el feed.
  */
 export function topicWeights(signals: Signal[], chosenTopicIds: string[], now: Date): Record<string, number> {
   // La base guarda solo la primera señal por noticia y tipo. La regla se repite aquí por si llegan duplicadas.
@@ -215,11 +219,11 @@ export function topicWeights(signals: Signal[], chosenTopicIds: string[], now: D
     }
   }
 
-  const max = Math.max(0, ...Object.values(totals));
-  const weights = Object.fromEntries(Object.entries(totals).map(([topicId, total]) => [topicId, total / max]));
   for (const topicId of chosenTopicIds) {
-    weights[topicId] = Math.max(weights[topicId] ?? 0, CHOSEN_TOPIC_WEIGHT);
+    totals[topicId] = (totals[topicId] ?? 0) + SIGNALS_FOR_HALF_WEIGHT;
   }
 
-  return weights;
+  return Object.fromEntries(
+    Object.entries(totals).map(([topicId, total]) => [topicId, total / (total + SIGNALS_FOR_HALF_WEIGHT)]),
+  );
 }

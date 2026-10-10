@@ -45,13 +45,7 @@ Ninguno: el recomendador no llama a ningún modelo (`RP-03`).
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Proponer a Datos y a `portal-admin` el campo de importancia y la tabla de señales | `RF-10`, `RF-11` | |
-| ⏳ | Puntaje con componentes y franjas de nivel | `RF-08`, `RT-01` | |
-| ⏳ | Pesos de temas a partir de las señales | `RF-10` | |
-| ⏳ | Cupos de noticias importantes locales, nacionales e internacionales | `RF-11` | |
-| ⏳ | Prueba con dos cuentas | `RF-08` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `recomendacion` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

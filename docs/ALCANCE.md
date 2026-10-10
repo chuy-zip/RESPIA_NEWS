@@ -98,7 +98,7 @@ criterio señala dónde se demuestra.
 | ID | Requisito | Criterio de aceptación | Prueba |
 |---|---|---|---|
 | RPR-01 | Desarrollo asistido por IA observable, con ciclos de comprensión, hipótesis, construcción, prueba, observación y corrección | Hay al menos 5 ciclos documentados donde la evidencia cambió una decisión o implementación, cada uno con fecha, evidencia y registro del uso de IA | Revisar las bitácoras de `docs/features/` |
-| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, las tablas de tareas de cada spec en `specs/` (cada tarea cita un ID de requisito) y la [definición de Done](PROCESO.md#6-definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
+| RPR-02 | Requisitos propios, criterios de aceptación, tareas y definición de Done | Este documento, la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion (cada ticket cita un ID de requisito y tiene responsable) y la [definición de Done](PROCESO.md#6-definición-de-done) | Revisar que cada tarea marcada como hecha cite un ID |
 | RPR-03 | Flujo de trabajo documentado y evidencia de por qué cada tarea concreta se consideró terminada | [PROCESO.md](PROCESO.md) describe el flujo. Cada tarea hecha tiene su evidencia o la referencia a dónde está | Tomar 3 tareas al azar y seguir su evidencia |
 
 ---
@@ -170,3 +170,4 @@ por el registro de cambios.
 | 8-oct-2026 | Se adopta un flujo de Git: ramas por cambio, PR hacia `main` y dueño por carpeta. Reemplaza la fila del 7-oct-2026 sobre no imponer control de versiones. Las tareas siguen en los specs, no en issues | Cuatro partes comparten el repositorio y `main` se publica en producción (D-16) |
 | 9-oct-2026 | Flujo de Git por feature: la documentación sube directo a `dev` y el código va en una rama por feature mayor. Reemplaza las ramas por cambio de la fila anterior | Una rama y un PR por cada cambio pequeño multiplicaban ramas y merges (D-21) |
 | 9-oct-2026 | `RF-14`: si la app no tiene noticias sobre la pregunta, el chat puede citar fuentes externas de sitios permitidos, separadas y con etiqueta. Antes se limitaba a las noticias de la app | Responder solo «no hay noticias» deja sin respuesta preguntas legítimas. Se mantiene la regla de no inventar: cada frase lleva su fuente (D-24) |
+| 9-oct-2026 | `RPR-02`: las tareas pasan de las tablas de los specs a la base Tickets de Notion, con responsable, estado, bloqueos y evidencia | Con las tareas repartidas en los specs no se veía qué hace cada persona ni qué bloquea a qué área (D-27) |

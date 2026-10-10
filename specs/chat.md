@@ -55,18 +55,7 @@ Todavía no existe. El diseño está en «Cambio en curso».
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Escribir el conjunto fijo: cuatro tipos, preguntas mixtas, sin cobertura y casos adversariales | `RF-12` | |
-| ⏳ | Prompt y salida estructurada, probados con modelos `:free` | `RF-12`, `RF-13` | |
-| ⏳ | Tools `recomendaciones_del_usuario` y `buscar_noticias`, con SQL y sin modelo | `RF-12`, `RP-03` | |
-| ✅ | Elegir el proveedor de búsqueda externa | `RF-14` | D-25, 2026-10-09. Plan gratis de Tavily revisado en su documentación: 1 000 créditos por mes. Peor caso estimado del mes de la demo: 460 créditos |
-| ⏳ | Armar la lista de sitios permitidos (Centroamérica e internacional, D-26) con el feed RSS de cada sitio | `RF-14` | 2026-10-09, local: se probaron 36 feeds con curl y el user agent de la app. Quedaron 23 en `src/lib/ia/rss.ts` (rama `chat`). Falta probar desde Vercel: algunos sitios bloquean las IP de centros de datos |
-| ⏳ | Lector RSS y búsqueda por palabras, sin modelo (incremento 1) | `RF-14`, `RP-03` | 2026-10-09, local con Node 24: 23 de 23 feeds con noticias y 7 preguntas de ejemplo. Una búsqueda sin caché tarda unos 2 s. `typecheck` y `lint` sin errores. Falta probar en Vercel cuando exista la ruta del chat. [Bitácora](../docs/features/chat/bitacora.md) |
-| ⏳ | Tool `buscar_externo`: RSS primero y Tavily si el RSS no tiene resultados, solo con 0 resultados internos | `RF-14` | |
-| ⏳ | Guardrails del servidor | `RF-14`, `RT-04` | |
-| ⏳ | Validar con el modelo de producción | `RF-12` | |
-| ⏳ | Actualizar `/privacidad` | `RF-06` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `chat` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

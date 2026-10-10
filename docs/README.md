@@ -18,6 +18,7 @@ IA están en [AGENTS.md](../AGENTS.md).
 
 Una feature tiene dos archivos: `specs/<feature>.md` y
 `docs/features/<feature>/bitacora.md`. Se crean cuando empieza su trabajo, no antes.
+Sus tareas están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion (D-27).
 
 | Feature | Requisitos | Parte principal | Spec |
 |---|---|---|---|

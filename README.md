@@ -61,8 +61,9 @@ npm run build && npm start
 | 1 | [AGENTS.md](AGENTS.md) | Dónde trabaja cada parte, qué infraestructura no se toca y las reglas para agentes | 5 min |
 | 2 | [docs/PROCESO.md](docs/PROCESO.md) | Ciclo de trabajo, registro del uso de agentes, límites y Definición de Done | 10 min |
 | 3 | [docs/ALCANCE.md](docs/ALCANCE.md) | Requisitos con ID. Busque los de su feature | 5 min |
-| 4 | `specs/<su-feature>.md` | Qué hace hoy la feature y qué tareas tiene. Lista en [docs/README.md](docs/README.md) | 5 min |
-| 5 | [docs/DECISIONES.md](docs/DECISIONES.md) | Qué ya se decidió. No lo contradiga sin proponerlo | 5 min |
+| 4 | `specs/<su-feature>.md` | Qué hace hoy la feature y qué cambio está en curso. Lista en [docs/README.md](docs/README.md) | 5 min |
+| 5 | [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) (Notion) | Sus tareas, qué las bloquea y cuáles puede empezar ya | 5 min |
+| 6 | [docs/DECISIONES.md](docs/DECISIONES.md) | Qué ya se decidió. No lo contradiga sin proponerlo | 5 min |
 
 Consulte [docs/INFRA_HANDOFF.md](docs/INFRA_HANDOFF.md) solo cuando toque sesión,
 seguridad, base de datos o despliegue. Sus secciones 10 (recetas de seguridad) y 13
@@ -86,7 +87,8 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
 
 ## 4. Su primer cambio
 
-1. Busque el requisito en `ALCANCE.md` (por ejemplo `RF-08`). Si no hay un requisito, no hay tarea.
+1. Elija su ticket en la vista «Listos para empezar» de [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f)
+   y cámbielo a «En curso». Cada ticket cita su requisito de `ALCANCE.md`. Si no hay un requisito, no hay tarea.
 2. Si el cambio es de código, trabaje en la rama de su feature. Si la rama no existe, créela desde `dev` actualizado:
 
    ```bash
@@ -98,14 +100,14 @@ El detalle y las reglas de cada parte están en [AGENTS.md](AGENTS.md).
    La rama se llama como la feature de [docs/README.md](docs/README.md). La documentación no necesita rama: va directo a `dev`.
 3. Abra `specs/<feature>.md`. Si no existe, créelo con la plantilla de `PROCESO.md` y
    cree `docs/features/<feature>/bitacora.md`.
-4. Escriba el cambio en la sección «Cambio en curso»: requisitos, criterios de
-   aceptación y tareas. Hágalo **antes** del código.
+4. Escriba el cambio en la sección «Cambio en curso»: requisitos y criterios de
+   aceptación. Hágalo **antes** del código.
 5. Construya el cambio, solo o con un agente (sección 5). Modifique solo las carpetas de su parte.
 6. Cuando una parte de la feature funciona, abra un PR hacia **`dev`** (no hacia `main`). Vercel crea una preview del PR. Ejecute la prueba en la preview.
-   Escriba en la tabla de tareas: fecha, dónde, qué vio y resultado.
+   Escriba la evidencia en el ticket: fecha, dónde, qué vio y resultado.
 7. Si la prueba cambió una decisión, escriba una entrada en la bitácora.
 8. Verifique la Definición de Done (sección 6).
-9. Cierre el cambio: actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
+9. Cierre el cambio: pase el ticket a «Hecho», actualice «Comportamiento actual» y borre «Cambio en curso». Fusione con
    **Create a merge commit**. Si el PR toca carpetas de otra parte, espere la aprobación del dueño.
 
 Reglas completas de ramas, dueños de carpetas y archivos compartidos: sección 8 de

@@ -70,13 +70,7 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Módulo de costo en `src/lib/ia/`: tabla de precios, cálculo y tope que falla cerrado | `RP-02` | |
-| ⏳ | Pedir a Datos la tabla `ai_usage` | `RP-02` | |
-| ⏳ | Elegir el modelo y el proveedor de producción con el conjunto fijo | `RP-01` | |
-| ⏳ | Consulta de gasto, saldo y costo por función | `RP-02` | |
-| ⏳ | Forzar el tope y comprobar que no se llama al modelo | `RP-02` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `costos-ia` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

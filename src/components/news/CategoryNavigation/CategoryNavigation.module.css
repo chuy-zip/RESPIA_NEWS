@@ -1,0 +1,4 @@
+.navigation { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); padding-bottom: var(--space-5); }
+.navigation a { display: inline-flex; align-items: center; min-height: var(--touch-target); color: var(--color-ink-muted); text-decoration: none; border-bottom: var(--border-width) solid transparent; transition: color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out); }
+.navigation a:hover { color: var(--color-ink); border-color: var(--color-line-strong); }
+.navigation a[aria-current="page"] { color: var(--color-ink); border-color: var(--color-ink); font-weight: 600; }

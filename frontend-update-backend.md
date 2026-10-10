@@ -14,6 +14,7 @@ El detalle de cada endpoint (campos, reglas y códigos) está en la sección «B
 | `GET` y `PATCH /api/profile` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
 | `POST /api/interactions` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
 | `GET /api/feed` | [feed-y-lector](specs/feed-y-lector.md) | `feat/back-chat`. Llega a `dev` con su PR |
+| `POST /api/chat` | [chat](specs/chat.md) | `feat/back-chat`. Responde `unavailable` hasta que se conecte el modelo |
 
 Los tipos están en `src/types/news.ts`, `src/types/profile.ts` y `src/types/feed.ts`. Importe esos tipos. No copie
 las formas a mano.
@@ -257,13 +258,30 @@ sobre por qué una noticia quedó en su lugar son de la parte de IA (`specs/reco
 
 `components` no estaba en el contrato. Sirve para explicar el puntaje si la pantalla lo necesita.
 
-## 7. Privacidad
+## 7. Chat
+
+Pantalla: `/chat`. Hoy muestra respuestas preparadas.
+
+1. Envíe `POST /api/chat` con `{ "question": "<texto>", "messages": [<turnos anteriores>] }`. Cada turno es
+   `{ "role": "reader" | "assistant", "text" }`. La conversación sigue solo en la memoria de la pantalla.
+2. Trate `data.status`:
+
+   | `status` | Qué mostrar |
+   |---|---|
+   | `answered` | Cada elemento de `data.segments` tiene `text` y `citations`. Cada cita lleva `articleId`, `title`, `status` y `contentType`: enlace a `/noticias/<articleId>` con la etiqueta del estado |
+   | `no_coverage` | «No hay noticias publicadas sobre ese tema.» |
+   | `unavailable` | «El chat no está disponible por ahora.» Hoy siempre sale este estado: el modelo no está conectado |
+
+3. Con 422, `fields.question` dice qué falló. No reintente solo: cada pregunta puede gastar créditos de IA.
+4. El texto de la respuesta y el estado de cada cita vienen del servidor. La pantalla no los cambia.
+
+## 8. Privacidad
 
 Antes de publicar el perfil, las señales o el feed para otros lectores, actualice `src/app/privacidad/page.tsx`. La
 app guarda la región elegida, los temas elegidos y las noticias que abre cada lector (regla 11 de `AGENTS.md`,
 `RF-06`). El texto de «Cómo se ordena tu feed» está en [specs/recomendacion.md](specs/recomendacion.md).
 
-## 8. Probar la integración
+## 9. Probar la integración
 
 Haga estas pruebas en local y después en la preview de Vercel:
 
@@ -282,7 +300,7 @@ Las noticias de prueba se borran en el SQL Editor de Supabase. Póngales `[PRUEB
 delete from public.articles where title like '[PRUEBA]%';
 ```
 
-## 9. Diferencias con el contrato de `notion-frontend.md`
+## 10. Diferencias con el contrato de `notion-frontend.md`
 
 | Diferencia | Razón |
 |---|---|
@@ -294,8 +312,8 @@ delete from public.articles where title like '[PRUEBA]%';
 | Sin `relatedArticles` en el lector | Llega con el incremento 2 de `recomendacion` (D-31) |
 | Sin `reviewIssue` | El servidor solo exige dos fuentes para «Confirmado». La contradicción queda a criterio del editor |
 
-## 10. Endpoints que todavía no existen
+## 11. Endpoints que todavía no existen
 
-`POST /api/chat`, `POST /api/admin/images/preview`, `GET /api/admin/ai-usage`, `GET /api/articles` (búsqueda) y
+`POST /api/admin/images/preview`, `GET /api/admin/ai-usage`, `GET /api/articles` (búsqueda) y
 `/api/bookmarks`. Las pantallas que los usan siguen con la demo. La búsqueda y los guardados no tienen requisito
 en `ALCANCE.md`.

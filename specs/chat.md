@@ -16,6 +16,87 @@ No existe el servicio de chat. La interfaz de demo vive en `/chat` y ofrece cuat
 La raíz con sesión dirige a esa ruta. La edición completa está en `/edicion`.
 La conversación vive en memoria y tiene desplazamiento propio. El diseño de servidor está en «Cambio en curso».
 
+### Backend
+
+Responsable: Gerardo Pineda. El código está en la rama `feat/back-chat`. Todavía no llega a `dev`: la pantalla no
+lo usa. El modelo no está conectado: `POST /api/chat` responde `unavailable` hasta que exista `src/lib/ia/chat.ts`.
+
+Los tipos están en `src/types/chat.ts`. La primera parte sigue la ficha 7 de [notion-frontend.md](../notion-frontend.md).
+La segunda es el contrato con el módulo del modelo, tomado del «Incremento 2» de este spec:
+
+| Tipo | Contenido |
+|---|---|
+| `ChatModelInput` | `question`, `history` (últimos 4 turnos), `region` (nombre de la región del lector o `null`) y `articles` |
+| `ChatContextArticle` | `id`, `title`, `summary`, `status`, `contentType`, `publishedAt`, y los nombres de `topics` y `regions` |
+| `ChatModelOutput` | `text`, `articleIds` (noticias usadas) y `covered` |
+| `ChatModel` | La función que exporta `src/lib/ia/chat.ts`: recibe `ChatModelInput` y devuelve `ChatModelOutput` |
+
+Para conectar el modelo, `getChatModel()` de `src/lib/services/chat.ts` devuelve esa función.
+
+`supabase/migrations/005_article_search.sql` agrega `articles.search`: un índice de texto en español con el título
+y la entradilla (CIC-18). El script se ejecutó en Supabase el 2026-10-10, antes de llegar a `main` (excepción a la
+regla 10 de `AGENTS.md`). No lo edite.
+
+#### `POST /api/chat`
+
+Cualquier cuenta con sesión. El cuerpo es `{ "question", "messages"? }`:
+
+| Campo | Regla |
+|---|---|
+| `question` | Obligatorio. 500 caracteres como máximo |
+| `messages` | Opcional. Turnos `{ "role": "reader" \| "assistant", "text" }`, de 2 000 caracteres como máximo. El servidor usa los últimos 4 |
+
+Flujo:
+
+1. El servidor arma el contexto: las 10 primeras noticias del feed del lector, su bloque importante y hasta 5
+   noticias que coinciden con la pregunta en `articles.search`. Ningún paso llama a un modelo (`RP-03`).
+2. Sin noticias en el contexto, responde `no_coverage` sin llamar al modelo (`RF-14`, CIC-20).
+3. Sin módulo del modelo, o si el modelo falla, responde `unavailable`.
+4. Con respuesta del modelo, descarta los ids que no estaban en el contexto y toma el estado de cada noticia de la
+   base (`RF-13`). Si no queda ninguna cita o `covered` es `false`, responde `no_coverage`.
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data` es `{ "status", "segments" }`. `status` es `answered`, `no_coverage` o `unavailable` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 422 | `VALIDATION_ERROR` | La pregunta está vacía o es larga, o el historial no es válido. `fields` dice cuál |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
+No incluido todavía: fuentes externas (`buscar_externo`, D-25), el tope de gasto y el registro de costo
+(`costos-ia`), los guardrails que dependen del modelo y la señal `chat` de `POST /api/interactions`.
+
+#### Probar el chat
+
+Requisitos: `npm run dev` y una sesión. En la consola del navegador:
+
+```js
+const ask = async (body) => {
+  const r = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  console.log(JSON.stringify(body).slice(0, 60), r.status, await r.json());
+};
+await ask({ question: "¿Qué pasa en Guatemala?", messages: [] });
+await ask({ question: "", messages: [] });
+await ask({ question: "x".repeat(501) });
+await ask({ question: "Hola", messages: [{ role: "bot", text: "hola" }] });
+```
+
+Resultado: `200` con `status: "unavailable"` y tres `422`.
+
+#### Pruebas registradas
+
+| Fecha | Dónde | Qué se hizo y qué se vio | Resultado |
+|---|---|---|---|
+| 2026-10-10 | Local, sin sesión | `POST /api/chat`: 401 `UNAUTHORIZED` | Pasó |
+| 2026-10-10 | Local, sesión de administrador | Pregunta válida: 200 `unavailable`. La búsqueda en `articles.search` no falló: la `005` está aplicada. 422 con pregunta vacía, con 501 caracteres y con un rol de historial inválido | Pasó |
+
+Pendiente: `no_coverage` sin noticias publicadas, `answered` con el modelo conectado, pruebas en la preview de Vercel
+y conexión de la pantalla.
+
 ## Criterios de aceptación
 
 - **`RF-07`**: abrir la app con sesión lleva al chat. Escribir, cerrar y reabrir: el chat empieza vacío.

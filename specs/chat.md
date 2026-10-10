@@ -3,7 +3,7 @@
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
 **Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../docs/features/chat/bitacora.md) ·
-**Decisiones:** D-22, D-24, D-25, D-26 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
+**Decisiones:** D-24, D-25, D-26, D-29 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
 [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2), [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62),
@@ -46,7 +46,7 @@ La conversación vive en memoria y tiene desplazamiento propio. El diseño de se
 
 | Función | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|
-| `responderChat` | Haiku 5.5 o GPT de gama baja (D-22). Pruebas: modelos `:free` de OpenRouter | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
+| `responderChat` | Claude Haiku 5.5 (D-29). Pruebas: modelos `:free` de OpenRouter | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
 | `buscar_externo` | Ninguno: RSS de los sitios permitidos y, si no hay resultados, Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0: el RSS no cobra y Tavily queda dentro de sus 1 000 créditos gratis por mes |
 
 ## Done específico
@@ -152,7 +152,7 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 
 ### Incremento 2: modelo y salida estructurada (rama `chat`)
 
-Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-22, D-24. Tickets: TKT-55 y TKT-56.
+Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-24, D-29. Ticket: TKT-1.
 
 - `src/lib/ia/chat.ts` recibe la pregunta, los últimos 4 turnos, la región del lector y las noticias del contexto.
   Devuelve el texto, los IDs de las noticias usadas y si hubo cobertura.

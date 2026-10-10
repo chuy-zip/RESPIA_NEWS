@@ -154,7 +154,7 @@ por el registro de cambios.
 | RF-12 a RF-14 | En curso | Diseño del chat en `specs/chat.md` (D-24, D-25). Sin código |
 | RF-15 a RF-18 | Pendiente | Imágenes de banco elegidas por el modelo (D-23). Sin código |
 | RT-01 a RT-06 | Pendiente | |
-| RP-01 a RP-03 | En curso | Modelos y reserva del 30 % decididos (D-22). Faltan el registro y el tope |
+| RP-01 a RP-03 | En curso | Haiku 5.5 y reserva del 30 % decididos (D-29). Faltan el registro y el tope |
 | RP-04 | Hecho | |
 | RPR-01 a RPR-03 | En curso | Hay bitácora reconstruida de las features de infraestructura; faltan las demás |
 

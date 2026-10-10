@@ -11,6 +11,132 @@ La puerta del portal verifica sesión y rol. El editor por pasos publica únicam
 Comparte el marco editorial y relaciona errores con campos. El foco pasa al resumen de errores o al paso correspondiente.
 El contenido publicado usa bloques tipados para el lector. No hay publicación remota implementada.
 
+### Backend
+
+Responsable: Gerardo Pineda. El código está en la rama `feat/backend`. Todavía no llega a `dev`: el portal no
+lo usa. Los tipos están en `src/types/news.ts`. Siguen el contrato de [notion-frontend.md](../notion-frontend.md),
+fichas 1 y 9, con estas diferencias: `important`, `reviewNote` en la publicación y el origen de imagen `event_photo`.
+
+Las tablas están en `supabase/migrations/003_articles.sql`. El script se ejecutó en Supabase el 2026-10-10, antes de
+llegar a `main` (excepción a la regla 10 de `AGENTS.md`). No lo edite: un cambio va en un script nuevo.
+
+Todas las respuestas usan `cache-control: private, no-store`. Un error tiene la forma
+`{ "error": { "code", "message", "fields"? } }`. `fields` solo aparece en `VALIDATION_ERROR`.
+
+#### `GET /api/catalogs`
+
+Devuelve las regiones y los temas de la base, y los estados y tipos de contenido admitidos. Requiere sesión.
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | Hay sesión. `data` tiene `regions`, `topics`, `statuses` y `contentTypes` |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió. No se devuelven listas vacías |
+
+Respuesta 200, recortada:
+
+```json
+{
+  "data": {
+    "regions": [{ "id": "<uuid>", "slug": "guatemala", "label": "Guatemala" }],
+    "topics": [{ "id": "<uuid>", "slug": "tecnologia", "label": "Tecnología" }],
+    "statuses": ["confirmed", "developing", "unconfirmed"],
+    "contentTypes": ["original", "summary", "ai_contribution"]
+  },
+  "meta": {}
+}
+```
+
+Hay 8 regiones (los 7 países de Centroamérica e «Internacional») y 3 temas (Tecnología, Economía y Finanzas).
+
+#### `POST /api/admin/articles`
+
+Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
+
+| Campo | Regla |
+|---|---|
+| `title` | Obligatorio. 180 caracteres como máximo |
+| `summary` | Obligatorio. 500 caracteres como máximo |
+| `body` | Bloques `{ "type": "paragraph" \| "heading", "text" }`. Al menos uno. 15 000 caracteres en total |
+| `sources` | Al menos una `{ "name", "url" }`. Nombre de 120 caracteres como máximo. URL `http://` o `https://` |
+| `publishedAt` | Fecha ISO 8601 del hecho |
+| `topicIds`, `regionIds` | Al menos un ID de cada uno, tomado de `GET /api/catalogs` |
+| `status` | `confirmed` necesita al menos dos fuentes (`RT-03`) |
+| `contentType` | Un valor de `contentTypes` |
+| `reviewNote` | Obligatorio. 1 500 caracteres como máximo |
+| `important` | `true` o `false` |
+| `imageCandidateId` | Siempre `null`: el servicio de imágenes no existe todavía |
+| `reviewConfirmed` | Siempre `true`: una persona revisó la noticia (`RT-04`) |
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 201 | | Se publicó. `data` es `{ "id", "publicationState": "published" }` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 422 | `VALIDATION_ERROR` | Uno o más campos no cumplen la regla. `fields` tiene un mensaje por campo, por ejemplo `sources.0.url` |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
+Límite conocido: la noticia, sus regiones y sus temas se guardan en tres inserciones. Si la conexión falla entre la
+primera y las otras, la noticia queda sin regiones o sin temas. Una función SQL con una transacción lo evitaría.
+
+#### Probar los endpoints
+
+Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
+
+1. Abra `http://localhost:3000` e inicie sesión. La barra superior muestra el escudo.
+2. Abra `http://localhost:3000/api/catalogs`. Resultado: el JSON del catálogo.
+3. Abra la consola del navegador (F12 → Console). Escriba `allow pasting` y presione Enter.
+4. Pegue este código y presione Enter:
+
+   ```js
+   const cat = (await (await fetch("/api/catalogs")).json()).data;
+   const base = {
+     title: "[PRUEBA] Noticia de prueba del backend",
+     summary: "Entradilla de prueba.",
+     body: [{ type: "paragraph", text: "Contenido de prueba." }],
+     sources: [{ name: "Fuente de prueba", url: "https://example.org/" }],
+     publishedAt: new Date().toISOString(),
+     topicIds: [cat.topics[0].id],
+     regionIds: [cat.regions[0].id],
+     status: "developing",
+     contentType: "original",
+     reviewNote: "Prueba del endpoint.",
+     important: false,
+     imageCandidateId: null,
+     reviewConfirmed: true,
+   };
+   const post = async (b) => {
+     const r = await fetch("/api/admin/articles", {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify(b),
+     });
+     console.log(r.status, await r.json());
+   };
+   await post(base);
+   await post({ ...base, status: "confirmed" });
+   await post({ ...base, title: "", sources: [] });
+   ```
+
+   Resultado: `201`, `422` y `422`. Solo la primera noticia se guarda.
+
+5. Borre la noticia de prueba en el SQL Editor de Supabase. La base compartida sirve también a producción:
+
+   ```sql
+   delete from public.articles where title like '[PRUEBA]%';
+   ```
+
+#### Pruebas registradas
+
+| Fecha | Dónde | Qué se hizo y qué se vio | Resultado |
+|---|---|---|---|
+| 2026-10-10 | Local, sin sesión y con una cookie inventada | `GET /api/catalogs` y `POST /api/admin/articles`: 401 `UNAUTHORIZED` | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `GET /api/catalogs`: 200 con 8 regiones, 3 temas, 3 estados y 3 tipos | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `POST /api/admin/articles`: 201 con una fuente y `developing`. 422 con `confirmed` y una fuente. 422 sin título ni fuentes | Pasó |
+
+Pendiente: 403 con una cuenta común, prueba en la preview de Vercel y conexión del portal.
+
 ## Criterios de aceptación
 
 - Mantener 404 para cuentas sin rol administrativo y pedir sesión a visitantes.

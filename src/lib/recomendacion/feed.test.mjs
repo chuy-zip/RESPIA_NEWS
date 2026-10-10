@@ -51,12 +51,12 @@ const ARTICLES = [
 ];
 const BY_ID = new Map(ARTICLES.map((item) => [item.id, item]));
 
-// Perfiles fijos de los cuatro lectores del spec. L4 equivale a 10 aperturas de deportes: el tema más leído vale 1.
+// Perfiles fijos de los cuatro lectores del spec. L4 equivale a 10 aperturas recientes de deportes.
 const READERS = {
   L1: { regionId: "gt", topicWeights: {} },
   L2: { regionId: "gt", topicWeights: { deportes: 0.5 } },
   L3: { regionId: "cr", topicWeights: { economia: 0.5 } },
-  L4: { regionId: "gt", topicWeights: { deportes: 1 } },
+  L4: { regionId: "gt", topicWeights: { deportes: 0.83 } },
 };
 
 function feedFor(profile, articles = ARTICLES, extra = {}) {
@@ -203,8 +203,8 @@ function meanPosition(items, topicId) {
   return positions.reduce((sum, position) => sum + position, 0) / positions.length;
 }
 
-test("RF-10: diez aperturas de un solo tema dan peso 1 a ese tema, como el perfil L4", () => {
-  assert.deepEqual(topicWeights(signals("deportes", 10), [], NOW), READERS.L4.topicWeights);
+test("RF-10: diez aperturas de un solo tema dan el perfil L4", () => {
+  assert.ok(Math.abs(topicWeights(signals("deportes", 10), [], NOW).deportes - READERS.L4.topicWeights.deportes) < 0.005);
 });
 
 test("RF-10: un tema sube después de 5 aperturas", (t) => {
@@ -224,8 +224,8 @@ test("D-31: cada tipo de señal cuenta una vez por noticia", () => {
   const distinct = ["y1", "y2", "y3"].map((articleId) => ({ articleId, topicIds: ["economia"], type: "open", createdAt }));
   const weights = topicWeights([...repeated, ...distinct], [], NOW);
 
-  assert.equal(weights.economia, 1);
-  assert.ok(Math.abs(weights.deportes - 1 / 3) < 1e-12);
+  assert.equal(weights.economia, 3 / 5);
+  assert.equal(weights.deportes, 1 / 3);
 });
 
 test("D-31: preguntar al chat desde una noticia vale 1 más que abrirla", () => {
@@ -240,11 +240,27 @@ test("D-31: preguntar al chat desde una noticia vale 1 más que abrirla", () => 
     NOW,
   );
 
-  assert.equal(weights.economia, 1);
-  assert.equal(weights.salud, 0.5);
+  assert.equal(weights.economia, 2 / 4);
+  assert.equal(weights.salud, 1 / 3);
 });
 
-test("D-32: un tema elegido empieza en 0.5 y las señales lo suben hasta 1", () => {
+test("D-32: un tema elegido empieza en 0.5 y las señales lo suben hacia 1", () => {
+  const withSignals = topicWeights(signals("deportes", 3), ["deportes"], NOW).deportes;
+
   assert.equal(topicWeights([], ["deportes"], NOW).deportes, 0.5);
-  assert.equal(topicWeights(signals("deportes", 3), ["deportes"], NOW).deportes, 1);
+  assert.ok(withSignals > 0.5 && withSignals < 1);
+});
+
+test("D-32: un solo clic en otro tema no le gana a un tema elegido (prueba de Backend)", () => {
+  const createdAt = NOW.toISOString();
+  const weights = topicWeights([{ articleId: "e1", topicIds: ["economia"], type: "open", createdAt }], ["tecnologia"], NOW);
+
+  assert.equal(weights.tecnologia, 0.5);
+  assert.equal(weights.economia, 1 / 3);
+});
+
+test("RF-10: cinco aperturas de un tema no elegido lo llevan por encima de un tema elegido", () => {
+  const weights = topicWeights(signals("salud", 5), ["tecnologia"], NOW);
+
+  assert.ok(weights.salud > weights.tecnologia);
 });

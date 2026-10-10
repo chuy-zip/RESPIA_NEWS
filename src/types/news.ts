@@ -34,6 +34,11 @@ export interface CatalogData {
   contentTypes: ContentType[];
 }
 
+export interface CatalogResponse {
+  data: CatalogData;
+  meta: Record<string, never>;
+}
+
 /** Texto plano: el lector nunca recibe HTML. */
 export interface ContentBlock {
   type: "paragraph" | "heading";

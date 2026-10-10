@@ -6,11 +6,14 @@ export type Prominence = "hero" | "large" | "standard" | "compact";
 export type Visual = "network" | "trade" | "orbit";
 export type PreviewState = "ready" | "loading" | "empty" | "error" | "offline" | "limit";
 
+export type ArticleBlock = { type: "paragraph" | "heading"; text: string };
+
 export interface DemoArticle {
   id: string;
   title: string;
   summary: string;
-  body: string[];
+  body: ArticleBlock[];
+  byline: string;
   topic: Topic;
   regions: Region[];
   status: EditorialStatus;
@@ -30,7 +33,12 @@ export interface DemoMessage {
 }
 
 export const REGIONS: Region[] = ["Guatemala", "México", "Estados Unidos"];
-export const TOPICS: Topic[] = ["Tecnología", "Economía", "Finanzas"];
+export const DEMO_TOPICS: { slug: string; label: Topic; description: string }[] = [
+  { slug: "tecnologia", label: "Tecnología", description: "Las ideas, las redes y las personas que transforman nuestra forma de vivir." },
+  { slug: "economia", label: "Economía", description: "Las conexiones entre los grandes cambios y la vida de nuestras regiones." },
+  { slug: "finanzas", label: "Finanzas", description: "El capital, sus decisiones y el contexto necesario para entenderlas." },
+];
+export const TOPICS: Topic[] = DEMO_TOPICS.map((topic) => topic.label);
 export const STATUS_LABELS: Record<EditorialStatus, string> = {
   confirmed: "Confirmado",
   developing: "En desarrollo",
@@ -44,7 +52,7 @@ export const PREVIEW_LABELS: Record<PreviewState, string> = {
 const source = { name: "Redacción de ejemplo · fuente ficticia", url: "https://example.org/" };
 const note = "Caso editorial ficticio para revisar la interfaz. No describe acontecimientos reales.";
 
-export const DEMO_ARTICLES: DemoArticle[] = [
+const ARTICLE_FIXTURES: (Omit<DemoArticle, "body" | "byline"> & { body: string[] })[] = [
   {
     id: "infraestructura-ia", title: "La próxima frontera de la IA también se construye fuera de las pantallas",
     summary: "Energía, redes y talento: tres piezas de una infraestructura que conecta la tecnología global con las economías locales.",
@@ -95,6 +103,14 @@ export const DEMO_ARTICLES: DemoArticle[] = [
     date: "2026-10-07", contentType: "Original", sources: [source], visual: "trade", important: true, reviewNote: note,
   },
 ];
+
+export const DEMO_ARTICLES: DemoArticle[] = ARTICLE_FIXTURES.map(({ body, ...article }) => ({
+  ...article,
+  byline: "Redacción de demostración",
+  body: body.flatMap<ArticleBlock>((text, index) => index === 1
+    ? [{ type: "heading", text: "El contexto de este escenario" }, { type: "paragraph", text }]
+    : [{ type: "paragraph", text }]),
+}));
 
 // Escenarios de UI explícitos. El orden real lo entregará el recomendador del servidor.
 export const DEMO_ORDER: Record<Region, string[]> = {

@@ -30,6 +30,8 @@
 .visualGrid label { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); min-height: var(--touch-target); font-size: var(--text-sm); cursor: pointer; }
 .errors { padding: var(--space-4); border-inline-start: var(--rule-width) solid var(--color-signal-fail); background: var(--color-surface-sunken); }
 .errors a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+.fieldError { display: block; color: var(--color-signal-fail); font-size: var(--text-sm); font-weight: 400; }
+.checks .fieldError { flex-basis: 100%; }
 .preview { max-width: var(--reading-width); margin-inline: auto; display: grid; gap: var(--space-4); overflow-wrap: anywhere; }
 .preview h2 { font-size: var(--text-2xl); }
 .preview a { min-height: var(--touch-target); display: inline-flex; align-items: center; }

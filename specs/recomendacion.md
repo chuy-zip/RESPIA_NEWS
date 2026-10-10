@@ -11,9 +11,9 @@ de Backend y llama al recomendador (D-20).
 ## Comportamiento actual
 
 `src/lib/recomendacion/feed.ts` ordena el feed con funciones puras ([PR #5](https://github.com/chuy-zip/RESPIA_NEWS/pull/5)):
-puntaje, prominencia por posición, motivo y bloque importante por ámbito. El cálculo de intereses está en revisión
-([PR #8](https://github.com/chuy-zip/RESPIA_NEWS/pull/8)). Ningún endpoint llama todavía al recomendador: falta
-`GET /api/feed` (Backend).
+puntaje, prominencia por posición, motivo y bloque importante por ámbito. También calcula los intereses a partir de
+las señales y los temas elegidos ([PR #8](https://github.com/chuy-zip/RESPIA_NEWS/pull/8)). Ningún endpoint llama
+todavía al recomendador: falta `GET /api/feed` (Backend).
 
 ## Criterios de aceptación
 
@@ -148,15 +148,47 @@ por noticia y un bloque `importantItems` que no depende del filtro.
 
 ### Incremento 2: noticias relacionadas (rama `recomendacion`)
 
-Decisión: D-31. El lector muestra noticias que comparten temas con la noticia abierta. Primero van las de otro
-ámbito: así se ve el cruce entre lo internacional y lo local. Cada relacionada dice el tema en común. No afirma
-causas. Es una función pura en `src/lib/recomendacion/`. El servicio de `GET /api/articles/[id]` la llama para
-llenar `relatedArticles`.
+Requisitos: `RF-11`, `RT-01`, `RP-03`. Decisión: D-31. Ticket: TKT-2. Ciclo: CIC-28.
+
+El lector muestra noticias que comparten temas con la noticia abierta. Primero van las de otro alcance: así se ve el
+cruce entre lo internacional y lo local. Cada relacionada dice el tema en común. No afirma causas.
+
+- `src/lib/recomendacion/related.ts` tiene la función pura `relatedArticles`, sin base de datos ni modelos.
+- **Candidatas:** noticias que comparten al menos un tema con la noticia abierta. La noticia abierta no entra.
+- **Alcance de una noticia:** `local` si es relevante para un país de Centroamérica, `regional` si es relevante para
+  dos o más e `international` si no es relevante para ninguno. El alcance no depende del lector. El ámbito del feed
+  sí depende del lector y no sirve aquí: para un lector de Guatemala, un informe relevante para toda Centroamérica y
+  una noticia de Guatemala tienen el mismo ámbito.
+- **Orden:** primero las de otro alcance que la noticia abierta. Después, las que tienen más temas en común. Después,
+  las más recientes. El ID desempata.
+- **Salida:** hasta 3 relacionadas, cada una con `articleId`, `sharedTopicIds` y `reach`. La pantalla muestra «Tema
+  en común: <etiqueta>» con el catálogo.
+- **Integración (Backend):** `getArticle` llama a `relatedArticles` y llena `relatedArticles` en `ArticleDetail`. Los
+  países de Centroamérica son las regiones del catálogo menos `internacional`.
+- **Prueba:** `src/lib/recomendacion/related.test.mjs`. Un caso por regla, con noticias ficticias (D-15):
+
+  | Caso | Resultado esperado |
+  |---|---|
+  | Noticia local de remesas. Hay otra local más reciente y un informe regional sobre IA y economía | El informe regional va primero |
+  | Una candidata comparte dos temas y otra comparte uno, con el mismo alcance | Primero la de dos temas |
+  | Candidatas sin temas en común y la propia noticia | No aparecen |
+  | Más de 3 candidatas | Solo 3 |
+  | Mismas entradas en otro orden | Mismo resultado |
+
+  Las pruebas de las dos funciones corren juntas:
+
+  ```bash
+  node --test "src/lib/recomendacion/*.test.mjs"
+  ```
 
 ### Pendiente
 
 - Guardar las señales: tabla de señales (Datos) y `POST /api/interactions` (Backend).
-- El campo de importancia en la tabla de noticias (Datos y `portal-admin`).
+- El campo de importancia ya está en `supabase/migrations/003_articles.sql`. Se ejecuta cuando llegue a `main`.
+- El catálogo de temas tiene 3: tecnología, economía y finanzas. Con tan pocos, casi todas las noticias comparten
+  economía y las relacionadas se ordenan sobre todo por alcance y fecha. El cruce mejora con temas transversales,
+  por ejemplo empleo, migración y remesas, e IA (Datos).
+- `relatedArticles` en `ArticleDetail` y en `getArticle` (Backend).
 - Los temas elegidos en el perfil y la pantalla de onboarding (D-32).
 - La señal `chat`, cuando exista el chat.
 - La prueba con dos cuentas reales (`RF-08`), cuando exista el endpoint.

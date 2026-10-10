@@ -2,6 +2,30 @@
 
 De lo más reciente a lo más antiguo.
 
+## 2026-10-10 · CIC-28 · Las relacionadas usan el alcance de la noticia, no el ámbito del lector
+
+**Requisitos:** `RF-11`, `RT-01` · **Notion:** [CIC-28](https://app.notion.com/p/3f4f573ce6df813fb993ea21c9aa29db) ·
+**Ticket:** [TKT-2](https://app.notion.com/p/3f5f573ce6df814ba4fcf0fa30be4906) · **Decisión:** D-31
+
+- **Comprensión:** el spec decía «primero van las de otro ámbito», con el ámbito del bloque importante: país del
+  lector, resto de Centroamérica o internacional.
+- **Hipótesis:** el mismo ámbito sirve para mostrar el cruce entre lo internacional y lo local.
+- **Construcción:** revisión del caso del informe sobre IA y economía frente a la noticia de remesas, con las
+  regiones del catálogo del PR #7.
+- **Prueba:** cálculo del ámbito de las dos noticias para un lector de Guatemala. No hubo prueba de código.
+- **Observación:** el informe es relevante para toda Centroamérica y la noticia de remesas para Guatemala. Para ese
+  lector, las dos tienen el ámbito «tu país». El ámbito del lector no las distingue.
+- **Corrección:** las relacionadas usan el alcance de la noticia, que no depende del lector: `local` (un país),
+  `regional` (dos o más) o `international` (ninguno). El bloque importante sigue con el ámbito del lector.
+- **Agente:** Claude Code (Claude Opus 5.5).
+- **Pedido:** Rodrigo pidió empezar el incremento 2.
+- **Propuesta:** el agente escribió «otro ámbito» en el spec sin probar el caso del cruce. Al revisar el catálogo
+  del PR #7 encontró el problema y propuso el alcance de la noticia.
+- **Decisión:** el cambio queda dentro de D-31, que no define el ámbito de las relacionadas. Se aplica el criterio
+  de Rodrigo: usa los datos que ya existen y no bloquea a nadie.
+- **Verificación:** prueba «El informe regional va primero» en `related.test.mjs`.
+- **Evidencia:** 2026-10-10, revisión del caso. La prueba del código está en el spec (incremento 2).
+
 ## 2026-10-10 · CIC-28 · Marco teórico y diseño cerrado: bloque por ámbito, señales con tipo y relacionadas
 
 **Requisitos:** `RF-08`, `RF-10`, `RF-11`, `RT-01`, `RP-03` · **Notion:** [CIC-28](https://app.notion.com/p/3f4f573ce6df813fb993ea21c9aa29db),

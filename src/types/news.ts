@@ -14,10 +14,14 @@ export type EditorialStatus = "confirmed" | "developing" | "unconfirmed";
 export type ContentType = "original" | "summary" | "ai_contribution";
 
 /**
- * De dónde sale la imagen (RF-18). Una foto de banco no es del hecho y lleva la
- * etiqueta «Imagen ilustrativa» (D-23).
+ * De dónde sale la imagen (RF-18).
+ * - event_photo: foto real del hecho, subida por el administrador.
+ * - illustrative: foto propia que no es del hecho, por ejemplo de archivo.
+ * - stock: foto de un banco, recomendada para una noticia sin imagen (D-23).
+ * Solo event_photo se muestra como fotografía del hecho. Las otras llevan la
+ * etiqueta «Imagen ilustrativa».
  */
-export type ImageOrigin = "stock" | "event_photo";
+export type ImageOrigin = "event_photo" | "illustrative" | "stock";
 
 /** Región o tema. El id se guarda, el slug va en la URL y el label se muestra. */
 export interface CatalogItem {
@@ -55,11 +59,25 @@ export interface ImageProvenance {
   url: string;
   alt: string;
   origin: ImageOrigin;
-  sourceUrl: string;
+  /** Página de la foto en el banco. null en una foto subida. */
+  sourceUrl: string | null;
   author: string;
   license: string;
   /** Texto visible, por ejemplo «Imagen ilustrativa». */
   label: string;
+}
+
+/** Respuesta de POST /api/admin/images: una foto subida que todavía no está en una noticia. */
+export interface ImageUploadResult {
+  /** Referencia para publicar la noticia con esta foto. */
+  uploadId: string;
+  /** URL pública, para la vista previa del portal. */
+  url: string;
+}
+
+export interface ImageUploadResponse {
+  data: ImageUploadResult;
+  meta: Record<string, never>;
 }
 
 /** Lo que muestran las listas: portal, feed y búsqueda. */
@@ -87,6 +105,19 @@ export interface ArticleDetail extends ArticleSummary {
   important: boolean;
 }
 
+/**
+ * Foto subida por el administrador, con la procedencia que solo él conoce. La
+ * URL no viaja: el servidor la arma con `uploadId`.
+ */
+export interface PublishImageInput {
+  uploadId: string;
+  /** Descripción para lectores de pantalla. */
+  alt: string;
+  author: string;
+  license: string;
+  origin: "event_photo" | "illustrative";
+}
+
 /** Cuerpo de POST /api/admin/articles. El servidor valida cada campo. */
 export interface PublishArticleInput {
   title: string;
@@ -100,8 +131,8 @@ export interface PublishArticleInput {
   contentType: ContentType;
   reviewNote: string;
   important: boolean;
-  /** Candidata de /api/admin/images/preview, o null si la noticia va sin imagen. */
-  imageCandidateId: string | null;
+  /** Foto subida con POST /api/admin/images, o null si la noticia va sin imagen. */
+  image: PublishImageInput | null;
   /** Una persona revisó la noticia antes de publicar (RT-04). */
   reviewConfirmed: true;
 }

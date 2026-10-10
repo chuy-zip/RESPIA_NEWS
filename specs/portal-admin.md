@@ -15,7 +15,8 @@ El contenido publicado usa bloques tipados para el lector. No hay publicación r
 
 Responsable: Gerardo Pineda. El código está en la rama `feat/backend`. Todavía no llega a `dev`: el portal no
 lo usa. Los tipos están en `src/types/news.ts`. Siguen el contrato de [notion-frontend.md](../notion-frontend.md),
-fichas 1 y 9, con estas diferencias: `important`, `reviewNote` en la publicación y el origen de imagen `event_photo`.
+fichas 1 y 9, con estas diferencias: `important`, `reviewNote` en la publicación, `image` en lugar de `imageCandidateId`
+y los orígenes de imagen `event_photo` e `illustrative`.
 
 Las tablas están en `supabase/migrations/003_articles.sql`. El script se ejecutó en Supabase el 2026-10-10, antes de
 llegar a `main` (excepción a la regla 10 de `AGENTS.md`). No lo edite: un cambio va en un script nuevo.
@@ -65,7 +66,7 @@ Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
 | `contentType` | Un valor de `contentTypes` |
 | `reviewNote` | Obligatorio. 1 500 caracteres como máximo |
 | `important` | `true` o `false` |
-| `imageCandidateId` | Siempre `null`: el servicio de imágenes no existe todavía |
+| `image` | `null` (sin imagen) o una foto subida con `POST /api/admin/images`: `{ "uploadId", "alt", "author", "license", "origin" }`. `origin` es `event_photo` (foto del hecho) o `illustrative`. Los cinco campos son obligatorios (`RF-18`). Errores en `image.<campo>` |
 | `reviewConfirmed` | Siempre `true`: una persona revisó la noticia (`RT-04`) |
 
 | Status | `code` | Cuándo |
@@ -79,6 +80,35 @@ Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
 
 Límite conocido: la noticia, sus regiones y sus temas se guardan en tres inserciones. Si la conexión falla entre la
 primera y las otras, la noticia queda sin regiones o sin temas. Una función SQL con una transacción lo evitaría.
+
+#### `POST /api/admin/images`
+
+Sube una foto del administrador al bucket `article-images` (`RF-17`). Solo un administrador. El cuerpo es
+`multipart/form-data` con el campo `file`.
+
+| Regla | Valor |
+|---|---|
+| Tipos | PNG, JPEG o WebP. El servidor revisa los primeros bytes: el tipo que declara el navegador no basta |
+| Tamaño | 4 MB como máximo. Vercel rechaza peticiones de más de 4.5 MB |
+| Nombre | Uno nuevo al azar en `uploads/`. El nombre original no se guarda |
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 201 | | `data` es `{ "uploadId", "url" }`. `url` sirve para la vista previa |
+| 400 | `INVALID_BODY` | El cuerpo no es `multipart/form-data` |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 422 | `VALIDATION_ERROR` | Falta el archivo, el tipo o el tamaño no sirven, o no es una imagen. Error en `fields.file` |
+| 503 | `SERVICE_UNAVAILABLE` | El bucket no respondió |
+
+Al publicar, el servidor arma la URL con el `uploadId`, comprueba que el archivo existe y guarda en `articles.image`
+la URL, el texto alternativo, el autor, la licencia, el origen y la etiqueta: «Fotografía del hecho» para
+`event_photo` e «Imagen ilustrativa» para las demás. La URL nunca la envía el cliente.
+
+El bucket se creó con `supabase/migrations/002_storage_article_images.sql`. El script se ejecutó en Supabase el
+2026-10-10, antes de llegar a `main` (excepción a la regla 10 de `AGENTS.md`).
+
+Límite conocido: una foto que se sube y no se publica queda en el bucket. Se borra a mano desde Supabase.
 
 #### `GET /api/admin/articles`
 
@@ -138,7 +168,7 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
      contentType: "original",
      reviewNote: "Prueba del endpoint.",
      important: false,
-     imageCandidateId: null,
+     image: null,
      reviewConfirmed: true,
    };
    const post = async (b) => {
@@ -199,6 +229,7 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 | 2026-10-10 | Local, sesión de administrador | `GET /api/catalogs`: 200 con 8 regiones, 3 temas, 3 estados y 3 tipos | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `POST /api/admin/articles`: 201 con una fuente y `developing`. 422 con `confirmed` y una fuente. 422 sin título ni fuentes | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `GET /api/admin/articles`: 200 sin filtros, con `q`, con `topic` y con `status`, cada uno con las noticias esperadas. 400 con `status`, `topic` y `cursor` inválidos | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `POST /api/admin/images`: 201 con un PNG. 422 con un texto declarado como PNG, con un GIF y con 5 MB. `POST /api/admin/articles` con la foto: 201, y el lector devuelve `image` con la URL del bucket, `origin: event_photo` y la etiqueta «Fotografía del hecho». 422 con un `uploadId` inexistente y con `origin: stock`. 201 con `image: null` | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `GET /api/articles/[id]`: 200 con `body`, `sources`, `reviewNote`, una región y un tema que coinciden con el catálogo. 404 `ARTICLE_NOT_FOUND` con un UUID inexistente y con un id que no es UUID | Pasó |
 
 Pendiente: 403 en el portal y 200 en el lector con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel

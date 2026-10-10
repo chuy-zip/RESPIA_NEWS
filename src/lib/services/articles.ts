@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getCatalog } from "@/lib/services/catalogs";
+import { isUploadId, resolveUploadedImage, UploadNotFoundError } from "@/lib/services/images";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ArticleDetail,
@@ -12,6 +13,7 @@ import type {
   PageMeta,
   PublicationResult,
   PublishArticleInput,
+  PublishImageInput,
   Source,
 } from "@/types/news";
 
@@ -25,6 +27,8 @@ import type {
 
 // Los mismos límites que el formulario del portal, para no rechazar lo que la interfaz deja escribir.
 const MAX = { title: 180, summary: 500, body: 15000, sourceName: 120, sourceUrl: 1000, reviewNote: 1500 };
+const MAX_IMAGE = { alt: 300, author: 120, license: 200 };
+const IMAGE_ORIGINS: PublishImageInput["origin"][] = ["event_photo", "illustrative"];
 
 const STATUSES: EditorialStatus[] = ["confirmed", "developing", "unconfirmed"];
 const CONTENT_TYPES: ContentType[] = ["original", "summary", "ai_contribution"];
@@ -143,8 +147,24 @@ export function validatePublishInput(raw: unknown): PublishArticleInput {
 
   if (typeof raw.important !== "boolean") fields.important = "Indica si la noticia es importante.";
 
-  // El servicio de imágenes aún no existe: no hay candidatas que resolver.
-  if (raw.imageCandidateId !== null) fields.imageCandidateId = "Las imágenes todavía no están disponibles. Publica sin imagen.";
+  let image: PublishImageInput | null = null;
+  if (raw.image !== null && raw.image !== undefined) {
+    const input = isRecord(raw.image) ? raw.image : {};
+    const uploadId = text(input.uploadId);
+    const alt = text(input.alt);
+    const author = text(input.author);
+    const license = text(input.license);
+    const origin = input.origin as PublishImageInput["origin"];
+
+    if (!isUploadId(uploadId)) fields["image.uploadId"] = "Sube la imagen antes de publicar.";
+    if (!alt || alt.length > MAX_IMAGE.alt) fields["image.alt"] = "Describe la imagen para quien no puede verla.";
+    if (!author || author.length > MAX_IMAGE.author) fields["image.author"] = "Indica el autor de la imagen.";
+    if (!license || license.length > MAX_IMAGE.license) fields["image.license"] = "Indica la licencia o el permiso de uso.";
+    // RF-18: no se publica una imagen sin origen declarado.
+    if (!IMAGE_ORIGINS.includes(origin)) fields["image.origin"] = "Indica si es una foto del hecho o una imagen ilustrativa.";
+
+    image = { uploadId, alt, author, license, origin };
+  }
 
   // RT-04: la publicación la decide una persona.
   if (raw.reviewConfirmed !== true) fields.reviewConfirmed = "Confirma que revisaste la noticia antes de publicar.";
@@ -165,7 +185,7 @@ export function validatePublishInput(raw: unknown): PublishArticleInput {
     contentType,
     reviewNote,
     important: raw.important as boolean,
-    imageCandidateId: null,
+    image,
     reviewConfirmed: true,
   };
 }
@@ -189,6 +209,18 @@ export async function publishArticle(input: PublishArticleInput): Promise<Public
     throw new ArticleValidationError(fields);
   }
 
+  let image: ImageProvenance | null = null;
+  if (input.image) {
+    try {
+      image = await resolveUploadedImage(input.image);
+    } catch (failure) {
+      if (failure instanceof UploadNotFoundError) {
+        throw new ArticleValidationError({ "image.uploadId": failure.message });
+      }
+      throw new ArticleStoreError(failure);
+    }
+  }
+
   // Con la sesión del administrador: RLS vuelve a comprobar el rol en cada inserción.
   const supabase = await createClient();
 
@@ -204,6 +236,7 @@ export async function publishArticle(input: PublishArticleInput): Promise<Public
       content_type: input.contentType,
       review_note: input.reviewNote,
       important: input.important,
+      image,
     })
     .select("id")
     .single();

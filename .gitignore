@@ -30,3 +30,7 @@ yarn-error.log*
 
 # configuración personal de Claude Code (permisos locales)
 .claude/settings.local.json
+
+# skills instaladas localmente (las skills compartidas de .claude siguen versionadas)
+/.agents/
+/skills-lock.json

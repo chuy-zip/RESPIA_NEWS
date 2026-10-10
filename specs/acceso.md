@@ -47,20 +47,7 @@ Toda pantalla o ruta que dependa del rol se probó con una cuenta administradora
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ✅ | Inicio de sesión con Google y callback | `RF-02` | Bitácora 2026-09-23 (primer inicio de sesión), commit `3df4657` |
-| ✅ | Sesión verificada en iPhone con la app instalada | `RF-02` | Bitácora 2026-09-23: la sesión volvió activa con la PWA abierta desde el icono |
-| ✅ | Sesión verificada en Android con la app instalada | `RF-02` | Tabla de pruebas de [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md): confirmado el 4-oct-2026 |
-| ✅ | Contenido protegido: 401 o pantalla bloqueada sin sesión | `RF-02` | Prueba del 2026-09-23: la API responde 401 sin sesión. Ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Tabla de administradores, `private.is_admin()` y administradores cargados | `RF-03` | Bitácora 2026-10-04, script `supabase/migrations/001_admins.sql`, commit `8b26007`; verificación del equipo en el SQL Editor el 4-oct |
-| ✅ | Proveedor Email desactivado | `RF-03` | Bitácora 2026-10-04: el endpoint público de ajustes devuelve solo Google |
-| ✅ | Icono de administración y pantalla `/admin` | `RF-03` | Bitácora 2026-10-04, commit `766ddf0`. Probado sin sesión; falta la prueba con cuentas |
-| ⏳ | Probar `RF-03` con una cuenta administradora y una común, y anotar el resultado | `RF-03` | |
-| ⏳ | Crear `/privacidad` y enlazarla desde la portada | `RF-06` | Creada el 2026-10-07 (`src/app/privacidad/page.tsx`) y compilada; el servidor local responde 200. Se enlaza desde el pie de la portada y bajo el botón de iniciar sesión (que aparece en `/`, `/contenido` y `/admin` sin sesión). Falta probarla desplegada |
-| — | ~~Publicar la pantalla de consentimiento de Google~~ | `RF-06` | Descartada el 2026-10-07: con permisos básicos no hace falta. Bitácora 2026-10-07, D-12 |
-| ✅ | Probar el inicio de sesión con una cuenta ajena al equipo | `RF-06` | Prueba del equipo reportada el 2026-10-07: una cuenta que no es del equipo ni está definida en Google Cloud inició sesión sin problema |
-| ⏳ | Mantener `/privacidad` al día: cada feature que guarde un dato nuevo del usuario la actualiza en el mismo cambio | `RF-06` | Tarea permanente |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `acceso` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

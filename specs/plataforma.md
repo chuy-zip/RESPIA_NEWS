@@ -43,14 +43,7 @@ consulta. Los scripts se pueden volver a ejecutar sin romper nada.
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ✅ | Despliegue automático desde `main` en Vercel | `RP-04` | Cada commit a `main` se despliega solo; ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Proyecto de Supabase con acceso a la API de datos y RLS automática | `RP-04` | Estado de la base en [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Variables de entorno cargadas en Vercel y en el entorno local | `RP-04` | La app corre en producción y en local con ellas; ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Primer script de base de datos: administradores | `RP-04` | Bitácora de [acceso](../docs/features/acceso/bitacora.md) 2026-10-04, `supabase/migrations/001_admins.sql` |
-| ✅ | Documento de traspaso de infraestructura para el equipo | `RP-04` | [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ⏳ | Scripts de las tablas del producto: los escribe cada feature | `RP-04` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `plataforma` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
 
 ## Cambio en curso
 

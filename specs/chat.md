@@ -12,7 +12,9 @@ Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, co
 
 ## Comportamiento actual
 
-Todavía no existe. El diseño está en «Cambio en curso».
+No existe el servicio de chat. La interfaz de demo vive en `/chat` y ofrece cuatro respuestas preparadas.
+La raíz con sesión dirige a esa ruta. La edición completa está en `/edicion`.
+La conversación vive en memoria y tiene desplazamiento propio. El diseño de servidor está en «Cambio en curso».
 
 ## Criterios de aceptación
 
@@ -55,22 +57,34 @@ Todavía no existe. El diseño está en «Cambio en curso».
 
 ## Tareas
 
-| Estado | Tarea | Req. | Evidencia |
-|---|---|---|---|
-| ⏳ | Escribir el conjunto fijo: cuatro tipos, preguntas mixtas, sin cobertura y casos adversariales | `RF-12` | |
-| ⏳ | Prompt y salida estructurada, probados con modelos `:free` | `RF-12`, `RF-13` | |
-| ⏳ | Tools `recomendaciones_del_usuario` y `buscar_noticias`, con SQL y sin modelo | `RF-12`, `RP-03` | |
-| ✅ | Elegir el proveedor de búsqueda externa | `RF-14` | D-25, 2026-10-09. Plan gratis de Tavily revisado en su documentación: 1 000 créditos por mes. Peor caso estimado del mes de la demo: 460 créditos |
-| ⏳ | Armar la lista de sitios permitidos (Centroamérica e internacional, D-26) con el feed RSS de cada sitio | `RF-14` | |
-| ⏳ | Lector RSS y búsqueda por palabras, sin modelo (incremento 1) | `RF-14`, `RP-03` | |
-| ⏳ | Tool `buscar_externo`: RSS primero y Tavily si el RSS no tiene resultados, solo con 0 resultados internos | `RF-14` | |
-| ⏳ | Guardrails del servidor | `RF-14`, `RT-04` | |
-| ⏳ | Validar con el modelo de producción | `RF-12` | |
-| ⏳ | Actualizar `/privacidad` | `RF-06` | |
+Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `chat` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
+
+El alcance de la interfaz de demostración se describe en «Cambio en curso». Sus tickets de frontend están pendientes de asignación.
 
 ## Cambio en curso
 
-Diseño acordado el 2026-10-09 (D-24). Todavía no hay código.
+### Interfaz de demostración independiente
+
+2026-10-09: Sergio solicitó una demo editorial con feed y conversación en memoria.
+El registro propio de frontend está en [notion-frontend.md](../notion-frontend.md).
+No adopta los ciclos de IA como hipótesis propias ni modifica el diseño de servidor descrito abajo.
+Los cuatro botones de ejemplo muestran respuestas preparadas con referencias al corpus ficticio.
+Una consulta libre explica que el servicio no está conectado. No se simula una respuesta de modelo.
+La demo solo usa noticias internas, según la petición del usuario. La búsqueda externa de D-24 queda pendiente de integración.
+Se preparan estados de carga, error, desconexión y límite de costo.
+El 2026-10-09 el usuario autorizó verificaciones locales y aprobó separar chat y edición.
+La ruta `/chat` es la entrada autenticada en el código. La conversación tiene desplazamiento propio y el compositor permanece en el flujo.
+El ajuste al teclado usa el viewport visual. Su funcionamiento en teléfonos reales sigue pendiente.
+La edición completa queda en `/edicion`. Se conservan las citas, el estado temporal y las cuatro consultas preparadas.
+No se cambia el servicio de IA ni sus límites. No se hacen commits ni operaciones de escritura en Git.
+Contrato propuesto: POST `/api/chat`, JSON con respuesta y citas validadas por el servidor.
+La forma definitiva y los límites del contexto se acuerdan con Backend antes de retirar la demo.
+Las verificaciones técnicas y anónimas están en [el registro local](../notion-frontend.md#registro-honesto).
+El usuario pidió no ejecutar las pruebas con sesión. No se acredita todavía el recorrido de preguntas, citas ni reapertura.
+
+### Diseño de servidor
+
+Diseño acordado el 2026-10-09 (D-24). Todavía no hay código de servidor.
 
 ### Flujo de una pregunta
 
@@ -136,9 +150,33 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 - Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
 - Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
 
+### Incremento 2: modelo y salida estructurada (rama `chat`)
+
+Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-22, D-24. Tickets: TKT-55 y TKT-56.
+
+- `src/lib/ia/chat.ts` recibe la pregunta, los últimos 4 turnos, la región del lector y las noticias del contexto.
+  Devuelve el texto, los IDs de las noticias usadas y si hubo cobertura.
+- El modelo se llama por OpenRouter, con la salida estructurada de un esquema JSON. Variables de servidor:
+  `OPENROUTER_API_KEY` y `IA_MODEL`. Sin `IA_MODEL`, se usa `nvidia/nemotron-3-super-120b-a12b:free`, que el
+  2026-10-10 era uno de los 6 modelos gratis de OpenRouter con tools y salida estructurada.
+- El servidor descarta los IDs que no estaban en el contexto. Si no hay noticias en el contexto, responde
+  «sin cobertura» sin llamar al modelo (CIC-20).
+- Los estados usan los mismos valores que la pantalla de Sergio: `confirmed`, `developing` y `unconfirmed`.
+- Todavía no hay tools ni búsqueda externa: el contexto son noticias de ejemplo. Las tools esperan la tabla de
+  noticias (TKT-57).
+- El registro de costo espera la tabla `ai_usage` (TKT-67). Mientras tanto, solo se llama a modelos `:free`, que
+  cuestan USD 0.
+- `scripts/eval-chat.mjs` tiene el conjunto fijo: 12 noticias ficticias y 21 preguntas (CIC-17). Revisa en
+  automático los IDs citados y la cobertura. La calidad del texto la revisa una persona. Se ejecuta en local:
+  `node --conditions=react-server --env-file=.env.local scripts/eval-chat.mjs`.
+- La cuenta de OpenRouter debe permitir los modelos gratis en su configuración de privacidad. Por eso solo
+  reciben noticias ficticias.
+
 ### Pendiente
 
 - Tavily como respaldo del RSS y la tool `buscar_externo` dentro del flujo del chat.
+- El guardrail de alcance actúa antes de cualquier búsqueda externa. En la prueba del incremento 1, «receta de
+  pastel de chocolate» encontró una receta en Infobae: sin ese filtro, el chat respondería temas ajenos a las noticias.
 - Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Rodrigo carga el valor en `.env.local` y en Vercel.
   El nombre se agrega a `.env.example` junto con el código que la usa.
 - Límite diario de preguntas por usuario: guarda el `user_id`, así que obliga a actualizar `/privacidad`.

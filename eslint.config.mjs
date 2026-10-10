@@ -13,7 +13,7 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
   {
-    ignores: [".next/**", "node_modules/**", "public/sw.js"],
+    ignores: [".next/**", "node_modules/**", "public/sw.js", ".agents/**"],
   },
 ];
 

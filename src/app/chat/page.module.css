@@ -1,0 +1,5 @@
+.intro { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+.intro h1 { font-size: var(--text-xl); }
+.intro p { margin-top: var(--space-2); color: var(--color-ink-muted); font-size: var(--text-sm); }
+.intro nav { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.intro a { display: inline-flex; align-items: center; min-height: var(--touch-target); font-size: var(--text-sm); }

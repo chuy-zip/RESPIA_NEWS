@@ -2,6 +2,37 @@
 
 De lo más reciente a lo más antiguo.
 
+## 2026-10-09 · CIC-25 · Lector RSS: la prueba con feeds reales cambió la lista y la búsqueda
+
+**Requisitos:** `RF-14`, `RP-03` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·
+**Commit:** `a2d6218` (rama `chat`) · **Decisión:** D-25, D-26
+
+- **Comprensión:** el incremento 1 lee el RSS de los sitios permitidos de Centroamérica y medios internacionales,
+  y busca por palabras sin modelo.
+- **Hipótesis:** con los feeds que responden al user agent de la app, una búsqueda por raíces de palabras encuentra
+  las noticias de una pregunta en pocos segundos.
+- **Construcción:** `src/lib/ia/rss.ts` con 24 sitios, `fast-xml-parser`, un límite de 5 s por feed y un mínimo de
+  2 palabras en común.
+- **Prueba:** un script local con Node 24 leyó cada feed e hizo 5 preguntas de ejemplo.
+- **Observación:**
+  - La Prensa de Nicaragua tardó de 6 a 8 s en 3 intentos. Cada búsqueda esperaba su límite de 5 s.
+  - «Noticias de economía en Costa Rica» trajo noticias de sismos: «Costa» y «Rica» contaban como 2 palabras.
+    Pasó lo mismo con «Estados Unidos».
+  - «Receta de pastel de chocolate» encontró una receta en Infobae.
+- **Corrección:**
+  - La Prensa de Nicaragua salió de la lista. Nicaragua sigue con Confidencial y Divergentes.
+  - Los nombres de lugar de varias palabras cuentan como una sola coincidencia.
+  - El guardrail de alcance debe actuar antes de buscar afuera (pendiente en el spec).
+  - Resultado después de corregir: 23 de 23 feeds con noticias, unos 2 s por búsqueda sin caché, y «economía en
+    Costa Rica» devuelve 0 resultados, que es el caso en que entra Tavily.
+- **Agente:** Claude Code (Claude Opus 5.5).
+- **Pedido:** empezar el lector RSS de la búsqueda externa con cobertura de Centroamérica.
+- **Propuesta:** el agente probó 36 feeds, escribió el lector, lo probó con preguntas de ejemplo y propuso las tres
+  correcciones.
+- **Decisión:** el equipo pidió empezar por el RSS y eligió la cobertura de Centroamérica (D-26).
+- **Verificación:** el mismo script antes y después de corregir. `typecheck` y `lint` sin errores.
+- **Evidencia:** 2026-10-09, equipo local, Node 24, feeds reales. Falta probar desde Vercel.
+
 ## 2026-10-09 · CIC-25 · Búsqueda externa: RSS primero y Tavily de respaldo, sin MCP
 
 **Requisitos:** `RF-14`, `RF-06`, `RP-01` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·

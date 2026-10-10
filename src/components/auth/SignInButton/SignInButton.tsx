@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
@@ -27,29 +27,33 @@ export function SignInButton({
   variant = "primary",
 }: SignInButtonProps) {
   const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const errorId = useId();
 
   async function signIn() {
     setPending(true);
-
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    // Si sale bien, el navegador ya se fue a Google y este código no sigue.
-    if (error) {
+    setFailed(false);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch {
+      setFailed(true);
       setPending(false);
     }
   }
 
   return (
     <div className={styles.wrapper}>
-      <Button onClick={signIn} disabled={pending} variant={variant}>
+      <Button onClick={signIn} disabled={pending} variant={variant} aria-busy={pending} aria-describedby={failed ? errorId : undefined}>
         {pending ? "Abriendo Google…" : label}
       </Button>
+      {failed && <p id={errorId} className={styles.error} role="alert">No se pudo abrir Google. Comprueba tu conexión y vuelve a intentarlo.</p>}
       {/* Que la política sea visible justo donde se entregan los datos (RF-06). */}
       <p className={styles.note}>
         Consulta cómo tratamos tus datos en la{" "}

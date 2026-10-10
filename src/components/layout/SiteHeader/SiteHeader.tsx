@@ -1,31 +1,35 @@
-import Link from "next/link";
+"use client";
 
-import { isAdmin } from "@/lib/auth/dal";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import styles from "./SiteHeader.module.css";
 
 interface SiteHeaderProps {
-  /** Texto corto a la derecha: en qué estado está lo que se está viendo. */
-  badge?: string;
+  signedIn: boolean;
+  admin: boolean;
 }
 
-/**
- * Barra superior.
- *
- * Es un componente de servidor: pregunta `isAdmin()` y solo entonces escribe el
- * icono del portal administrativo en el HTML. Para cualquier otra persona ese
- * enlace no existe en la página (no está escondido con CSS ni con JavaScript).
- *
- * Esto es comodidad, no seguridad: quien escriba /admin a mano llega igual, y es
- * `app/admin/page.tsx` quien lo rechaza con su propia comprobación.
- */
-export async function SiteHeader({ badge }: SiteHeaderProps) {
-  const admin = await isAdmin();
+// El layout obtiene estos permisos en servidor. Cada página vuelve a autorizar el acceso.
+export function SiteHeader({ signedIn, admin }: SiteHeaderProps) {
+  const pathname = usePathname();
+  const compact = pathname !== "/" && pathname !== "/edicion" && !pathname.startsWith("/temas/");
+  const links = signedIn
+    ? [{ href: "/chat", label: "Preguntar" }, { href: "/edicion", label: "Edición" }, { href: "/buscar", label: "Buscar" }, { href: "/perfil", label: "Perfil" }]
+    : [{ href: "/", label: "Inicio" }, { href: "/#acceso", label: "Iniciar sesión" }, { href: "/#instalar", label: "Instalar" }];
+  function isActive(href: string) {
+    if (href === "/edicion") return pathname === href || pathname.startsWith("/temas/") || pathname.startsWith("/noticias/");
+    if (href === "/perfil") return pathname === href || pathname === "/guardados";
+    return pathname === href;
+  }
 
   return (
-    <header className={styles.header}>
-      <div className={styles.brand}>
-        {/* Tres líneas de texto que se acortan, y el punto de señal en vivo. */}
+    <header className={styles.header} data-compact={compact}>
+      <div className={styles.utility}>
+        <span>Tecnología · Economía · Finanzas</span>
+        <span>Una perspectiva más amplia</span>
+      </div>
+      <Link href="/" className={styles.brand} aria-label="The Meridian Times, inicio">
         <svg
           className={styles.mark}
           viewBox="0 0 24 24"
@@ -33,38 +37,30 @@ export async function SiteHeader({ badge }: SiteHeaderProps) {
           height="22"
           aria-hidden="true"
         >
-          <rect x="2" y="4" width="20" height="3" rx="1.5" fill="currentColor" />
-          <rect
-            x="2"
-            y="10.5"
-            width="14"
-            height="3"
-            rx="1.5"
-            fill="currentColor"
-          />
-          <rect x="2" y="17" width="9" height="3" rx="1.5" fill="currentColor" />
-          <circle cx="19.5" cy="18.5" r="2.5" className={styles.markDot} />
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" />
+          <path d="M8 17V7l4 6 4-6v10M17 1 7 23" fill="none" stroke="currentColor" />
         </svg>
         <span className={styles.wordmark}>
-          RESPIA <span className={styles.wordmarkLight}>News</span>
+          The Meridian Times
+          <span className={styles.tagline}>El mundo cambia. Entiende lo que significa para ti.</span>
         </span>
-      </div>
+      </Link>
 
-      <div className={styles.actions}>
-        {badge ? <span className={styles.badge}>{badge}</span> : null}
+      <nav className={styles.actions} aria-label="Navegación principal">
+        {links.map(({ href, label }) => <Link key={href} href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
 
         {admin ? (
           <Link
             href="/admin"
             className={styles.adminLink}
+            aria-current={pathname === "/admin" ? "page" : undefined}
             aria-label="Panel de administración"
             title="Panel de administración"
           >
-            {/* Escudo con palomita. */}
             <svg
               viewBox="0 0 24 24"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -75,9 +71,10 @@ export async function SiteHeader({ badge }: SiteHeaderProps) {
               <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8.2 7.5 9.5 4.4-1.3 7.5-5.1 7.5-9.5V6L12 3Z" />
               <path d="m9 12 2.2 2.2L15.2 10" />
             </svg>
+            Redacción
           </Link>
         ) : null}
-      </div>
+      </nav>
     </header>
   );
 }

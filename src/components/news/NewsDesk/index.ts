@@ -1,0 +1,1 @@
+export { NewsDesk } from "./NewsDesk";

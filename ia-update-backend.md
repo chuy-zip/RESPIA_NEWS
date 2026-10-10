@@ -3,6 +3,20 @@
 Este documento explica qué ofrece el backend a la parte de IA y qué falta del lado de IA para que el chat, el feed y
 el registro de gasto funcionen. Cubre el modelo del chat, el recomendador y el gasto de IA.
 
+## Resumen: lo que falta del lado de IA
+
+| # | Qué hacer | Sección |
+|---|---|---|
+| 1 | **Crear `src/lib/ia/chat.ts`** con una función del tipo `ChatModel`: recibe la pregunta, el historial, la región y las noticias, y devuelve el texto, los ids usados y si hubo cobertura | 2.1 a 2.3 |
+| 2 | Dentro de esa función: prompt, salida estructurada, guardrails del modelo, tope de gasto y registro de costo. No repetir lo que el backend ya valida | 2.4 y 2.5 |
+| 3 | **Conectar la función** cambiando `getChatModel()` en `src/lib/services/chat.ts` | 2.6 |
+| 4 | Acordar con el backend: cuándo corre la búsqueda externa, cómo se devuelven las citas externas, la señal `chat` y el error del tope de gasto | 2.7 |
+| 5 | **Decidir si el peso de los temas es el esperado:** con una sola apertura, Economía pesó más que Tecnología, el tema elegido. `topicWeights` normaliza al máximo, así que una apertura vale 1 y un tema elegido 0.5 | 3 |
+| 6 | Definir la función de noticias relacionadas (incremento 2) para agregarlas al lector | 3 |
+| 7 | Para el gasto de IA: definir las columnas de `ai_usage`, escribir el módulo de costo y una función que devuelva el resumen | 4 |
+| 8 | **Quitar `elegirImagen`** de `specs/costos-ia.md`: no habrá imágenes. Registrar el cambio de alcance con el equipo | 5 |
+| 9 | Revisar el texto de `/privacidad`. Cuando el chat use el modelo, nombrar al proveedor | 6 |
+
 El detalle de cada endpoint está en la sección «Backend» de cada spec:
 
 | Endpoint | Spec | Estado |

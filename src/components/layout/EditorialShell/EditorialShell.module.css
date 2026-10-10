@@ -1,0 +1,9 @@
+.shell { max-width: var(--layout-max-width); margin-inline: auto; padding-inline: var(--layout-gutter); min-height: 100dvh; display: flex; flex-direction: column; }
+.main { flex: 1; padding-block: var(--space-5) var(--space-7); min-width: 0; }
+.main > aside:first-child { margin-bottom: var(--space-6); }
+.footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); border-top: var(--rule-width) double var(--color-ink); padding-block: var(--space-6) calc(var(--space-6) + env(safe-area-inset-bottom)); color: var(--color-ink-muted); font-size: var(--text-xs); }
+.footer strong { font-size: var(--text-lg); font-family: var(--font-display); color: var(--color-ink); }
+.footer a { min-height: var(--touch-target); display: inline-flex; align-items: center; }
+.skip { position: fixed; top: var(--space-2); left: var(--space-2); z-index: var(--z-skip); background: var(--color-surface-raised); padding: var(--space-3); transform: translateY(-200%); }
+.skip:focus { transform: translateY(0); }
+@media (min-width: 40rem) { .shell { padding-inline: var(--space-6); } }

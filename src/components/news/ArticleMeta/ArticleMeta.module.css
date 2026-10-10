@@ -1,0 +1,5 @@
+.meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-ink-muted); }
+.status { display: inline-flex; gap: var(--space-1); align-items: center; font-weight: 600; }
+.status[data-status="confirmed"] { color: var(--color-signal-ok); }
+.status[data-status="developing"] { color: var(--color-signal-wait); }
+.status[data-status="unconfirmed"] { color: var(--color-signal-fail); }

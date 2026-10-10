@@ -21,6 +21,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-block: var(--space-6);
 }
 
 body {
@@ -52,6 +53,21 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+button:not(:disabled),
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input,
+select,
+textarea {
+  font-size: var(--text-md);
 }
 
 /* ------------------------------------------------------------------ base */

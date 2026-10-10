@@ -18,6 +18,7 @@
 
 # IA · Rodrigo Mansilla
 /src/lib/ia/                      @Rodrimansidub14
+/src/lib/recomendacion/           @Rodrimansidub14
 
 # Infra · Ricardo Chuy (infraestructura ya implementada; ver AGENTS.md)
 /supabase/migrations/             @chuy-zip

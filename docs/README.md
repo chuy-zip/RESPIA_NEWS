@@ -18,18 +18,20 @@ IA están en [AGENTS.md](../AGENTS.md).
 
 Una feature tiene dos archivos: `specs/<feature>.md` y
 `docs/features/<feature>/bitacora.md`. Se crean cuando empieza su trabajo, no antes.
+Cada funcionalidad tiene un ticket en la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion, creado por su responsable (D-28). Sin ticket, el spec mantiene su tabla de tareas.
 
 | Feature | Requisitos | Parte principal | Spec |
 |---|---|---|---|
 | `acceso` (sesión, roles y privacidad) | RF-02, RF-03, RF-06 | Back | [acceso](../specs/acceso.md) |
 | `pwa` (instalación y compartir) | RF-01, RF-05 | Front | [pwa](../specs/pwa.md) |
 | `plataforma` (hosting, base de datos y costo de infraestructura) | RP-04 | Infra, Datos | [plataforma](../specs/plataforma.md) |
-| `ubicacion-y-perfil` (región simulada e intereses) | RF-04, RF-10 | Front, Datos | aún no creada |
-| `portal-admin` (crear, publicar, validar) | RF-15, RF-16, RT-03, RT-04 | Front, Back | aún no creada |
-| `imagenes` | RF-17, RF-18, RT-05 | Back, Datos | aún no creada |
-| `feed-y-lector` (jerarquía y lectura) | RF-08, RF-09, RF-11, RT-01, RT-02, RT-06 | Front, Back | aún no creada |
-| `chat` | RF-07, RF-12, RF-13, RF-14 | IA, Front | aún no creada |
-| `costos-ia` (registro, tope y reserva) | RP-01, RP-02, RP-03 | IA, Datos | aún no creada |
+| `ubicacion-y-perfil` (región simulada) | RF-04 | Front, Datos | [ubicación y perfil](../specs/ubicacion-y-perfil.md) |
+| `portal-admin` (crear, publicar, validar) | RF-15, RF-16, RT-03, RT-04 | Front, Back | [portal administrativo](../specs/portal-admin.md) |
+| `imagenes` (banco de imágenes; el modelo propone, D-23) | RF-17, RF-18, RT-05 | Back, Datos, IA | [imágenes](../specs/imagenes.md) |
+| `recomendacion` (orden, niveles de prominencia e intereses inferidos) | RF-08, RF-10, RF-11, RT-01 | IA | [recomendacion](../specs/recomendacion.md) |
+| `feed-y-lector` (endpoint del feed, pantalla y lectura) | RF-08, RF-09, RT-02, RT-06 | Front, Back | [feed y lector](../specs/feed-y-lector.md) |
+| `chat` | RF-07, RF-12, RF-13, RF-14 | IA, Front | [chat](../specs/chat.md) |
+| `costos-ia` (registro, tope y reserva) | RP-01, RP-02, RP-03 | IA, Datos | [costos-ia](../specs/costos-ia.md) |
 
 Si una parte nueva no encaja en ninguna, primero revise si responde a un requisito.
 Si no, falta el requisito.

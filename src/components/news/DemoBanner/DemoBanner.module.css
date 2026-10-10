@@ -1,0 +1,17 @@
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-sunken);
+  border: var(--border-hairline);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+.banner strong { color: var(--color-ink); }
+.controls { max-width: 100%; }
+.controls summary { cursor: pointer; min-height: var(--touch-target); display: flex; align-items: center; text-decoration: underline; }
+.options { display: grid; gap: var(--space-2); margin-bottom: var(--space-2); }
+.options select { min-height: var(--touch-target); padding: var(--space-2); background: var(--color-surface-raised); border: var(--border-width) solid var(--color-line-strong); }

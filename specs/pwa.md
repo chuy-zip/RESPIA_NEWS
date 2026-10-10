@@ -9,6 +9,8 @@ Instalación en iPhone y Android sin tiendas, y la forma de compartir la app par
 ## Comportamiento actual
 
 Aplicación web progresiva: se instala desde el navegador y abre a pantalla completa (D-01).
+Las rutas nuevas comparten el mismo layout en navegador y modo instalado.
+El manifiesto sigue declarando RESPIA News, inicio `/` y tres iconos. No se modificó la infraestructura de instalación.
 
 | Regla menor | Razón |
 |---|---|
@@ -56,4 +58,15 @@ Toda pantalla nueva se probó en un iPhone y un Android reales, ya instalada.
 
 ## Cambio en curso
 
-Ninguno.
+2026-10-09: adaptar las pantallas a The Meridian Times, con tema automático, áreas seguras y movimiento reducido.
+Se reutilizan las instrucciones de instalación. No se modifica el service worker, el manifiesto ni los iconos.
+El nombre de la PWA instalada sigue pendiente de coordinación con Ricardo.
+La instrucción del 2026-10-09 autoriza verificaciones locales. La instalación y cada pantalla final requieren verificación real.
+La entrada `/` con sesión dirige a `/chat` en el código, sin cambiar `start_url`, callback, manifiesto o service worker.
+El usuario confirmó que la marca instalada, los iconos, la pantalla offline y la renovación de caché quedan como dependencia de Ricardo.
+El frontend conserva las áreas seguras, controles táctiles, movimiento reducido y navegación compartida con el navegador.
+Los colores de tema del layout coinciden con el papel claro y oscuro. El manifiesto conserva sus colores anteriores.
+No se añade almacenamiento de respuestas privadas ni noticias para leer sin conexión.
+La fase de implementación no escribió en Git. La entrega posterior autoriza commits locales, sin publicación automática. Las pruebas en teléfonos y preview siguen pendientes.
+La consulta del manifiesto y las cabeceras HTTP anónimas se registran en [la evidencia local](../notion-frontend.md#registro-honesto).
+No hubo prueba nueva de instalación, actualización ni desconexión real. El usuario pidió dejar pendientes todas las pruebas con sesión.

@@ -19,6 +19,9 @@ frontend, backend, datos e IA.
 2. Lee [docs/PROCESO.md](docs/PROCESO.md): ciclo, registro del uso de agentes, límites y Done.
 3. Lee el spec de la feature (`specs/<feature>.md`), su bitácora
    (`docs/features/<feature>/bitacora.md`) y [docs/DECISIONES.md](docs/DECISIONES.md).
+4. Pide a la persona el ticket de la funcionalidad (`TKT-NN`). Hay un ticket por funcionalidad
+   en la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion.
+   Si la funcionalidad no tiene ticket, sus tareas están en la tabla del spec.
 
 ## Reglas
 
@@ -32,7 +35,8 @@ frontend, backend, datos e IA.
    (agente, pedido, propuesta, decisión, verificación). Usa la fecha real. No inventes
    fechas ni resultados.
 5. **Si propusiste algo incorrecto y eso cambió una decisión, regístralo.** Es evidencia.
-6. **No marques una tarea como hecha sin ejecutar su prueba** y dejar el registro. Si no
+6. **No marques una tarea como hecha sin ejecutar su prueba** y dejar el registro junto a la
+   tarea, en el ticket o en la tabla del spec. Si no tienes acceso a Notion, da el registro a la persona. Si no
    puedes probarla (cuenta real, teléfono, acceso), dilo y déjala pendiente.
 7. **Respeta los límites de archivos** de `PROCESO.md`. Antes de crear un archivo,
    verifica si el dato cabe en uno existente.
@@ -45,9 +49,10 @@ frontend, backend, datos e IA.
     producción comparten la base de datos.
 11. Si tu cambio guarda un dato nuevo del usuario, actualiza `src/app/privacidad/page.tsx` (`RF-06`).
 12. Los commits hechos con un agente llevan la línea `Co-Authored-By` del agente.
-13. **No trabajes en `main` ni en `dev`.** Crea una rama `<parte>/<feature>-<descripcion>` desde `dev`
-    y abre un PR hacia `dev`. Solo un release lleva `dev` a `main`.
-14. **Modifica solo las carpetas de la parte de tu rama.** Si necesitas una carpeta de otra
+13. **No trabajes en `main`.** La documentación (`docs/`, `specs/`, `AGENTS.md`, `README.md`) va
+    directo a `dev`. El código va en la rama de su feature (`chat`, `recomendacion`…), que sale de
+    `dev` y vuelve por PR. No crees una rama por cada cambio pequeño. Solo un release lleva `dev` a `main`.
+14. **Modifica solo las carpetas de tu parte.** Si necesitas una carpeta de otra
     parte, dilo a la persona: el cambio necesita la aprobación del dueño (tabla de la sección
     8 de `PROCESO.md` y `.github/CODEOWNERS`).
 
@@ -98,10 +103,10 @@ de PR y prompts, usa las dos skills del repositorio:
 | **Frontend** (Sergio Orellana) | `src/app/**/page.tsx` y `*.module.css` (pantallas), `src/components/`, `src/styles/`, `e2e/` | Un componente por carpeta con `index.ts`. No llames a la base de datos desde un componente cliente: pide los datos al backend |
 | **Backend** (Gerardo Pineda) | `src/app/api/` (endpoints), `src/app/actions/` (server actions), `src/lib/services/` (lógica de negocio), `src/types/` | Cada ruta y página protegida verifica la sesión en el servidor con `src/lib/auth/dal.ts`. La ruta HTTP no contiene lógica de negocio: llama a un servicio |
 | **Modelación de datos** (Ricardo Chuy) | `supabase/migrations/` (SQL numerado), `src/types/` | Script nuevo con el número siguiente, idempotente, con RLS, `GRANT` mínimos y una política por operación. No edites un script ya ejecutado |
-| **IA (modelos)** (Rodrigo Mansilla) | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_` |
+| **IA (modelos y recomendador)** (Rodrigo Mansilla) | `src/lib/ia/` (llamadas a modelos, prompts, registro de costo), `src/lib/recomendacion/` (orden, niveles de prominencia e intereses del feed) | Solo el servidor llama al modelo. Registra cada llamada y su costo (`RP-02`). La llave del modelo va en una variable de entorno de servidor, nunca `NEXT_PUBLIC_`. El recomendador no llama a ningún modelo (`RP-03`). El endpoint del feed es de Backend y llama al recomendador |
 | **Proceso** | `specs/`, `docs/` | Ver [docs/PROCESO.md](docs/PROCESO.md) |
 
-Las carpetas `e2e/` y `src/lib/ia/` se crean con su primer archivo. No dejes carpetas vacías.
+Las carpetas `e2e/`, `src/lib/ia/` y `src/lib/recomendacion/` se crean con su primer archivo. No dejes carpetas vacías.
 
 ## Infraestructura ya implementada: no modificar sin coordinar
 

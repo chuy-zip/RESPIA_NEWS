@@ -1,0 +1,7 @@
+.prompt { max-width: var(--layout-panel-width); margin: var(--space-7) auto; padding-block: var(--space-6); border-top: var(--rule-width) solid var(--color-accent); }
+.kicker { color: var(--color-ink-muted); margin-bottom: var(--space-4); }
+.prompt h1 { font-size: var(--text-2xl); max-width: 18ch; }
+.description { margin-block: var(--space-5); font-size: var(--text-lg); }
+.note { color: var(--color-ink-muted); font-size: var(--text-sm); margin-top: var(--space-4); max-width: var(--measure-copy); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin-top: var(--space-6); padding-top: var(--space-4); border-top: var(--border-hairline); }
+.links a { display: inline-flex; align-items: center; min-height: var(--touch-target); }

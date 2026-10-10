@@ -149,7 +149,8 @@ flowchart LR
 
   G["Google OAuth<br/>Google Cloud"]
   J["JokeAPI v2<br/>sustituto de noticias"]
-  IA["Proveedor de IA<br/>pendiente"]
+  IA["Modelo de IA<br/>D-22: OpenRouter en pruebas"]
+  BX["Búsqueda externa<br/>D-25: RSS y Tavily"]
 
   A --> P
   B --> P
@@ -162,6 +163,7 @@ flowchart LR
   API --> SVC
   SVC --> J
   SVC -.-> IA
+  SVC -.-> BX
   SVC -.-> DB
   AUTH <--> G
 ```
@@ -473,6 +475,8 @@ propio navegador.
 
 - **La llave del proveedor de IA:** será el primero y el más importante.
   Sin `NEXT_PUBLIC_`, solo en código de servidor.
+- **`TAVILY_API_KEY`**, para la búsqueda externa del chat (D-25). Plan gratis, sin
+  tarjeta. Sin `NEXT_PUBLIC_`, solo en código de servidor.
 - **`sb_secret_…`**, solo si algún trabajo del servidor necesita escribir saltándose
   RLS (por ejemplo, una importación programada). Preferir no usarla.
 

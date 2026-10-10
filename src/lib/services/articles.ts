@@ -3,6 +3,7 @@ import "server-only";
 import { getCatalog } from "@/lib/services/catalogs";
 import { createClient } from "@/lib/supabase/server";
 import type {
+  ArticleDetail,
   ArticleSummary,
   ContentBlock,
   ContentType,
@@ -366,5 +367,63 @@ export async function listArticles(query: ArticleListQuery): Promise<{ items: Ar
       image: row.image,
     })),
     meta: { nextCursor: rows.length > query.limit && last ? encodeCursor(last.published_at, last.id) : null },
+  };
+}
+
+// Lector ----------------------------------------------------------------------
+
+interface ArticleDetailRow extends ArticleSummaryRow {
+  author: string | null;
+  body: ContentBlock[];
+  sources: Source[];
+  review_note: string;
+  important: boolean;
+  regions: { region_id: string }[];
+}
+
+/**
+ * Una noticia completa, o null si no existe. Lo usa el lector con cualquier
+ * cuenta con sesión: RLS no entrega nada sin sesión (RF-02).
+ */
+export async function getArticle(id: string): Promise<ArticleDetail | null> {
+  // Un id que no es UUID no existe. Consultarlo daría un error de la base, no un 404.
+  if (!UUID.test(id)) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("articles")
+    .select(
+      "id, title, summary, published_at, status, content_type, image, author, body, sources, review_note, important, " +
+        "topics:article_topics(topic_id), regions:article_regions(region_id)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new ArticleStoreError(error);
+  }
+  if (!data) {
+    return null;
+  }
+
+  const row = data as unknown as ArticleDetailRow;
+
+  return {
+    id: row.id,
+    title: row.title,
+    summary: row.summary,
+    topicIds: row.topics.map((topic) => topic.topic_id),
+    publishedAt: row.published_at,
+    status: row.status,
+    contentType: row.content_type,
+    image: row.image,
+    author: row.author,
+    regionIds: row.regions.map((region) => region.region_id),
+    body: row.body,
+    sources: row.sources,
+    reviewNote: row.review_note,
+    important: row.important,
   };
 }

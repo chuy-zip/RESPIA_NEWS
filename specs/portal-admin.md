@@ -102,6 +102,19 @@ administrador.
 | 403 | `FORBIDDEN` | La cuenta no es administradora |
 | 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
 
+#### `GET /api/articles/[id]`
+
+Devuelve una noticia completa para el lector. Lo puede usar cualquier cuenta con sesión, no solo un administrador.
+`data` es un `ArticleDetail`: los campos de `ArticleSummary` más `author`, `regionIds`, `body`, `sources`,
+`reviewNote` e `important`. No incluye `relatedArticles`: llega con el incremento 2 de `recomendacion` (D-31).
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | La noticia existe |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 404 | `ARTICLE_NOT_FOUND` | No hay una noticia con ese id, o el id no es un UUID |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
 #### Probar los endpoints
 
 Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
@@ -158,7 +171,21 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 
    Resultado: `200` con la noticia de prueba, `200` con la misma noticia, `400 INVALID_FILTER` y `400 INVALID_CURSOR`.
 
-6. Borre la noticia de prueba en el SQL Editor de Supabase. La base compartida sirve también a producción:
+6. Pegue este código para probar el lector:
+
+   ```js
+   const read = async (id) => {
+     const r = await fetch("/api/articles/" + id);
+     console.log(id, r.status, await r.json());
+   };
+   const first = (await (await fetch("/api/admin/articles?limit=1")).json()).data.items[0];
+   await read(first.id);
+   await read("00000000-0000-0000-0000-000000000000");
+   ```
+
+   Resultado: `200` con la noticia completa y `404 ARTICLE_NOT_FOUND`.
+
+7. Borre la noticia de prueba en el SQL Editor de Supabase. La base compartida sirve también a producción:
 
    ```sql
    delete from public.articles where title like '[PRUEBA]%';
@@ -172,8 +199,9 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 | 2026-10-10 | Local, sesión de administrador | `GET /api/catalogs`: 200 con 8 regiones, 3 temas, 3 estados y 3 tipos | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `POST /api/admin/articles`: 201 con una fuente y `developing`. 422 con `confirmed` y una fuente. 422 sin título ni fuentes | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `GET /api/admin/articles`: 200 sin filtros, con `q`, con `topic` y con `status`, cada uno con las noticias esperadas. 400 con `status`, `topic` y `cursor` inválidos | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `GET /api/articles/[id]`: 200 con `body`, `sources`, `reviewNote`, una región y un tema que coinciden con el catálogo. 404 `ARTICLE_NOT_FOUND` con un UUID inexistente y con un id que no es UUID | Pasó |
 
-Pendiente: 403 con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel
+Pendiente: 403 en el portal y 200 en el lector con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel
 y conexión del portal.
 
 ## Criterios de aceptación

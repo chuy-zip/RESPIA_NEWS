@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildFeed } from "./feed.ts";
+import { buildFeed, topicWeights } from "./feed.ts";
 
 // Datos ficticios (D-15). Regiones: los 7 países de Centroamérica (D-26). "int" es una noticia internacional.
 const CENTRAL_AMERICA = ["gt", "sv", "hn", "ni", "cr", "pa", "bz"];
@@ -182,4 +182,69 @@ test("RP-03: src/lib/recomendacion/ no importa un SDK de modelo ni hace llamadas
     assert.deepEqual(specifiers.filter((specifier) => forbidden.test(specifier)), [], file);
     assert.doesNotMatch(source, /\bfetch\(/, file);
   }
+});
+
+// Intereses (RF-10, D-31, D-32): de las señales y los temas elegidos a los pesos del perfil.
+
+function signals(topicId, count) {
+  return Array.from({ length: count }, (_, i) => ({
+    articleId: `${topicId}-${i}`,
+    topicIds: [topicId],
+    type: "open",
+    createdAt: hoursAgo(i + 1),
+  }));
+}
+
+function meanPosition(items, topicId) {
+  const positions = items
+    .map((item, position) => ({ item, position }))
+    .filter(({ item }) => BY_ID.get(item.articleId).topicIds.includes(topicId))
+    .map(({ position }) => position);
+  return positions.reduce((sum, position) => sum + position, 0) / positions.length;
+}
+
+test("RF-10: diez aperturas de un solo tema dan peso 1 a ese tema, como el perfil L4", () => {
+  assert.deepEqual(topicWeights(signals("deportes", 10), [], NOW), READERS.L4.topicWeights);
+});
+
+test("RF-10: un tema sube después de 5 aperturas", (t) => {
+  const before = meanPosition(feedFor(READERS.L1).items, "salud");
+  const after = meanPosition(
+    feedFor({ ...READERS.L1, topicWeights: topicWeights(signals("salud", 5), [], NOW) }).items,
+    "salud",
+  );
+
+  assert.ok(after < before);
+  t.diagnostic(`posición media de salud: ${before.toFixed(1)} antes, ${after.toFixed(1)} después`);
+});
+
+test("D-31: cada tipo de señal cuenta una vez por noticia", () => {
+  const createdAt = NOW.toISOString();
+  const repeated = Array.from({ length: 5 }, () => ({ articleId: "x1", topicIds: ["deportes"], type: "open", createdAt }));
+  const distinct = ["y1", "y2", "y3"].map((articleId) => ({ articleId, topicIds: ["economia"], type: "open", createdAt }));
+  const weights = topicWeights([...repeated, ...distinct], [], NOW);
+
+  assert.equal(weights.economia, 1);
+  assert.ok(Math.abs(weights.deportes - 1 / 3) < 1e-12);
+});
+
+test("D-31: preguntar al chat desde una noticia vale 1 más que abrirla", () => {
+  const createdAt = NOW.toISOString();
+  const weights = topicWeights(
+    [
+      { articleId: "x1", topicIds: ["economia"], type: "open", createdAt },
+      { articleId: "x1", topicIds: ["economia"], type: "chat", createdAt },
+      { articleId: "y1", topicIds: ["salud"], type: "open", createdAt },
+    ],
+    [],
+    NOW,
+  );
+
+  assert.equal(weights.economia, 1);
+  assert.equal(weights.salud, 0.5);
+});
+
+test("D-32: un tema elegido empieza en 0.5 y las señales lo suben hasta 1", () => {
+  assert.equal(topicWeights([], ["deportes"], NOW).deportes, 0.5);
+  assert.equal(topicWeights(signals("deportes", 3), ["deportes"], NOW).deportes, 1);
 });

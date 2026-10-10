@@ -2,6 +2,31 @@
 
 De lo más reciente a lo más antiguo.
 
+## 2026-10-10 · CIC-24 · El chat usa contexto fijo en lugar de tools
+
+**Requisitos:** `RF-12`, `RF-14`, `RP-02`, `RP-03` · **Notion:** [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2) ·
+**Ticket:** [TKT-1](https://app.notion.com/p/3f5f573ce6df81949870d08ecf84997e) · **Decisión:** D-34 (reemplaza D-24)
+
+- **Comprensión:** D-24 decía que el modelo pide datos con tools, en dos rondas como máximo.
+- **Hipótesis:** las tools hacen falta para las consultas (c) y (d) de `RF-12`.
+- **Construcción:** Backend construyó `POST /api/chat` con el contrato del incremento 2 de este spec (PR #11). El
+  servidor arma el contexto antes de llamar al modelo: las 10 primeras del feed, el bloque importante y hasta 5
+  noticias de la búsqueda de texto.
+- **Prueba:** revisión del código del PR #11. Pruebas de Backend: 401 sin sesión, `unavailable` sin módulo y 422 con
+  entradas inválidas.
+- **Observación:** el contexto fijo ya cubre la búsqueda que hacía `buscar_noticias`, sin una segunda llamada al
+  modelo. La búsqueda externa puede decidirla el servidor: corre cuando la búsqueda de texto devuelve 0.
+- **Corrección:** contexto fijo, una llamada al modelo y búsqueda externa en el módulo de IA (D-34). Las tools
+  vuelven solo si el conjunto fijo (CIC-17) falla en las consultas (c) y (d).
+- **Agente:** Claude Code (Claude Opus 5.5).
+- **Pedido:** Rodrigo pidió revisar lo que trajo Gerardo.
+- **Propuesta:** el agente vio que el código no seguía D-24 y propuso quedarse con el contexto fijo. También propuso
+  el `articleId` para la señal `chat`, `externalUrls` en la salida y `AiLimitError` para el tope.
+- **Decisión:** Rodrigo aprobó las cinco propuestas (D-34).
+- **Verificación:** lectura de `src/lib/services/chat.ts` y `src/types/chat.ts`. Pendiente: el conjunto fijo del chat
+  cuando haya créditos.
+- **Evidencia:** 2026-10-10, revisión del PR #11.
+
 ## 2026-10-09 · CIC-25 · Lector RSS: la prueba con feeds reales cambió la lista y la búsqueda
 
 **Requisitos:** `RF-14`, `RP-03` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·

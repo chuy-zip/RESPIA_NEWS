@@ -2,9 +2,9 @@
 
 Sesión con Google, quién es administrador y qué se entrega sin sesión.
 
-**Requisitos:** `RF-02`, `RF-03`, `RF-06` · **Bitácora:** [bitacora.md](../docs/features/acceso/bitacora.md) ·
+**Requisitos:** `RF-02`, `RF-03`, `RF-06` · **Bitácora:** [bitacora.md](../../docs/features/acceso/bitacora.md) ·
 **Decisiones:** D-03, D-04, D-06, D-07, D-12 · **Investigación:** [Notion](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) ·
-**Detalle técnico:** [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md)
+**Detalle técnico:** [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md)
 
 ## Comportamiento actual
 
@@ -51,8 +51,8 @@ Toda pantalla o ruta que dependa del rol se probó con una cuenta administradora
 |---|---|---|---|
 | ✅ | Inicio de sesión con Google y callback | `RF-02` | Bitácora 2026-09-23 (primer inicio de sesión), commit `3df4657` |
 | ✅ | Sesión verificada en iPhone con la app instalada | `RF-02` | Bitácora 2026-09-23: la sesión volvió activa con la PWA abierta desde el icono |
-| ✅ | Sesión verificada en Android con la app instalada | `RF-02` | Tabla de pruebas de [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md): confirmado el 4-oct-2026 |
-| ✅ | Contenido protegido: 401 o pantalla bloqueada sin sesión | `RF-02` | Prueba del 2026-09-23: la API responde 401 sin sesión. Ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
+| ✅ | Sesión verificada en Android con la app instalada | `RF-02` | Tabla de pruebas de [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md): confirmado el 4-oct-2026 |
+| ✅ | Contenido protegido: 401 o pantalla bloqueada sin sesión | `RF-02` | Prueba del 2026-09-23: la API responde 401 sin sesión. Ver [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md) |
 | ✅ | Tabla de administradores, `private.is_admin()` y administradores cargados | `RF-03` | Bitácora 2026-10-04, script `supabase/migrations/001_admins.sql`, commit `8b26007`; verificación del equipo en el SQL Editor el 4-oct |
 | ✅ | Proveedor Email desactivado | `RF-03` | Bitácora 2026-10-04: el endpoint público de ajustes devuelve solo Google |
 | ✅ | Icono de administración y pantalla `/admin` | `RF-03` | Bitácora 2026-10-04, commit `766ddf0`. Probado sin sesión; falta la prueba con cuentas |

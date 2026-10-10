@@ -1,5 +1,13 @@
 # The Meridian Times: investigación y auditoría de frontend
 
+> **Obsoleto desde el 2026-10-10 (D-35).** Este archivo era una copia de traslado a Notion y ya no se actualiza. Se
+> conserva como rastro, porque varios comentarios del código citan sus «fichas». No agregue enlaces nuevos a este
+> archivo. Lo vigente está en otros lugares:
+>
+> - Contratos de cada endpoint: la sección «Backend» de cada spec.
+> - Investigación de Frontend: la base Investigación (R&D) de Notion. Sergio la traslada.
+> - Tareas de Frontend: sus tickets de Notion.
+
 **Fecha del registro:** 2026-10-09, Guatemala. **Responsable de frontend:** Sergio Orellana.
 **Estado:** unificación visual y navegación por páginas implementadas en el directorio de trabajo. Pruebas con sesión, integración y verificación móvil pendientes.
 **Rama:** `front/experiencia-editorial-meridian`, creada desde `origin/dev`.
@@ -13,10 +21,10 @@ El ejemplo de otro integrante solo orientó las columnas. No se copian sus ciclo
 
 ### Fuentes de verdad
 
-- [Alcance](docs/ALCANCE.md): requisitos y criterios oficiales del equipo.
-- [Proceso](docs/PROCESO.md): evidencia, uso de agentes y definición de Done.
-- [Decisiones](docs/DECISIONES.md): decisiones vigentes de todas las áreas.
-- [Enunciado del curso](docs/Proyecto%202%20AI%20Assisted%20News%20App.pdf): fuente versionada del contenido de `instructions.md`.
+- [Alcance](../../docs/ALCANCE.md): requisitos y criterios oficiales del equipo.
+- [Proceso](../../docs/PROCESO.md): evidencia, uso de agentes y definición de Done.
+- [Decisiones](../../docs/DECISIONES.md): decisiones vigentes de todas las áreas.
+- [Enunciado del curso](../../docs/Proyecto%202%20AI%20Assisted%20News%20App.pdf): fuente versionada del contenido de `instructions.md`.
 - `instructions.md`, `FRONTEND.md` y `brief.md`: archivos locales aportados por el usuario y leídos durante la planificación. No se modifican ni se incorporan automáticamente al PR.
 
 ### Acuerdos de esta entrega
@@ -164,7 +172,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Experiencia móvil y Chat de noticias, exige comenzar en el chat.
 - **Hipótesis:** la primera entrega combinaba feed y chat. La revisión propone rutas independientes, con chat como llegada autenticada.
-- **Construcción:** `NewsDesk` y `ChatPanel` ya tienen rutas separadas, con cuatro preguntas preparadas y enlaces al lector. [Spec de chat](specs/chat.md).
+- **Construcción:** `NewsDesk` y `ChatPanel` ya tienen rutas separadas, con cuatro preguntas preparadas y enlaces al lector. [Spec de chat](../ia/chat.md).
 - **Prueba prevista:** entrar con sesión, consultar, abrir una cita y regresar. Cambiar a edición y comprobar que la conversación no alarga esa página.
 - **Observación:** el usuario reportó que la pantalla parecía extenderse hacia abajo al seleccionar botones. Es un reporte del usuario, no una prueba reproducida por el agente.
 - **Corrección:** el usuario pidió varias páginas reales. La navegación separada reemplaza la hipótesis de una sola pantalla, sin cambiar RF-07.
@@ -179,7 +187,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Experiencia móvil y Transparencia, exige jerarquía y evitar una burbuja de preferencias.
 - **Hipótesis:** cuatro variantes y un bloque fuera del filtro comunican relevancia. Alternativa: lista uniforme.
-- **Construcción:** `ArticleCard`, escenarios fijos y bloque «La otra perspectiva». [Spec de feed y lector](specs/feed-y-lector.md).
+- **Construcción:** `ArticleCard`, escenarios fijos y bloque «La otra perspectiva». [Spec de feed y lector](feed-y-lector.md).
 - **Prueba prevista:** alternar regiones y temas. Anotar posición y variante de una misma noticia. Comprobar que el bloque importante permanece.
 - **Observación:** los escenarios son datos de ejemplo. No prueban el recomendador.
 - **Corrección:** pendiente de comparar el frontend con el contrato real.
@@ -193,7 +201,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Fuentes y Límites de la IA, requiere procedencia e incertidumbre visibles.
 - **Hipótesis:** reutilizar metadatos evita divergencias. Alternativa: redactar las etiquetas por separado en cada pantalla.
-- **Construcción:** `ArticleMeta` en tarjetas, lector, citas y portal. Etiquetas con texto e icono. [Spec](specs/feed-y-lector.md).
+- **Construcción:** `ArticleMeta` en tarjetas, lector, citas y portal. Etiquetas con texto e icono. [Spec](feed-y-lector.md).
 - **Prueba prevista:** abrir noticias de los tres estados. Seguir sus citas y comparar etiquetas. Preguntar si una noticia no confirmada está confirmada.
 - **Observación:** la demo no consulta un modelo. La resistencia del servidor a cambios de estado no está probada.
 - **Corrección:** pendiente de prueba e integración.
@@ -207,7 +215,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Chat de noticias, no exige historial entre sesiones.
 - **Hipótesis:** memoria de React suficiente. Alternativa descartada del alcance: guardar historial en navegador o base.
-- **Construcción:** conversación en `DemoSession`, reiniciada por identidad y sin escrituras remotas. [Spec](specs/chat.md).
+- **Construcción:** conversación en `DemoSession`, reiniciada por identidad y sin escrituras remotas. [Spec](../ia/chat.md).
 - **Prueba prevista:** conversar, navegar al lector y volver. Recargar y cerrar/reabrir la PWA. Revisar que no hay escrituras en almacenamiento del navegador.
 - **Observación:** el comportamiento de cierre real de iOS y Android no se probó.
 - **Corrección:** pendiente de dispositivos reales.
@@ -221,7 +229,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Alcance del producto, exige iPhone y Android visualmente cuidados.
 - **Hipótesis:** retícula fluida, áreas seguras y control del teclado conservan acciones. Alternativa: dimensiones fijas de escritorio.
-- **Construcción:** tokens, CSS Modules, breakpoint de 40rem y compositor sensible al viewport visual. [Spec PWA](specs/pwa.md).
+- **Construcción:** tokens, CSS Modules, breakpoint de 40rem y compositor sensible al viewport visual. [Spec PWA](../infra/pwa.md).
 - **Prueba prevista:** teléfono vertical y horizontal, teclado abierto, texto ampliado, navegación por teclado, tema oscuro y movimiento reducido.
 - **Observación:** la primera entrega no renderizó la interfaz. Esta revisión conserva pendientes las pruebas con sesión y teléfonos reales.
 - **Corrección:** pendiente de revisión visual del usuario.
@@ -235,7 +243,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Acceso y ubicación, requiere regiones simuladas y señales de comportamiento.
 - **Hipótesis:** región visible y lecturas deduplicadas permiten comparar cambios. Alternativa: ocultar el contexto de personalización.
-- **Construcción:** `ProfilePanel`, selector y conjunto de IDs abiertos durante la demo. [Spec de perfil](specs/ubicacion-y-perfil.md).
+- **Construcción:** `ProfilePanel`, selector y conjunto de IDs abiertos durante la demo. [Spec de perfil](ubicacion-y-perfil.md).
 - **Prueba prevista:** abrir la misma noticia varias veces, revisar la lista y cambiar región. Después de integrar, comparar dos cuentas y repetir la conducta aprobada.
 - **Observación:** no se envían señales y no se calculan intereses. Los escenarios no prueban RF-10.
 - **Corrección:** pendiente del servicio y el recomendador.
@@ -249,7 +257,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Publicación administrativa y Validación, exige criterio humano y manejo de incertidumbre.
 - **Hipótesis:** pasos de contenido, fuentes y vista previa detectan omisiones. Alternativa: un botón que publica sin revisión.
-- **Construcción:** `EditorialDesk`, errores por campo y confirmación de publicación simulada. [Spec del portal](specs/portal-admin.md).
+- **Construcción:** `EditorialDesk`, errores por campo y confirmación de publicación simulada. [Spec del portal](../backend/portal-admin.md).
 - **Prueba prevista:** omitir una fuente, introducir URL no HTTP(S), declarar contradicción e intentar Confirmado. Revisar una noticia no confirmada y publicarla en la demo.
 - **Observación:** la regla editorial de interfaz es propuesta. No demuestra validación ni autorización del backend.
 - **Corrección:** pendiente de acuerdo y prueba real con roles.
@@ -263,7 +271,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Imágenes, exige alternativa, procedencia y condiciones de uso.
 - **Hipótesis:** una etiqueta persistente distingue ilustración de fotografía. Alternativa: imagen sin explicación de origen.
-- **Construcción:** SVG locales y selector de ejemplos. [Spec de imágenes](specs/imagenes.md).
+- **Construcción:** SVG locales y selector de ejemplos. [Spec de imágenes](../ia/imagenes.md).
 - **Prueba prevista:** elegir cada ilustración, publicar la demo y revisar origen en tarjeta y lector. Probar candidatas reales cuando exista el servicio.
 - **Observación:** el agente escribió las ilustraciones SVG y su etiqueta declara esa asistencia. No se consultó un banco ni un servicio de generación de imágenes. D-23 sigue vigente para el producto real.
 - **Corrección:** la primera redacción negaba de forma demasiado amplia la generación con IA. Se corrigieron la etiqueta y la procedencia para reconocer la asistencia de Codex al escribir los SVG. No son candidatas de banco ni evidencia del hecho.
@@ -277,7 +285,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Presupuesto y uso de IA, fija USD 20 y exige reserva, gasto y ahorro.
 - **Hipótesis:** explicar indisponibilidad conserva la lectura y evita reintentos costosos. Alternativa: reintentar sin control.
-- **Construcción:** estado de límite en la demo y consumo no disponible en el portal. [Spec del portal](specs/portal-admin.md).
+- **Construcción:** estado de límite en la demo y consumo no disponible en el portal. [Spec del portal](../backend/portal-admin.md).
 - **Prueba prevista:** seleccionar Límite de IA, comprobar que el envío se desactiva y seguir leyendo. Luego comprobar el bloqueo real del servidor.
 - **Observación:** no hay gasto medido ni llamadas a IA en esta entrega.
 - **Corrección:** el panel usa «no disponible», no cifras inventadas ni un saldo supuesto.
@@ -291,7 +299,7 @@ Solo se abre un ciclo cuando existe una incertidumbre que investigar. No se fabr
 
 - **Comprensión:** `instructions.md`, Alcance y Presentación, exige compartir la app sin tiendas y probarla con compañeros.
 - **Hipótesis:** los pasos existentes bastan dentro de la nueva navegación. Alternativa: explicar la instalación fuera de la app.
-- **Construcción:** reutilizar `InstallPrompt` en portada y perfil. [Spec PWA](specs/pwa.md).
+- **Construcción:** reutilizar `InstallPrompt` en portada y perfil. [Spec PWA](../infra/pwa.md).
 - **Prueba prevista:** una persona ajena abre el enlace, entra con Google, instala en cada plataforma y recorre las pantallas sin ayuda.
 - **Observación:** se consultó el manifiesto servido en producción local. No hubo cambio del manifiesto ni prueba de instalación nueva.
 - **Corrección:** el nombre e iconos instalados siguen pendientes de coordinación con Infra.
@@ -943,17 +951,17 @@ La comprobación exige respuestas reales, errores reales y roles. Un mock solo p
 
 | Task | Spec | Status | Acceptance evidence |
 |---|---|---|---|
-| Revisar identidad, cuatro niveles y lectura | [feed y lector](specs/feed-y-lector.md) | Código escrito, pendiente de prueba | Dispositivo, estados, navegación y resultado |
-| Revisar chat, citas y memoria temporal | [chat](specs/chat.md) | Código escrito, pendiente de prueba | Cuatro consultas, reapertura y resultados |
-| Conectar región y señales reales | [perfil](specs/ubicacion-y-perfil.md) | Dependencia pendiente | Dos cuentas y cambio observable |
-| Revisar publicación y controles editoriales | [portal](specs/portal-admin.md) | Código escrito, pendiente de prueba | Roles, casos de validación y publicación temporal |
-| Integrar candidatas con licencia y procedencia | [imágenes](specs/imagenes.md) | Dependencia pendiente | Fuente real, licencia y etiqueta en dos pantallas |
-| Coordinar marca instalada y verificar teléfonos | [PWA](specs/pwa.md) | Dependencia y pruebas pendientes | iPhone, Android y persona ajena |
+| Revisar identidad, cuatro niveles y lectura | [feed y lector](feed-y-lector.md) | Código escrito, pendiente de prueba | Dispositivo, estados, navegación y resultado |
+| Revisar chat, citas y memoria temporal | [chat](../ia/chat.md) | Código escrito, pendiente de prueba | Cuatro consultas, reapertura y resultados |
+| Conectar región y señales reales | [perfil](ubicacion-y-perfil.md) | Dependencia pendiente | Dos cuentas y cambio observable |
+| Revisar publicación y controles editoriales | [portal](../backend/portal-admin.md) | Código escrito, pendiente de prueba | Roles, casos de validación y publicación temporal |
+| Integrar candidatas con licencia y procedencia | [imágenes](../ia/imagenes.md) | Dependencia pendiente | Fuente real, licencia y etiqueta en dos pantallas |
+| Coordinar marca instalada y verificar teléfonos | [PWA](../infra/pwa.md) | Dependencia y pruebas pendientes | iPhone, Android y persona ajena |
 | Retirar ejemplos al conectar servicios | Specs de cada feature | Pendiente | Datos reales y ausencia de sustitución silenciosa por demo |
-| Separar chat inicial y edición con navegación activa | [feed y lector](specs/feed-y-lector.md), [chat](specs/chat.md) | En curso | URLs directas, historial y regreso desde lector |
-| Añadir exploración temática y búsqueda de demo | [feed y lector](specs/feed-y-lector.md) | En curso. Búsqueda: ampliación con ID pendiente | Query parameters, filtros, vacío y error |
-| Preparar guardados sin persistencia ficticia | [feed y lector](specs/feed-y-lector.md) | En curso. Ampliación con ID pendiente | Dependencia visible y ausencia de confirmación falsa |
-| Unificar acceso, carga, error y 404 | [acceso](specs/acceso.md), [PWA](specs/pwa.md) | En curso | Teclado, foco, error de Google y ruta inexistente |
+| Separar chat inicial y edición con navegación activa | [feed y lector](feed-y-lector.md), [chat](../ia/chat.md) | En curso | URLs directas, historial y regreso desde lector |
+| Añadir exploración temática y búsqueda de demo | [feed y lector](feed-y-lector.md) | En curso. Búsqueda: ampliación con ID pendiente | Query parameters, filtros, vacío y error |
+| Preparar guardados sin persistencia ficticia | [feed y lector](feed-y-lector.md) | En curso. Ampliación con ID pendiente | Dependencia visible y ausencia de confirmación falsa |
+| Unificar acceso, carga, error y 404 | [acceso](../infra/acceso.md), [PWA](../infra/pwa.md) | En curso | Teclado, foco, error de Google y ruta inexistente |
 
 ## 5. Verificación y presentación
 
@@ -1074,7 +1082,7 @@ Cuando haya evidencia para una hipótesis, el usuario registrará Confirmada o D
 
 #### Orden de integración
 
-La decisión D-21 y [PROCESO.md, sección 8](docs/PROCESO.md#8-git-y-propiedad-de-carpetas) regulan la entrega.
+La decisión D-21 y [PROCESO.md, sección 8](../../docs/PROCESO.md#8-git-y-propiedad-de-carpetas) regulan la entrega.
 La documentación va directamente a `dev`. El código llega a `dev` por PR. El release lleva `dev` a `main`.
 Los dos PR usan **Create a merge commit**, no squash ni rebase.
 
@@ -1082,7 +1090,7 @@ Los dos PR usan **Create a merge commit**, no squash ni rebase.
 2. Actualizar las referencias con `git fetch origin`.
 3. Cambiar a `dev` y actualizarla con `git pull --ff-only origin dev`.
 4. Trasladar únicamente los commits de documentación mediante `git cherry-pick`, en su orden original. Incluyen los anteriores `79c5cea` y `c495ddb`, más los nuevos commits documentales.
-5. Si hay conflictos, conservar los cambios de ambas áreas. En `specs/chat.md`, conservar la implementación RSS del compañero y aplicar solo las secciones de frontend.
+5. Si hay conflictos, conservar los cambios de ambas áreas. En `specs/ia/chat.md`, conservar la implementación RSS del compañero y aplicar solo las secciones de frontend.
 6. Adaptar los enlaces de tareas a Tickets conforme a D-27. Asignar los IDs reales y enlazar esta evidencia, sin marcar pruebas pendientes como Hecho.
 7. Validar los documentos y subir solo esa documentación con `git push origin dev`.
 8. Volver a `front/experiencia-editorial-meridian`. Integrar `origin/dev` con `git merge origin/dev` y resolver cualquier conflicto antes de continuar.
@@ -1113,7 +1121,7 @@ Texto para explicar el tamaño del PR 1:
 
 El proyecto existente `respia-news` publica `main` en [respia-news.vercel.app](https://respia-news.vercel.app).
 Al fusionar el release, Vercel debe generar un despliegue Production y marcarlo Ready. No se usa `vercel --prod` ni se crea otro proyecto.
-Este flujo está descrito en [INFRA_HANDOFF.md, sección 6.1](docs/INFRA_HANDOFF.md#61-vercel) y en [la documentación oficial de Vercel](https://vercel.com/docs/git).
+Este flujo está descrito en [INFRA_HANDOFF.md, sección 6.1](../../docs/INFRA_HANDOFF.md#61-vercel) y en [la documentación oficial de Vercel](https://vercel.com/docs/git).
 
 Antes del release, Ricardo confirma estos ajustes existentes, sin compartir valores secretos:
 

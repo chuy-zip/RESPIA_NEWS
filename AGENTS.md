@@ -17,7 +17,7 @@ frontend, backend, datos e IA.
 
 1. Lee [docs/ALCANCE.md](docs/ALCANCE.md): requisitos con ID y criterios de aceptación.
 2. Lee [docs/PROCESO.md](docs/PROCESO.md): ciclo, registro del uso de agentes, límites y Done.
-3. Lee el spec de la feature (`specs/<feature>.md`), su bitácora
+3. Lee el spec de la feature (`specs/<parte>/<feature>.md`, con la parte `ia`, `front`, `backend` o `infra`), su bitácora
    (`docs/features/<feature>/bitacora.md`) y [docs/DECISIONES.md](docs/DECISIONES.md).
 4. Pide a la persona el ticket de la funcionalidad (`TKT-NN`). Hay un ticket por funcionalidad
    en la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion.
@@ -80,12 +80,13 @@ frontend, backend, datos e IA.
 ## Documentación y comentarios
 
 Para escribir o editar documentación, comentarios de código, mensajes de error, descripciones
-de PR y prompts, usa las dos skills del repositorio:
+de PR y prompts, usa las dos primeras skills del repositorio. Para limpiar specs, usa la tercera:
 
 | Skill | Para qué | Modo |
 |---|---|---|
 | [`asd-ste100`](.claude/skills/asd-ste100/SKILL.md) | Frases sin ambigüedad: cortas, voz activa, una instrucción por frase, sin punto y coma, listas para pasos | *Strict* para mensajes de error, prompts y procedimientos. *STE-flavored* para README, specs, bitácoras y PR |
 | [`developer-documentation`](.claude/skills/developer-documentation/SKILL.md) | Tipo de documento correcto, procedimientos, ejemplos verificados y validación de Markdown | Documentos de `docs/`, `specs/` y README |
+| [`killspec`](.claude/skills/killspec/SKILL.md) | Revisar y limpiar specs: enlaces rotos, specs fuera de su carpeta, decisiones reemplazadas y documentos obsoletos (D-36) | Cuando el usuario escribe `/killspec` o el hook de commit se detiene |
 
 **Reglas del proyecto sobre las skills.** Estas reglas tienen prioridad sobre el texto de las skills:
 
@@ -132,6 +133,10 @@ lo que puede ser público.
 
 ```bash
 npm run typecheck
+```
+
+```bash
+node scripts/check-specs.mjs
 ```
 
 ```bash

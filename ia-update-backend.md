@@ -1,7 +1,7 @@
 # Conectar la parte de IA con el backend
 
-Este documento explica qué ofrece el backend a la parte de IA y qué falta del lado de IA para que el chat, el feed y
-el registro de gasto funcionen. Cubre el modelo del chat, el recomendador y el gasto de IA.
+Este documento explica qué ofrece el backend a la parte de IA y qué falta del lado de IA para que el chat, el feed,
+las imágenes y el registro de gasto funcionen. Cubre el modelo del chat, el recomendador, las imágenes y el gasto de IA.
 
 ## Resumen: lo que falta del lado de IA
 
@@ -14,7 +14,7 @@ el registro de gasto funcionen. Cubre el modelo del chat, el recomendador y el g
 | 5 | **Decidir si el peso de los temas es el esperado:** con una sola apertura, Economía pesó más que Tecnología, el tema elegido. `topicWeights` normaliza al máximo, así que una apertura vale 1 y un tema elegido 0.5 | 3 |
 | 6 | Definir la función de noticias relacionadas (incremento 2) para agregarlas al lector | 3 |
 | 7 | Para el gasto de IA: definir las columnas de `ai_usage`, escribir el módulo de costo y una función que devuelva el resumen | 4 |
-| 8 | **Quitar `elegirImagen`** de `specs/costos-ia.md`: no habrá imágenes. Registrar el cambio de alcance con el equipo | 5 |
+| 8 | **Imágenes (obligatorias):** definir el banco de imágenes y la función que propone una imagen leyendo las descripciones (D-23) | 5 |
 | 9 | Revisar el texto de `/privacidad`. Cuando el chat use el modelo, nombrar al proveedor | 6 |
 
 El detalle de cada endpoint está en la sección «Backend» de cada spec:
@@ -25,7 +25,7 @@ El detalle de cada endpoint está en la sección «Backend» de cada spec:
 | `GET /api/feed` | [feed-y-lector](specs/feed-y-lector.md) | Hecho. Usa `buildFeed` y `topicWeights` de `src/lib/recomendacion/feed.ts` |
 | `POST /api/interactions` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | Hecho. Solo acepta `open` |
 | `GET /api/admin/ai-usage` | Ficha 11 de [notion-frontend.md](notion-frontend.md) | No existe. Depende del registro de gasto (sección 4) |
-| `POST /api/admin/images/preview` | Ficha 10 de [notion-frontend.md](notion-frontend.md) | No se hará. Ver sección 5 |
+| `POST /api/admin/images/preview` | Ficha 10 de [notion-frontend.md](notion-frontend.md) | No existe. Depende del banco y de la función de IA (sección 5) |
 
 ## 1. Reglas comunes
 
@@ -153,17 +153,29 @@ construirlo falta:
 
 Con eso, el backend escribe la ruta: solo administradores, 401, 403 y 503.
 
-## 5. Imágenes: no habrá
+## 5. Imágenes
 
-El equipo decidió no ofrecer imágenes. Para el backend significa esto:
+Las imágenes son obligatorias. El enunciado pide que el portal ofrezca una imagen para una noticia que no tiene, y la
+parte 3 de la presentación muestra ese caso en vivo (`RF-17`, `RF-18`, `RT-05`). D-23 sigue vigente: imágenes de un
+banco con licencia libre, sin generación. El modelo propone una leyendo las descripciones y una persona confirma.
 
-- `POST /api/admin/images/preview` no se construye.
-- La publicación ya exige `imageCandidateId: null`, y `image` es siempre `null` en el lector y el feed.
-- La función `elegirImagen` de `specs/costos-ia.md` no se escribe. Quítela de la lista de funciones con IA.
+Estado actual del backend:
 
-> **Atención:** esto cambia el alcance. `RF-17`, `RF-18` y `RT-05` de `ALCANCE.md` piden imágenes, y D-23 sigue
-> vigente en `DECISIONES.md`. Hay que registrar el cambio: una fila en el registro de cambios de `ALCANCE.md` y una
-> decisión nueva que reemplace a D-23. Sin ese registro, la presentación mostraría requisitos sin cumplir.
+- El bucket `article-images` existe (`supabase/migrations/002_storage_article_images.sql`).
+- El administrador ya puede subir su propia foto (`POST /api/admin/images`) y publicarla con su procedencia. Los
+  orígenes son `event_photo` (foto del hecho) e `illustrative`. Se guardan en `articles.image`.
+- `POST /api/admin/images/preview`, la recomendación para una noticia sin foto, no existe. Usará el origen `stock`.
+  Al publicar, el backend copiará la imagen elegida al bucket para que no quede rota si el banco la borra.
+
+Del lado de IA falta:
+
+1. **Elegir el banco de imágenes** y revisar sus condiciones: licencia, atribución, si permite **copiar** la imagen
+   al bucket (el plan es copiarla) y si necesita una llave. Una llave va en una variable de servidor.
+2. **Escribir `elegirImagen`** en `src/lib/ia/`: recibe la noticia y las candidatas con su descripción, y propone una
+   o ninguna. Registra su costo como el chat.
+
+Con eso, el backend construye `POST /api/admin/images/preview` y acepta la imagen al publicar. La forma de esa
+función se acuerda antes de escribirla.
 
 ## 6. Privacidad
 

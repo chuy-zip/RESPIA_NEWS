@@ -11,6 +11,7 @@ El detalle de cada endpoint (campos, reglas y códigos) está en la sección «B
 | `POST /api/admin/articles` | [portal-admin](specs/portal-admin.md) | `dev` |
 | `GET /api/admin/articles` | [portal-admin](specs/portal-admin.md) | `dev` |
 | `GET /api/articles/[id]` | [portal-admin](specs/portal-admin.md) | `dev` |
+| `POST /api/admin/images` | [portal-admin](specs/portal-admin.md) | `feat/back-chat`. Llega a `dev` con su PR |
 | `GET` y `PATCH /api/profile` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
 | `POST /api/interactions` | [ubicacion-y-perfil](specs/ubicacion-y-perfil.md) | `feat/back-chat`. Llega a `dev` con su PR |
 | `GET /api/feed` | [feed-y-lector](specs/feed-y-lector.md) | `feat/back-chat`. Llega a `dev` con su PR |
@@ -57,7 +58,7 @@ Archivo principal: `src/components/admin/EditorialDesk/EditorialDesk.tsx`. Hoy p
 | 2 | Tomar los temas y las regiones de `GET /api/catalogs` | La lista real no es la de la demo. El servidor rechaza un tema o una región que no existe |
 | 3 | Enviar los **ids** de tema y región, no los nombres | El servidor guarda ids |
 | 4 | Enviar el tipo de contenido como `original`, `summary` o `ai_contribution` | Son los valores que acepta el servidor. La pantalla sigue mostrando «Original», «Resumen» y «Aporte de IA» |
-| 5 | No exigir la ilustración | El servidor todavía no guarda imágenes |
+| 5 | **Cambiar la ilustración de la demo por la subida de una foto**, con su texto alternativo, autor, licencia y origen | El servidor guarda la foto y su procedencia. No se publica una imagen sin origen declarado |
 | 6 | Enviar la fecha con hora | Sin hora, la fecha puede aparecer un día antes |
 | 7 | Exigir dos fuentes para «Confirmado» | El servidor rechaza «Confirmado» con una sola fuente |
 | 8 | Mostrar los errores que devuelve el servidor junto a cada campo | El servidor valida todo otra vez y dice qué campo falló |
@@ -89,7 +90,7 @@ y Finanzas). La demo usaba Guatemala, México y Estados Unidos.
 | `contentType` | Use `"original" \| "summary" \| "ai_contribution"`. Muestre «Original», «Resumen» y «Aporte de IA» |
 | (no existe) | **Agregue `important: boolean`**, con una casilla «Noticia importante» en el paso 1. Valor inicial `false` |
 | `issue` | Se queda solo en la pantalla. No se envía al servidor |
-| `visual` | Se queda solo para la vista previa. **Quite la validación que la exige**: el servidor todavía no guarda imágenes |
+| `visual` | Reemplácelo por `image`: el `uploadId` de la foto subida (2.5.1) más `alt`, `author`, `license` y `origin` (`"event_photo"` o `"illustrative"`). La imagen es opcional |
 
 ### 2.3 Armar el cuerpo de la petición
 
@@ -108,7 +109,7 @@ En `submit`, cuando `step === 2`, arme un `PublishArticleInput` (de `@/types/new
 | `contentType` | `draft.contentType` |
 | `reviewNote` | `draft.reviewNote.trim()` |
 | `important` | `draft.important` |
-| `imageCandidateId` | `null`. El servicio de imágenes no existe todavía |
+| `image` | `null` sin foto. Con foto: `{ uploadId, alt, author, license, origin }`. No envíe la URL: el servidor la arma |
 | `reviewConfirmed` | `true`. Solo se envía si la casilla de confirmación está marcada |
 
 ### 2.4 Validar antes de enviar
@@ -145,6 +146,32 @@ La validación de la pantalla mejora la experiencia. El servidor valida todo otr
 
 5. Quite la llamada a `publish(article)` de `useDemoSession`.
 
+### 2.5.1 Subir una foto
+
+1. Agregue en el paso 1 un campo de archivo que acepte PNG, JPEG o WebP de 4 MB como máximo.
+2. Al elegir el archivo, envíelo antes de publicar:
+
+   ```ts
+   const form = new FormData();
+   form.append("file", archivo);
+   const response = await fetch("/api/admin/images", { method: "POST", body: form });
+   ```
+
+   No ponga la cabecera `Content-Type`: el navegador la arma con `FormData`.
+3. Con 201, guarde `data.uploadId` en el borrador y muestre `data.url` en la vista previa.
+4. Con 422, muestre `error.fields.file` junto al campo.
+5. Pida al editor el texto alternativo, el autor, la licencia y el origen:
+
+   | Opción en pantalla | `origin` | Etiqueta que guarda el servidor |
+   |---|---|---|
+   | «Foto del hecho» | `event_photo` | «Fotografía del hecho» |
+   | «Imagen ilustrativa» (foto de archivo, no del hecho) | `illustrative` | «Imagen ilustrativa» |
+
+6. Si el editor quita la foto, envíe `image: null`.
+
+Cuando la noticia no tiene foto, el portal recomendará una imagen de un banco (D-23). Ese endpoint todavía no
+existe: ver 2.9.
+
 ### 2.6 Mostrar los errores del servidor
 
 Las claves de `error.fields` no son iguales a los `id` del formulario. Tradúzcalas así:
@@ -162,7 +189,7 @@ Las claves de `error.fields` no son iguales a los `id` del formulario. Tradúzca
 | `sources.N.url` | `source-url-N` | 1 |
 | `status`, `reviewNote` | Igual | 1 |
 | `reviewConfirmed` | `consent` | 2 |
-| `imageCandidateId` | `visual` | 1 |
+| `image.uploadId`, `image.alt`, `image.author`, `image.license`, `image.origin` | Los campos de la foto | 1 |
 
 Una clave que no esté en la tabla va al resumen de errores con su mensaje.
 
@@ -189,7 +216,8 @@ Una clave que no esté en la tabla va al resumen de errores con su mensaje.
 
 - **Cambiar el estado de una noticia publicada.** No hay endpoint ni permiso en la base. Una noticia publicada como
   «En desarrollo» no puede pasar a «Confirmado». Se acuerda antes de construirlo.
-- **Imágenes de banco.** `POST /api/admin/images/preview` no existe.
+- **Recomendar una imagen** para una noticia sin foto. `POST /api/admin/images/preview` no existe: depende del
+  banco de imágenes y de la función de IA que propone una.
 - **Borrar o editar una noticia.** No está en el contrato.
 
 ## 3. Lector
@@ -199,7 +227,8 @@ Archivo: la página de `/noticias/[id]`. Hoy lee un `DemoArticle`.
 1. Pida `GET /api/articles/<id>`. Si la página es un Server Component, puede llamar al servicio
    `getArticle()` de `src/lib/services/articles.ts` en vez de usar HTTP.
 2. `data` es un `ArticleDetail`: `title`, `summary`, `body`, `sources`, `status`, `contentType`, `reviewNote`,
-   `important`, `topicIds`, `regionIds`, `publishedAt`, `author` (puede ser `null`) e `image` (hoy siempre `null`).
+   `important`, `topicIds`, `regionIds`, `publishedAt`, `author` (puede ser `null`) e `image`. `image` es `null` o trae `url`, `alt`, `origin`, `author`, `license`,
+   `sourceUrl` (puede ser `null`) y `label`. Muestre `label` sobre la imagen siempre (`RF-18`).
 3. Con 404, muestre «no encontrado».
 4. `relatedArticles` no viene todavía. Oculte esa sección o déjela vacía.
 
@@ -306,7 +335,9 @@ delete from public.articles where title like '[PRUEBA]%';
 |---|---|
 | `important` en la publicación y en el lector | Una noticia importante aparece en el feed de todos los lectores |
 | `reviewNote` en la publicación | `RT-03`. El formulario ya la tenía |
-| Origen de imagen `event_photo`, además de `stock` | `RF-18`: distinguir una foto real del hecho |
+| Orígenes de imagen `event_photo` e `illustrative`, además de `stock` | `RF-18`: distinguir una foto real del hecho |
+| `image` en la publicación, en lugar de `imageCandidateId` | Una foto subida necesita su procedencia. La URL la arma el servidor |
+| `POST /api/admin/images` | No estaba en el contrato. Sube las fotos propias |
 | `topicIds` en el perfil | D-32 |
 | `components` en cada elemento del feed | `RT-01` |
 | Sin `relatedArticles` en el lector | Llega con el incremento 2 de `recomendacion` (D-31) |

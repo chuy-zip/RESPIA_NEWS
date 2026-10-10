@@ -57,7 +57,7 @@ La conversación vive en memoria y tiene desplazamiento propio. El diseño de se
 
 ## Tareas
 
-Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `chat` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
+Están en el ticket [TKT-1](https://app.notion.com/p/3f5f573ce6df81949870d08ecf84997e) de la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion (D-28). El ticket guarda la lista de tareas con su evidencia y de qué áreas depende.
 
 El alcance de la interfaz de demostración se describe en «Cambio en curso». Sus tickets de frontend están pendientes de asignación.
 

@@ -45,7 +45,7 @@ Ninguno: el recomendador no llama a ningún modelo (`RP-03`).
 
 ## Tareas
 
-Están en la base [Tickets](https://app.notion.com/p/49bcd1575a0543399a87a1db2f1c341f) de Notion, feature `recomendacion` (D-27). Cada ticket tiene responsable, estado, bloqueos y evidencia.
+Están en el ticket [TKT-2](https://app.notion.com/p/3f5f573ce6df814ba4fcf0fa30be4906) de la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion (D-28). El ticket guarda la lista de tareas con su evidencia y de qué áreas depende.
 
 ## Cambio en curso
 

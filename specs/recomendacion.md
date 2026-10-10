@@ -83,14 +83,39 @@ por noticia y un bloque `importantItems` que no depende del filtro.
 - **Motivo (`RT-01`):** una frase con los componentes que más aportaron. Ejemplo: «Destacada porque es relevante
   para tu país y es reciente.» Cada noticia trae además el aporte de cada componente.
 - **Lo importante no se oculta (`RF-11`):** la importancia suma al puntaje. Además, `importantItems` lleva la
-  noticia importante más reciente de cada ámbito que no quedó como `hero` ni `large`. Los ámbitos son: país del
-  lector, resto de Centroamérica e internacional (ninguna región de Centroamérica). El filtro por tema no las quita.
+  noticia importante más reciente de cada ámbito. Si una importante de un ámbito ya quedó como `hero` o `large`,
+  ese ámbito no se repite. Los ámbitos son: país del lector, resto de Centroamérica e internacional (ninguna región
+  de Centroamérica). El filtro por tema no las quita.
 - **Intereses (`RF-10`):** las señales se convierten en pesos de 0 a 1 por tema. Abrir una noticia vale 1.
   Preguntar al chat desde una noticia vale 1 más. Cada tipo cuenta una vez por noticia y por lector. Cada señal
   pierde la mitad de su valor cada 7 días. Un tema elegido en el onboarding empieza en 0.5 (D-32).
 - **Explicación pública (`RT-01`):** la sección «Cómo se ordena tu feed» de `/privacidad` lista los componentes y
   sus pesos, las vidas medias, las señales guardadas, el bloque importante y cómo cambiar la región y los temas.
-  IA escribe el texto. Frontend lo muestra.
+  IA escribe el texto. Frontend lo muestra. Borrador:
+
+  > **Cómo se ordena tu feed**
+  >
+  > La app no usa inteligencia artificial para ordenar tu feed. Cada noticia recibe un puntaje con cuatro partes:
+  >
+  > - **Tu país (35 %):** suma si la noticia es relevante para el país que elegiste. No usamos tu ubicación real.
+  > - **Tus temas (30 %):** suma si la noticia trata temas que elegiste o que lees.
+  > - **Recencia (20 %):** este valor baja a la mitad cada 24 horas.
+  > - **Importancia (15 %):** suma si la redacción marcó la noticia como importante.
+  >
+  > Las noticias con más puntaje van más arriba y más grandes. Cada noticia dice por qué quedó en su lugar.
+  >
+  > **Lo importante no se oculta.** Un bloque aparte muestra una noticia importante de tu país, una del resto de
+  > Centroamérica y una internacional, aunque no coincidan con tus temas.
+  >
+  > **Qué guardamos para conocer tus temas:**
+  >
+  > - Los temas que elegiste.
+  > - Las noticias que abres. Cada noticia cuenta una vez.
+  > - Las noticias sobre las que preguntas al chat. Guardamos cuál noticia fue, no tu pregunta.
+  >
+  > Cada una pierde la mitad de su valor cada 7 días. En Perfil puedes cambiar tu país y tus temas.
+
+  La línea del chat y la de los temas elegidos se publican cuando la base guarde esos datos (`RF-06`).
 - **Prueba:** `src/lib/recomendacion/feed.test.mjs`, con unas 30 noticias ficticias (D-15) y cuatro lectores:
 
   | Lector | Perfil |

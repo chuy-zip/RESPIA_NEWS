@@ -80,6 +80,28 @@ Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
 Límite conocido: la noticia, sus regiones y sus temas se guardan en tres inserciones. Si la conexión falla entre la
 primera y las otras, la noticia queda sin regiones o sin temas. Una función SQL con una transacción lo evitaría.
 
+#### `GET /api/admin/articles`
+
+Lista las noticias publicadas, de la más reciente a la más antigua. Con la misma fecha desempata el id. Solo un
+administrador.
+
+| Parámetro | Regla |
+|---|---|
+| `q` | Busca el texto en el título, sin distinguir mayúsculas |
+| `topic` | Slug de un tema del catálogo, por ejemplo `economia`. Cada noticia trae todos sus `topicIds` |
+| `status` | `confirmed`, `developing` o `unconfirmed` |
+| `limit` | De 1 a 50. Por defecto, 20 |
+| `cursor` | El `meta.nextCursor` de la página anterior. `null` indica que no hay otra página |
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data.items` es una lista de `ArticleSummary` y `meta.nextCursor` lleva a la página siguiente |
+| 400 | `INVALID_FILTER` | `topic`, `status` o `limit` no son válidos |
+| 400 | `INVALID_CURSOR` | El cursor no es uno que devolvió este endpoint |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
 #### Probar los endpoints
 
 Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
@@ -121,7 +143,22 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 
    Resultado: `201`, `422` y `422`. Solo la primera noticia se guarda.
 
-5. Borre la noticia de prueba en el SQL Editor de Supabase. La base compartida sirve también a producción:
+5. Pegue este código para probar el listado:
+
+   ```js
+   const get = async (qs) => {
+     const r = await fetch("/api/admin/articles" + qs);
+     console.log(qs || "(sin filtros)", r.status, await r.json());
+   };
+   await get("");
+   await get("?q=prueba");
+   await get("?status=foo");
+   await get("?cursor=basura");
+   ```
+
+   Resultado: `200` con la noticia de prueba, `200` con la misma noticia, `400 INVALID_FILTER` y `400 INVALID_CURSOR`.
+
+6. Borre la noticia de prueba en el SQL Editor de Supabase. La base compartida sirve también a producción:
 
    ```sql
    delete from public.articles where title like '[PRUEBA]%';
@@ -134,8 +171,10 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 | 2026-10-10 | Local, sin sesión y con una cookie inventada | `GET /api/catalogs` y `POST /api/admin/articles`: 401 `UNAUTHORIZED` | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `GET /api/catalogs`: 200 con 8 regiones, 3 temas, 3 estados y 3 tipos | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `POST /api/admin/articles`: 201 con una fuente y `developing`. 422 con `confirmed` y una fuente. 422 sin título ni fuentes | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `GET /api/admin/articles`: 200 sin filtros, con `q`, con `topic` y con `status`, cada uno con las noticias esperadas. 400 con `status`, `topic` y `cursor` inválidos | Pasó |
 
-Pendiente: 403 con una cuenta común, prueba en la preview de Vercel y conexión del portal.
+Pendiente: 403 con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel
+y conexión del portal.
 
 ## Criterios de aceptación
 

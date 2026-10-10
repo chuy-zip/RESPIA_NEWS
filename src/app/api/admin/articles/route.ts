@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 
 import { ForbiddenError, requireAdmin, UnauthorizedError } from "@/lib/auth/dal";
-import { ArticleValidationError, publishArticle, validatePublishInput } from "@/lib/services/articles";
+import {
+  ArticleQueryError,
+  ArticleValidationError,
+  listArticles,
+  parseListQuery,
+  publishArticle,
+  validatePublishInput,
+} from "@/lib/services/articles";
 import type { ApiErrorResponse } from "@/types/joke";
-import type { PublicationResponse } from "@/types/news";
+import type { ArticleListResponse, PublicationResponse } from "@/types/news";
 
 /**
- * POST /api/admin/articles
+ * /api/admin/articles
  *
- * Publica una noticia revisada por una persona (ficha 9 de notion-frontend.md).
+ * GET lista las noticias del portal (ficha 8 de notion-frontend.md). POST
+ * publica una noticia revisada por una persona (ficha 9).
  * Solo para administradores: 401 sin sesión y 403 con una cuenta común. La
  * página /admin responde 404 a esa cuenta, pero una API devuelve su código real.
  */
@@ -18,6 +26,34 @@ const PRIVATE = { "cache-control": "private, no-store" };
 function error(status: number, code: string, message: string, fields?: Record<string, string>) {
   const body: ApiErrorResponse = { error: fields ? { code, message, fields } : { code, message } };
   return NextResponse.json(body, { status, headers: PRIVATE });
+}
+
+export async function GET(request: Request) {
+  try {
+    await requireAdmin();
+  } catch (failure) {
+    if (failure instanceof UnauthorizedError) {
+      return error(401, "UNAUTHORIZED", "Inicia sesión de nuevo para ver las noticias.");
+    }
+    if (failure instanceof ForbiddenError) {
+      return error(403, "FORBIDDEN", "Tu cuenta no puede ver el portal.");
+    }
+    console.error("[api/admin/articles] no se pudo comprobar el rol", failure);
+    return error(503, "SERVICE_UNAVAILABLE", "No se pudo cargar el listado. Intenta de nuevo en unos minutos.");
+  }
+
+  try {
+    const { items, meta } = await listArticles(parseListQuery(new URL(request.url).searchParams));
+    const body: ArticleListResponse = { data: { items }, meta };
+
+    return NextResponse.json(body, { headers: PRIVATE });
+  } catch (failure) {
+    if (failure instanceof ArticleQueryError) {
+      return error(400, failure.code, failure.message);
+    }
+    console.error("[api/admin/articles] no se pudo leer el listado", failure);
+    return error(503, "SERVICE_UNAVAILABLE", "No se pudo cargar el listado. Intenta de nuevo en unos minutos.");
+  }
 }
 
 export async function POST(request: Request) {

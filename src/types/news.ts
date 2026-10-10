@@ -112,6 +112,12 @@ export interface PublicationResult {
   publicationState: "published";
 }
 
+/** Respuesta de GET /api/admin/articles. */
+export interface ArticleListResponse {
+  data: { items: ArticleSummary[] };
+  meta: PageMeta;
+}
+
 export interface PublicationResponse {
   data: PublicationResult;
   meta: Record<string, never>;

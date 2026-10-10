@@ -3,9 +3,12 @@ import "server-only";
 import { getCatalog } from "@/lib/services/catalogs";
 import { createClient } from "@/lib/supabase/server";
 import type {
+  ArticleSummary,
   ContentBlock,
   ContentType,
   EditorialStatus,
+  ImageProvenance,
+  PageMeta,
   PublicationResult,
   PublishArticleInput,
   Source,
@@ -218,4 +221,150 @@ export async function publishArticle(input: PublishArticleInput): Promise<Public
   }
 
   return { id: article.id, publicationState: "published" };
+}
+
+// Listado del portal --------------------------------------------------------
+
+const LIST_LIMIT = { default: 20, max: 50 };
+
+/** Un filtro o un cursor que no se puede usar. La ruta lo traduce a 400. */
+export class ArticleQueryError extends Error {
+  constructor(readonly code: "INVALID_FILTER" | "INVALID_CURSOR", message: string) {
+    super(message);
+    this.name = "ArticleQueryError";
+  }
+}
+
+export interface ArticleListQuery {
+  q: string | null;
+  topicSlug: string | null;
+  status: EditorialStatus | null;
+  limit: number;
+  /** Última noticia de la página anterior. */
+  after: { publishedAt: string; id: string } | null;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// El cursor es opaco para el cliente: la última noticia vista, en base64url.
+const encodeCursor = (publishedAt: string, id: string) =>
+  Buffer.from(JSON.stringify({ publishedAt, id })).toString("base64url");
+
+function decodeCursor(cursor: string): ArticleListQuery["after"] {
+  try {
+    const value: unknown = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+    if (
+      isRecord(value) &&
+      typeof value.publishedAt === "string" &&
+      !Number.isNaN(Date.parse(value.publishedAt)) &&
+      typeof value.id === "string" &&
+      UUID.test(value.id)
+    ) {
+      return { publishedAt: new Date(value.publishedAt).toISOString(), id: value.id };
+    }
+  } catch {
+    // Cae al error de abajo.
+  }
+  throw new ArticleQueryError("INVALID_CURSOR", "La página pedida no es válida. Vuelve al inicio del listado.");
+}
+
+/** Lee los filtros de la URL. Lanza `ArticleQueryError` si alguno no es válido. */
+export function parseListQuery(params: URLSearchParams): ArticleListQuery {
+  const q = params.get("q")?.trim() || null;
+  const topicSlug = params.get("topic")?.trim() || null;
+
+  const rawStatus = params.get("status");
+  if (rawStatus !== null && !STATUSES.includes(rawStatus as EditorialStatus)) {
+    throw new ArticleQueryError("INVALID_FILTER", "El estado del filtro no existe.");
+  }
+
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? LIST_LIMIT.default : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > LIST_LIMIT.max) {
+    throw new ArticleQueryError("INVALID_FILTER", `El límite debe ser un número entre 1 y ${LIST_LIMIT.max}.`);
+  }
+
+  const cursor = params.get("cursor");
+
+  return {
+    q,
+    topicSlug,
+    status: (rawStatus as EditorialStatus | null) ?? null,
+    limit,
+    after: cursor ? decodeCursor(cursor) : null,
+  };
+}
+
+interface ArticleSummaryRow {
+  id: string;
+  title: string;
+  summary: string;
+  published_at: string;
+  status: EditorialStatus;
+  content_type: ContentType;
+  image: ImageProvenance | null;
+  topics: { topic_id: string }[];
+}
+
+/**
+ * Noticias publicadas, de la más reciente a la más antigua. El orden es estable:
+ * con la misma fecha desempata el id, así el cursor no repite ni salta noticias.
+ */
+export async function listArticles(query: ArticleListQuery): Promise<{ items: ArticleSummary[]; meta: PageMeta }> {
+  let topicId: string | null = null;
+  if (query.topicSlug) {
+    const catalog = await getCatalog();
+    topicId = catalog.topics.find((topic) => topic.slug === query.topicSlug)?.id ?? null;
+    if (!topicId) {
+      throw new ArticleQueryError("INVALID_FILTER", "El tema del filtro no existe.");
+    }
+  }
+
+  const supabase = await createClient();
+
+  // `topics` trae todos los temas de cada noticia. `topic_filter` es la misma
+  // relación con inner join, solo para filtrar sin recortar `topics`.
+  const columns = "id, title, summary, published_at, status, content_type, image, topics:article_topics(topic_id)";
+  let request = supabase
+    .from("articles")
+    .select(topicId ? `${columns}, topic_filter:article_topics!inner(topic_id)` : columns)
+    .order("published_at", { ascending: false })
+    .order("id", { ascending: false })
+    // Una de más para saber si hay otra página.
+    .limit(query.limit + 1);
+
+  if (topicId) request = request.eq("topic_filter.topic_id", topicId);
+  if (query.status) request = request.eq("status", query.status);
+  if (query.q) {
+    // Los comodines que escribe la persona se buscan como texto.
+    request = request.ilike("title", `%${query.q.replace(/[\\%_]/g, (char) => `\\${char}`)}%`);
+  }
+  if (query.after) {
+    // Los dos valores ya se validaron como fecha ISO y UUID.
+    const { publishedAt, id } = query.after;
+    request = request.or(`published_at.lt.${publishedAt},and(published_at.eq.${publishedAt},id.lt.${id})`);
+  }
+
+  const { data, error } = await request;
+  if (error) {
+    throw new ArticleStoreError(error);
+  }
+
+  const rows = data as unknown as ArticleSummaryRow[];
+  const page = rows.slice(0, query.limit);
+  const last = page.at(-1);
+
+  return {
+    items: page.map((row) => ({
+      id: row.id,
+      title: row.title,
+      summary: row.summary,
+      topicIds: row.topics.map((topic) => topic.topic_id),
+      publishedAt: row.published_at,
+      status: row.status,
+      contentType: row.content_type,
+      image: row.image,
+    })),
+    meta: { nextCursor: rows.length > query.limit && last ? encodeCursor(last.published_at, last.id) : null },
+  };
 }

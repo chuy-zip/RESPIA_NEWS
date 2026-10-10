@@ -3,7 +3,7 @@
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
 **Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../docs/features/chat/bitacora.md) ·
-**Decisiones:** D-24, D-25, D-26, D-29 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
+**Decisiones:** D-24, D-25, D-26, D-30 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
 [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2), [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62),
@@ -46,7 +46,7 @@ La conversación vive en memoria y tiene desplazamiento propio. El diseño de se
 
 | Función | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|
-| `responderChat` | Claude Haiku 5.5 (D-29). Pruebas: modelos `:free` de OpenRouter | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
+| `responderChat` | Claude Haiku 5.5 por la API de Anthropic, en desarrollo y producción (D-30) | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
 | `buscar_externo` | Ninguno: RSS de los sitios permitidos y, si no hay resultados, Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0: el RSS no cobra y Tavily queda dentro de sus 1 000 créditos gratis por mes |
 
 ## Done específico
@@ -150,27 +150,20 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 - Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
 - Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
 
-### Incremento 2: modelo y salida estructurada (rama `chat`)
+### Incremento 2: modelo y salida estructurada (rama `chat`, en pausa)
 
-Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-24, D-29. Ticket: TKT-1.
+Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-24, D-30. Ticket: TKT-1.
+
+En pausa hasta comprar créditos de Anthropic (D-30). Diseño:
 
 - `src/lib/ia/chat.ts` recibe la pregunta, los últimos 4 turnos, la región del lector y las noticias del contexto.
   Devuelve el texto, los IDs de las noticias usadas y si hubo cobertura.
-- El modelo se llama por OpenRouter, con la salida estructurada de un esquema JSON. Variables de servidor:
-  `OPENROUTER_API_KEY` y `IA_MODEL`. Sin `IA_MODEL`, se usa `nvidia/nemotron-3-super-120b-a12b:free`, que el
-  2026-10-10 era uno de los 6 modelos gratis de OpenRouter con tools y salida estructurada.
+- El modelo es Claude Haiku 5.5 por la API de Anthropic, con el SDK oficial y salida estructurada
+  (`output_config.format`). La llave es `ANTHROPIC_API_KEY`.
 - El servidor descarta los IDs que no estaban en el contexto. Si no hay noticias en el contexto, responde
   «sin cobertura» sin llamar al modelo (CIC-20).
 - Los estados usan los mismos valores que la pantalla de Sergio: `confirmed`, `developing` y `unconfirmed`.
-- Todavía no hay tools ni búsqueda externa: el contexto son noticias de ejemplo. Las tools esperan la tabla de
-  noticias (TKT-57).
-- El registro de costo espera la tabla `ai_usage` (TKT-67). Mientras tanto, solo se llama a modelos `:free`, que
-  cuestan USD 0.
-- `scripts/eval-chat.mjs` tiene el conjunto fijo: 12 noticias ficticias y 21 preguntas (CIC-17). Revisa en
-  automático los IDs citados y la cobertura. La calidad del texto la revisa una persona. Se ejecuta en local:
-  `node --conditions=react-server --env-file=.env.local scripts/eval-chat.mjs`.
-- La cuenta de OpenRouter debe permitir los modelos gratis en su configuración de privacidad. Por eso solo
-  reciben noticias ficticias.
+- `scripts/eval-chat.mjs` tendrá el conjunto fijo: 12 noticias ficticias y 21 preguntas (CIC-17).
 
 ### Pendiente
 

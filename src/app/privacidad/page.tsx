@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { EditorialShell } from "@/components/layout/EditorialShell";
-
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -22,7 +20,6 @@ const LAST_UPDATE = "9 de octubre de 2026";
 
 export default function PrivacidadPage() {
   return (
-    <EditorialShell>
         <div className={styles.main}>
           <section className={styles.intro}>
             <p className={styles.eyebrow}>Última actualización: {LAST_UPDATE}</p>
@@ -104,6 +101,7 @@ export default function PrivacidadPage() {
           <section className={styles.block}>
             <h2 className={styles.subhead}>En tu dispositivo</h2>
             <p className={styles.text}>La demo mantiene en memoria la región elegida, las noticias abiertas, la conversación y las publicaciones simuladas. No guarda esos datos en la base, localStorage ni sessionStorage. Se pierden al recargar o cerrar la pestaña. No introduzcas datos personales en los ejemplos.</p>
+            <p className={styles.text}>La dirección de la página de búsqueda incluye el término, el tema y el orden elegidos. Esos valores pueden quedar en el historial del navegador y se incluyen si compartes el enlace. No escribas datos personales en la búsqueda. Guardados todavía no almacena noticias.</p>
             <p className={styles.text}>
               Al instalar la app, tu navegador guarda archivos de la propia
               aplicación (imágenes, estilos y una pantalla de aviso sin
@@ -134,6 +132,5 @@ export default function PrivacidadPage() {
             ← Volver al inicio
           </Link>
         </div>
-    </EditorialShell>
   );
 }

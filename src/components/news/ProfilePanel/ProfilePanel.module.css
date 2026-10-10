@@ -10,6 +10,9 @@
 .regions input { accent-color: var(--color-accent); }
 .note { font-size: var(--text-sm); color: var(--color-ink-muted); margin-top: var(--space-4); }
 .link, .readings a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); }
+.saved { border-top: var(--border-hairline); margin-top: var(--space-5); padding-top: var(--space-5); }
+.saved p { font-size: var(--text-sm); color: var(--color-ink-muted); }
 .readings { border-top: var(--rule-width) double var(--color-ink); padding-top: var(--space-5); }
 .readings ul { padding-inline-start: var(--space-5); margin-block: var(--space-4); }
 @media (min-width: 40rem) { .panel { grid-template-columns: 1fr 1fr; } }

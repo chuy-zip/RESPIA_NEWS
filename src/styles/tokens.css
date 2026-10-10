@@ -9,44 +9,54 @@
 :root {
   /* ---------------------------------------------------------------- color */
   /* Superficies */
-  --color-surface: #fbfbfd;
+  --color-surface: #f7f5f0;
   --color-surface-raised: #ffffff;
-  --color-surface-sunken: #f1f2f6;
+  --color-surface-sunken: #eeece5;
 
   /* Texto */
-  --color-ink: #14161d;
-  --color-ink-muted: #5b6070;
+  --color-ink: #242721;
+  --color-ink-muted: #63665e;
   --color-ink-inverse: #fbfbfd;
 
   /* Bordes y separadores */
-  --color-line: #e4e6ed;
-  --color-line-strong: #c9cdd9;
+  --color-line: #d8d8ce;
+  --color-line-strong: #83897e;
 
   /* Acento de marca */
-  --color-accent: #3d2bff;
-  --color-accent-hover: #2f20d6;
-  --color-accent-soft: #ecebff;
+  --color-accent: #303e35;
+  --color-accent-hover: #172b20;
+  --color-accent-soft: #e6eae3;
+  --color-action-ink: #ffffff;
+  --color-art-paper: #e5e4d9;
+  --color-art-line: #d0d1c2;
+  --color-art-plane: #f0eee5;
+  --color-art-ink: #49584a;
 
   /* Estados de diagnóstico (semáforo del probe) */
   --color-signal-idle: #9aa0b0;
-  --color-signal-wait: #b57e00;
-  --color-signal-ok: #0f9d6e;
-  --color-signal-fail: #ce3b32;
+  --color-signal-wait: #84600b;
+  --color-signal-ok: #256644;
+  --color-signal-fail: #a43b32;
 
   /* --------------------------------------------------------- tipografía */
   /* Las familias las inyecta next/font desde src/app/layout.tsx */
-  --font-display: var(--font-bricolage), "Segoe UI", system-ui, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
   --font-body: var(--font-inter), "Segoe UI", system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), "Cascadia Mono", ui-monospace, monospace;
 
   /* Escala fluida: crece con el viewport sin media queries */
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
+  --text-base: 1rem;
   --text-md: 1rem;
   --text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
   --text-xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.125rem);
   --text-2xl: clamp(2rem, 1.4rem + 3vw, 3.25rem);
+  --text-masthead: clamp(2.15rem, 6.7vw, 5.5rem);
+  --text-hero: clamp(2.65rem, 5.6vw, 5.75rem);
+  --text-article: clamp(1.1rem, 1rem + 0.3vw, 1.3rem);
+  --art-label-size: 42px;
+  --art-caption-size: 12px;
 
   --leading-tight: 1.1;
   --leading-snug: 1.35;
@@ -78,13 +88,23 @@
   --shadow-md: 0 4px 16px rgba(20, 22, 29, 0.08);
 
   /* ------------------------------------------------------------ layout */
-  --layout-max-width: 60rem;
+  --layout-max-width: 82rem;
   --layout-gutter: var(--space-4);
+  --reading-width: 43rem;
+  --measure-copy: 65ch;
+  --layout-panel-width: 36rem;
+  --touch-target: 2.75rem;
+  --border-width: 1px;
+  --rule-width: 3px;
+  --focus-width: 2px;
+  --z-composer: 20;
+  --z-skip: 30;
 
   /* ---------------------------------------------------------- movimiento */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 120ms;
   --duration-base: 220ms;
+  --duration-pulse: 1500ms;
 
   color-scheme: light dark;
 }
@@ -95,20 +115,25 @@
  */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-surface: #0d0f14;
-    --color-surface-raised: #151821;
-    --color-surface-sunken: #090b0f;
+    --color-surface: #171c19;
+    --color-surface-raised: #202722;
+    --color-surface-sunken: #111713;
 
-    --color-ink: #edeef3;
-    --color-ink-muted: #9aa0b0;
+    --color-ink: #f0eee6;
+    --color-ink-muted: #b3baaf;
     --color-ink-inverse: #0d0f14;
 
-    --color-line: #262b38;
-    --color-line-strong: #39404f;
+    --color-line: #374039;
+    --color-line-strong: #6a766b;
 
-    --color-accent: #8b7dff;
-    --color-accent-hover: #a396ff;
-    --color-accent-soft: #1c1b33;
+    --color-accent: #ccd9c9;
+    --color-accent-hover: #e7efe4;
+    --color-accent-soft: #29372c;
+    --color-action-ink: #172b20;
+    --color-art-paper: #29332b;
+    --color-art-line: #38493b;
+    --color-art-plane: #344838;
+    --color-art-ink: #acbca3;
 
     --color-signal-idle: #6b7280;
     --color-signal-wait: #d9a520;

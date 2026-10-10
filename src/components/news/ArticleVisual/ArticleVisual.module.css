@@ -1,0 +1,10 @@
+.figure { position: relative; overflow: hidden; background: var(--color-art-paper); }
+.art { width: 100%; aspect-ratio: 2 / 1; }
+.grid { fill: none; stroke: var(--color-art-line); stroke-width: 1; }
+.plane { fill: var(--color-art-plane); stroke: var(--color-art-ink); stroke-width: 2; }
+.solid, .chip, .node { fill: var(--color-art-ink); }
+.lines, .ring { fill: none; stroke: var(--color-art-ink); stroke-width: 2; }
+.route { fill: none; stroke: var(--color-art-ink); stroke-width: 4; }
+.label { fill: var(--color-art-paper); font-family: var(--font-display); font-size: var(--art-label-size); }
+.caption { fill: var(--color-art-ink); font-family: var(--font-mono); font-size: var(--art-caption-size); letter-spacing: var(--tracking-wide); }
+.figure figcaption { padding: var(--space-2) var(--space-3); background: var(--color-surface-raised); color: var(--color-ink-muted); font-size: var(--text-xs); border-top: var(--border-hairline); }

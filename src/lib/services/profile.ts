@@ -2,7 +2,7 @@ import "server-only";
 
 import { getCatalog } from "@/lib/services/catalogs";
 import { createClient } from "@/lib/supabase/server";
-import type { EditorialProfile, UpdateProfileInput } from "@/types/profile";
+import type { EditorialProfile, InteractionInput, InteractionResult, UpdateProfileInput } from "@/types/profile";
 
 /**
  * Perfil editorial del lector: región simulada (RF-04) y temas elegidos (D-32).
@@ -119,4 +119,69 @@ export async function updateProfile(userId: string, input: UpdateProfileInput): 
   }
 
   return getProfile(userId);
+}
+
+// Señales de lectura ----------------------------------------------------------
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_EVENT_ID = 100;
+
+/** La noticia no existe. La ruta lo traduce a 404. */
+export class InteractionArticleNotFoundError extends Error {
+  constructor() {
+    super("La noticia no existe o ya no está disponible.");
+    this.name = "InteractionArticleNotFoundError";
+  }
+}
+
+export function validateInteractionInput(raw: unknown): InteractionInput {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    throw new ProfileValidationError({ body: "El cuerpo de la petición no es válido." });
+  }
+
+  const { articleId, type, eventId } = raw as Record<string, unknown>;
+  const fields: Record<string, string> = {};
+
+  if (typeof articleId !== "string" || !articleId) fields.articleId = "Indica la noticia.";
+  if (type !== "open") fields.type = "El tipo de señal no está disponible.";
+  if (typeof eventId !== "string" || !eventId || eventId.length > MAX_EVENT_ID) {
+    fields.eventId = "Indica el identificador del evento.";
+  }
+
+  if (Object.keys(fields).length > 0) {
+    throw new ProfileValidationError(fields);
+  }
+
+  return { articleId: articleId as string, type: "open", eventId: eventId as string };
+}
+
+/**
+ * Registra la señal una sola vez por lector, noticia y tipo (D-31). Si ya
+ * existía, la base no inserta nada y se responde `duplicate: true`. El cliente no
+ * envía ningún peso: el recomendador lo calcula con la fecha de la señal.
+ */
+export async function recordInteraction(userId: string, input: InteractionInput): Promise<InteractionResult> {
+  // Un id que no es UUID no es una noticia. Consultarlo daría un error de la base, no un 404.
+  if (!UUID.test(input.articleId)) {
+    throw new InteractionArticleNotFoundError();
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("interactions")
+    .upsert(
+      { user_id: userId, article_id: input.articleId, type: input.type },
+      { onConflict: "user_id,article_id,type", ignoreDuplicates: true },
+    )
+    .select("article_id");
+
+  // 23503: la clave foránea no encontró la noticia.
+  if (error?.code === "23503") {
+    throw new InteractionArticleNotFoundError();
+  }
+  if (error) {
+    throw new ProfileStoreError(error);
+  }
+
+  return { accepted: true, duplicate: data.length === 0 };
 }

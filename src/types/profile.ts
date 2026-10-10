@@ -23,3 +23,25 @@ export interface ProfileResponse {
   data: EditorialProfile;
   meta: Record<string, never>;
 }
+
+/** Señal de lectura (RF-10, D-31). Por ahora solo «abrió la noticia». */
+export type InteractionType = "open";
+
+/** Cuerpo de POST /api/interactions. */
+export interface InteractionInput {
+  articleId: string;
+  type: InteractionType;
+  /** Identifica el intento en el cliente. No se guarda: la base ya evita duplicados. */
+  eventId: string;
+}
+
+export interface InteractionResult {
+  accepted: boolean;
+  /** true si el lector ya había registrado esta señal para esta noticia. No suma otra. */
+  duplicate: boolean;
+}
+
+export interface InteractionResponse {
+  data: InteractionResult;
+  meta: Record<string, never>;
+}

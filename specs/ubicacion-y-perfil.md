@@ -48,6 +48,29 @@ Un campo que no se envía no cambia. La respuesta es el perfil completo después
 | 422 | `VALIDATION_ERROR` | El cuerpo está vacío, o una región o un tema no existen. `fields` dice cuál |
 | 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
 
+#### `POST /api/interactions`
+
+Registra que el lector abrió una noticia (`RF-10`). El recomendador usa la señal para inferir sus intereses (D-31).
+Cualquier cuenta con sesión.
+
+| Campo | Regla |
+|---|---|
+| `articleId` | Id de una noticia publicada |
+| `type` | Solo `open`. `chat` se habilita cuando exista el chat |
+| `eventId` | Texto de 100 caracteres como máximo. Obligatorio por el contrato, pero no se guarda |
+
+La señal cuenta una vez por lector, noticia y tipo. Si ya existía, la respuesta es `duplicate: true` y no se
+guarda otra. El cliente no envía ningún peso: el recomendador lo calcula con la fecha de la señal.
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data` es `{ "accepted": true, "duplicate": <bool> }` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 404 | `ARTICLE_NOT_FOUND` | La noticia no existe, o el id no es un UUID |
+| 422 | `VALIDATION_ERROR` | Falta un campo o el tipo no es `open`. `fields` dice cuál |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
 #### Probar el perfil
 
 Requisitos: `npm run dev` y una sesión con cualquier cuenta. Abra la consola del navegador y pegue:
@@ -73,12 +96,35 @@ await call("PATCH", {});
 
 Resultado: cinco `200` y dos `422`. El último `GET` tiene la región y un solo tema.
 
+Para probar las señales, pegue este código. Necesita una noticia publicada:
+
+```js
+const first = (await (await fetch("/api/admin/articles?limit=1")).json()).data.items[0];
+const signal = async (body) => {
+  const r = await fetch("/api/interactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  console.log(JSON.stringify(body), r.status, await r.json());
+};
+await signal({ articleId: first.id, type: "open", eventId: "e1" });
+await signal({ articleId: first.id, type: "open", eventId: "e2" });
+await signal({ articleId: "00000000-0000-0000-0000-000000000000", type: "open", eventId: "e3" });
+await signal({ articleId: first.id, type: "chat", eventId: "e4" });
+await signal({ articleId: first.id, type: "open" });
+```
+
+Resultado: `200` con `duplicate: false`, `200` con `duplicate: true`, `404` y dos `422`. La tabla `interactions`
+tiene una sola fila para esa noticia.
+
 #### Pruebas registradas
 
 | Fecha | Dónde | Qué se hizo y qué se vio | Resultado |
 |---|---|---|---|
 | 2026-10-10 | Local, sin sesión | `GET` y `PATCH /api/profile`: 401 `UNAUTHORIZED` | Pasó |
 | 2026-10-10 | Local, sesión de administrador | Perfil vacío al inicio. Región guardada. Dos temas y luego uno: la lista se reemplaza. El `GET` final conserva la región y un tema. 422 con región inexistente y con cuerpo vacío | Pasó |
+| 2026-10-10 | Local, sesión de administrador | `POST /api/interactions`: 200 con `duplicate: false` la primera vez y `duplicate: true` la segunda. 404 con una noticia inexistente. 422 con `type: chat` y sin `eventId` | Pasó |
 
 Pendiente: prueba con una cuenta común, prueba en la preview de Vercel, conexión de la pantalla y actualización
 de `/privacidad`.

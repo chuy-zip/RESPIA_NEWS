@@ -7,7 +7,9 @@
 
 ## Comportamiento actual
 
-La puerta del portal verifica sesión y rol. No hay publicación implementada.
+La puerta del portal verifica sesión y rol. El editor por pasos publica únicamente noticias ficticias en memoria.
+Comparte el marco editorial y relaciona errores con campos. El foco pasa al resumen de errores o al paso correspondiente.
+El contenido publicado usa bloques tipados para el lector. No hay publicación remota implementada.
 
 ## Criterios de aceptación
 
@@ -38,8 +40,8 @@ Verificar con administrador y usuario común. Publicar y comprobar la noticia en
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Editor por pasos, revisión y publicación temporal | RF-15, RF-16, RT-03, RT-04 | Pruebas pendientes |
-| En curso | Mostrar consumo no disponible y dependencia del servidor | RP-02 | Prueba pendiente |
+| En curso | Editor por pasos, revisión y publicación temporal | RF-15, RF-16, RT-03, RT-04 | Código actualizado. [Verificación local](../notion-frontend.md#registro-honesto). Pruebas con administrador pendientes |
+| En curso | Mostrar consumo no disponible y dependencia del servidor | RP-02 | Código conservado. Prueba con sesión pendiente |
 | Pendiente | Integración y validación editorial en servidor | RF-03, RF-15, RT-03 | Contratos pendientes |
 
 ## Cambio en curso
@@ -49,3 +51,12 @@ La regla demostrativa impide Confirmado mientras el editor declare fuente insufi
 Esta regla de interfaz es una propuesta. Backend debe acordarla y aplicarla en servidor antes de publicar de verdad.
 El portal requiere una fuente con URL HTTP(S), revisión humana y origen de imagen declarado.
 La noticia simulada aparece en el contexto de la pestaña. Una recarga la elimina.
+
+2026-10-09: unificar acceso, formularios y mensajes con el layout editorial compartido.
+Conservar la comprobación de rol en servidor, la revisión humana y todas las validaciones actuales.
+Adaptar el contenido de la demo a bloques tipados para el lector. Mantener errores por campo y el texto escrito.
+El usuario autoriza verificaciones locales. No se conectan servicios nuevos ni se hacen commits.
+Se retiró la carga global de la raíz para evitar que el streaming anticipe HTTP 200 antes de `notFound()`.
+La carga de ruta se limita a chat, edición y búsqueda. El control administrativo sigue en servidor.
+El acceso anónimo se comprobó. La respuesta 404 con cuenta común y la publicación con administrador siguen pendientes por petición del usuario.
+La evidencia está en [el registro local](../notion-frontend.md#registro-honesto). La inspección estática no demuestra esas pruebas de roles.

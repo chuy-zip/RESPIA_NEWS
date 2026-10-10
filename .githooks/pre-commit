@@ -1,0 +1,8 @@
+#!/bin/sh
+# Revisa specs y enlaces antes de cada commit (D-36). Para limpiar los avisos: /killspec.
+# Se activa una vez por copia del repositorio: git config core.hooksPath .githooks
+
+# Solo corre si el commit toca un .md, o si borra o renombra un archivo: eso puede romper enlaces.
+if git diff --cached --name-only | grep -q '\.md$' || git diff --cached --name-only --diff-filter=DR | grep -q .; then
+  node scripts/check-specs.mjs --hook || exit 1
+fi

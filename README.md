@@ -31,15 +31,21 @@ Requisito: Node 20.9 o superior.
    npm ci
    ```
 
-3. Copie `.env.example` a `.env.local`.
-4. Pida los valores de las variables al responsable de infra. Escríbalos en `.env.local`.
-5. Inicie el servidor de desarrollo:
+3. Active el hook de commit. Revisa specs y enlaces antes de cada commit (D-36):
+
+   ```bash
+   git config core.hooksPath .githooks
+   ```
+
+4. Copie `.env.example` a `.env.local`.
+5. Pida los valores de las variables al responsable de infra. Escríbalos en `.env.local`.
+6. Inicie el servidor de desarrollo:
 
    ```bash
    npm run dev
    ```
 
-6. Abra `http://localhost:3000` e inicie sesión con Google. Si el inicio de sesión
+7. Abra `http://localhost:3000` e inicie sesión con Google. Si el inicio de sesión
    funciona, el entorno está listo.
 
 > **Atención:** `.env.local` no se sube al repositorio. El repositorio es público.
@@ -177,6 +183,7 @@ Si el agente se equivocó y eso cambió una decisión, regístrelo. Es evidencia
 | `npm run typecheck` | Verificar tipos |
 | `npm run lint` | Verificar estilo de código |
 | `npm run icons` | Regenerar los íconos de la PWA |
+| `node scripts/check-specs.mjs` | Revisar specs y enlaces de la documentación (D-36). Para limpiar: `/killspec` |
 
 ---
 

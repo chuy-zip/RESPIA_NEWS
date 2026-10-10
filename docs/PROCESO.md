@@ -90,7 +90,7 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 | Test de lógica | 1 archivo por módulo con riesgo: costo de IA, roles, validaciones, feed. 1 test por criterio. Al lado del módulo (`*.test.ts`) |
 | Test e2e | 5 como máximo, con Playwright, en `e2e/`. Solo el camino principal del flujo. Sin estilos ni snapshots |
 | UI sin e2e | Prueba manual en Vercel y en un teléfono real. Pruebe carga, vacío, error, sin conexión y cada rol |
-| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más. Hoy hay 2: `asd-ste100` y `developer-documentation` (ver [AGENTS.md](../AGENTS.md)) |
+| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más. Hoy hay 3: `asd-ste100`, `developer-documentation` y `killspec` (ver [AGENTS.md](../AGENTS.md)) |
 | Capturas | 0 por defecto. Si hace falta una: `docs/features/<feature>/evidencia/AAAA-MM-DD-descripcion.ext`, sin llaves, tokens, cookies ni correos |
 | Tamaño de un PR | Un cambio por PR. 400 líneas como máximo, sin contar `package-lock.json` ni archivos de terceros copiados sin modificar. Si es mayor, divídalo o explique en el PR por qué no se puede dividir |
 
@@ -139,6 +139,7 @@ hotfix/<descripcion> --PR, squash-->        main  --merge-->  dev
 
 - **Nadie sube directo a `main`.**
 - **La documentación va directo a `dev`**, sin rama ni PR: `docs/`, `specs/`, `AGENTS.md` y `README.md`. Antes de subir, ejecute `git pull` y revise `git diff --stat`.
+- **El hook `.githooks/pre-commit` revisa specs y enlaces** (D-36). Un error detiene el commit. Un aviso no lo detiene: se limpia con `/killspec`. Actívelo una vez por copia: `git config core.hooksPath .githooks`.
 - **El código va en la rama de su feature.** La rama se llama como la feature de [docs/README.md](README.md): `chat`, `recomendacion`, `portal-admin`. No cree una rama por cada cambio pequeño.
 - La rama vive hasta que la feature está terminada. Después, bórrela. Traiga `dev` a su rama cada día:
 

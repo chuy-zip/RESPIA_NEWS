@@ -150,6 +150,28 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 - Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
 - Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
 
+### Incremento 2: modelo y salida estructurada (rama `chat`)
+
+Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-22, D-24. Tickets: TKT-55 y TKT-56.
+
+- `src/lib/ia/chat.ts` recibe la pregunta, los últimos 4 turnos, la región del lector y las noticias del contexto.
+  Devuelve el texto, los IDs de las noticias usadas y si hubo cobertura.
+- El modelo se llama por OpenRouter, con la salida estructurada de un esquema JSON. Variables de servidor:
+  `OPENROUTER_API_KEY` y `IA_MODEL`. Sin `IA_MODEL`, se usa `nvidia/nemotron-3-super-120b-a12b:free`, que el
+  2026-10-10 era uno de los 6 modelos gratis de OpenRouter con tools y salida estructurada.
+- El servidor descarta los IDs que no estaban en el contexto. Si no hay noticias en el contexto, responde
+  «sin cobertura» sin llamar al modelo (CIC-20).
+- Los estados usan los mismos valores que la pantalla de Sergio: `confirmed`, `developing` y `unconfirmed`.
+- Todavía no hay tools ni búsqueda externa: el contexto son noticias de ejemplo. Las tools esperan la tabla de
+  noticias (TKT-57).
+- El registro de costo espera la tabla `ai_usage` (TKT-67). Mientras tanto, solo se llama a modelos `:free`, que
+  cuestan USD 0.
+- `scripts/eval-chat.mjs` tiene el conjunto fijo: 12 noticias ficticias y 21 preguntas (CIC-17). Revisa en
+  automático los IDs citados y la cobertura. La calidad del texto la revisa una persona. Se ejecuta en local:
+  `node --conditions=react-server --env-file=.env.local scripts/eval-chat.mjs`.
+- La cuenta de OpenRouter debe permitir los modelos gratis en su configuración de privacidad. Por eso solo
+  reciben noticias ficticias.
+
 ### Pendiente
 
 - Tavily como respaldo del RSS y la tool `buscar_externo` dentro del flujo del chat.

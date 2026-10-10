@@ -12,7 +12,9 @@ Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, co
 
 ## Comportamiento actual
 
-Todavía no existe. El diseño está en «Cambio en curso».
+No existe el servicio de chat. La interfaz de demo vive en `/chat` y ofrece cuatro respuestas preparadas.
+La raíz con sesión dirige a esa ruta. La edición completa está en `/edicion`.
+La conversación vive en memoria y tiene desplazamiento propio. El diseño de servidor está en «Cambio en curso».
 
 ## Criterios de aceptación
 
@@ -69,9 +71,16 @@ No adopta los ciclos de IA como hipótesis propias ni modifica el diseño de ser
 Los cuatro botones de ejemplo muestran respuestas preparadas con referencias al corpus ficticio.
 Una consulta libre explica que el servicio no está conectado. No se simula una respuesta de modelo.
 La demo solo usa noticias internas, según la petición del usuario. La búsqueda externa de D-24 queda pendiente de integración.
-Se preparan estados de carga, error, desconexión y límite de costo. No se ejecuta ninguna prueba por instrucción del usuario.
+Se preparan estados de carga, error, desconexión y límite de costo.
+El 2026-10-09 el usuario autorizó verificaciones locales y aprobó separar chat y edición.
+La ruta `/chat` es la entrada autenticada en el código. La conversación tiene desplazamiento propio y el compositor permanece en el flujo.
+El ajuste al teclado usa el viewport visual. Su funcionamiento en teléfonos reales sigue pendiente.
+La edición completa queda en `/edicion`. Se conservan las citas, el estado temporal y las cuatro consultas preparadas.
+No se cambia el servicio de IA ni sus límites. No se hacen commits ni operaciones de escritura en Git.
 Contrato propuesto: POST `/api/chat`, JSON con respuesta y citas validadas por el servidor.
 La forma definitiva y los límites del contexto se acuerdan con Backend antes de retirar la demo.
+Las verificaciones técnicas y anónimas están en [el registro local](../notion-frontend.md#registro-honesto).
+El usuario pidió no ejecutar las pruebas con sesión. No se acredita todavía el recorrido de preguntas, citas ni reapertura.
 
 ### Diseño de servidor
 

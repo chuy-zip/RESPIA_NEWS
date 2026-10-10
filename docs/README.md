@@ -25,11 +25,11 @@ Sus tareas están en la base [Tickets](https://app.notion.com/p/49bcd1575a054339
 | `acceso` (sesión, roles y privacidad) | RF-02, RF-03, RF-06 | Back | [acceso](../specs/acceso.md) |
 | `pwa` (instalación y compartir) | RF-01, RF-05 | Front | [pwa](../specs/pwa.md) |
 | `plataforma` (hosting, base de datos y costo de infraestructura) | RP-04 | Infra, Datos | [plataforma](../specs/plataforma.md) |
-| `ubicacion-y-perfil` (región simulada) | RF-04 | Front, Datos | aún no creada |
-| `portal-admin` (crear, publicar, validar) | RF-15, RF-16, RT-03, RT-04 | Front, Back | aún no creada |
-| `imagenes` (banco de imágenes; el modelo propone, D-23) | RF-17, RF-18, RT-05 | Back, Datos, IA | aún no creada |
+| `ubicacion-y-perfil` (región simulada) | RF-04 | Front, Datos | [ubicación y perfil](../specs/ubicacion-y-perfil.md) |
+| `portal-admin` (crear, publicar, validar) | RF-15, RF-16, RT-03, RT-04 | Front, Back | [portal administrativo](../specs/portal-admin.md) |
+| `imagenes` (banco de imágenes; el modelo propone, D-23) | RF-17, RF-18, RT-05 | Back, Datos, IA | [imágenes](../specs/imagenes.md) |
 | `recomendacion` (orden, niveles de prominencia e intereses inferidos) | RF-08, RF-10, RF-11, RT-01 | IA | [recomendacion](../specs/recomendacion.md) |
-| `feed-y-lector` (endpoint del feed, pantalla y lectura) | RF-08, RF-09, RT-02, RT-06 | Front, Back | aún no creada |
+| `feed-y-lector` (endpoint del feed, pantalla y lectura) | RF-08, RF-09, RT-02, RT-06 | Front, Back | [feed y lector](../specs/feed-y-lector.md) |
 | `chat` | RF-07, RF-12, RF-13, RF-14 | IA, Front | [chat](../specs/chat.md) |
 | `costos-ia` (registro, tope y reserva) | RP-01, RP-02, RP-03 | IA, Datos | [costos-ia](../specs/costos-ia.md) |
 

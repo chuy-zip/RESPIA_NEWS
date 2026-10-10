@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { SignInButton } from "@/components/auth/SignInButton";
-import { EditorialShell } from "@/components/layout/EditorialShell";
+import { AccessPrompt } from "@/components/auth/AccessPrompt";
 import { EditorialDesk } from "@/components/admin/EditorialDesk";
 import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
 
@@ -38,23 +37,16 @@ export default async function AdminPage() {
   }
 
   return (
-    <EditorialShell demo={!!user}>
+    <>
       {user ? (
         <EditorialDesk />
       ) : (
-        <section className={styles.locked}>
-          <p className={styles.eyebrow}>Acceso restringido</p>
-          <h1 className={styles.headline}>Necesitas iniciar sesión.</h1>
-          <p className={styles.lead}>
-            Esta sección es solo para administradores.
-          </p>
-          <SignInButton />
-        </section>
+        <AccessPrompt title="La mesa de edición." description="Inicia sesión con una cuenta administradora para preparar y revisar noticias." />
       )}
 
-      <Link href="/" className={styles.back}>
-        ← Volver al inicio
+      <Link href="/edicion" className={styles.back}>
+        Volver a la edición
       </Link>
-    </EditorialShell>
+    </>
   );
 }

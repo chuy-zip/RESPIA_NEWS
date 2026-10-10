@@ -20,7 +20,7 @@
 
   /* Bordes y separadores */
   --color-line: #d8d8ce;
-  --color-line-strong: #a4a79d;
+  --color-line-strong: #83897e;
 
   /* Acento de marca */
   --color-accent: #303e35;
@@ -47,7 +47,7 @@
   /* Escala fluida: crece con el viewport sin media queries */
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
+  --text-base: 1rem;
   --text-md: 1rem;
   --text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
   --text-xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.125rem);
@@ -91,6 +91,8 @@
   --layout-max-width: 82rem;
   --layout-gutter: var(--space-4);
   --reading-width: 43rem;
+  --measure-copy: 65ch;
+  --layout-panel-width: 36rem;
   --touch-target: 2.75rem;
   --border-width: 1px;
   --rule-width: 3px;

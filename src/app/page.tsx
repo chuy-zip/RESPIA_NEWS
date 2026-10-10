@@ -1,7 +1,6 @@
 import { SignInButton } from "@/components/auth/SignInButton";
-import { EditorialShell } from "@/components/layout/EditorialShell";
+import { redirect } from "next/navigation";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-import { NewsDesk } from "@/components/news/NewsDesk";
 import { ArticleVisual } from "@/components/news/ArticleVisual";
 import { getCurrentUser } from "@/lib/auth/dal";
 
@@ -15,6 +14,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // La verificación ocurre en el servidor: el HTML que sale ya sabe si hay
   // sesión. No se manda contenido protegido para esconderlo después con CSS.
   const user = await getCurrentUser();
+  if (user) redirect("/chat");
 
   // El callback deja aquí el motivo cuando el login falla.
   const params = await searchParams;
@@ -22,8 +22,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     typeof params.auth_error === "string" ? params.auth_error : null;
 
   return (
-    <EditorialShell demo={!!user}>
-      {user ? <NewsDesk /> : <>
+    <>
         <section className={styles.hero} aria-labelledby="welcome-title">
           <div className={styles.copy}>
             <p className={styles.eyebrow}>Una edición para ampliar tu perspectiva</p>
@@ -47,7 +46,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <article><span>03 / CONTEXTO</span><h2>Pregunta. Conecta. Comprende.</h2><p>Lee una noticia o abre una conversación. Las respuestas conservan sus referencias.</p></article>
         </section>
         <section id="instalar" className={styles.install}><div><p className={styles.eyebrow}>Tu edición, contigo</p><h2>Un lugar en tu pantalla de inicio.</h2><p>Instala la app desde tu navegador en iPhone o Android.</p></div><InstallPrompt /></section>
-      </>}
-    </EditorialShell>
+    </>
   );
 }

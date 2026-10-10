@@ -1,3 +1,6 @@
 .account { padding-block: var(--space-5); border-top: var(--border-hairline); display: grid; gap: var(--space-3); margin-bottom: var(--space-5); }
 .account h2 { font-size: var(--text-xl); }
 .account p { font-size: var(--text-sm); color: var(--color-ink-muted); }
+.settings { display: grid; gap: var(--space-6); }
+.install { min-width: 0; }
+@media (min-width: 40rem) { .settings { grid-template-columns: 1fr 1fr; } }

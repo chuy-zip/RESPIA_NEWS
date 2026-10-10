@@ -19,3 +19,5 @@
 .note a:hover {
   color: var(--color-accent);
 }
+
+.error { color: var(--color-signal-fail); max-width: var(--measure-copy); font-size: var(--text-sm); }

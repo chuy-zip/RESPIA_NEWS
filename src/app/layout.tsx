@@ -3,8 +3,9 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { getSiteUrl } from "@/lib/site";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
 import { DemoSession } from "@/components/news/DemoSession";
+import { EditorialShell } from "@/components/layout/EditorialShell";
 
 import "@/styles/globals.css";
 
@@ -56,8 +57,8 @@ export const viewport: Viewport = {
   // Necesario para que el contenido llegue hasta los bordes en iPhone con notch.
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfbfd" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d0f14" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#171c19" },
   ],
 };
 
@@ -65,13 +66,16 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const user = await getCurrentUser();
+  const admin = user ? await isAdmin() : false;
   return (
     <html
       lang="es"
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        <DemoSession key={user?.id ?? "visitor"}>{children}</DemoSession>
+        <DemoSession key={user?.id ?? "visitor"}>
+          <EditorialShell signedIn={!!user} admin={admin}>{children}</EditorialShell>
+        </DemoSession>
         <ServiceWorkerRegistrar />
       </body>
     </html>

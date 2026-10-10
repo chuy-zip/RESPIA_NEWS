@@ -1,7 +1,8 @@
 .notice { display: grid; justify-items: start; gap: var(--space-5); padding-block: var(--space-8); max-width: var(--reading-width); margin-inline: auto; }
-.notice h2 { font-size: var(--text-2xl); margin-block: var(--space-3); }
+.notice h1, .notice h2 { font-size: var(--text-2xl); margin-block: var(--space-3); }
 .notice p { color: var(--color-ink-muted); }
 .symbol { font-size: var(--text-2xl); }
+.notice > a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
 .skeleton { display: grid; gap: var(--space-3); width: 100%; }
 .skeleton span { height: var(--space-4); background: var(--color-surface-sunken); animation: pulse var(--duration-pulse) ease-in-out infinite alternate; }
 .skeleton span:last-child { width: 65%; }

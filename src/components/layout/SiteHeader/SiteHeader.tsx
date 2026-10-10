@@ -1,33 +1,33 @@
-import Link from "next/link";
+"use client";
 
-import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import styles from "./SiteHeader.module.css";
 
 interface SiteHeaderProps {
-  /** Texto corto a la derecha: en qué estado está lo que se está viendo. */
-  badge?: string;
+  signedIn: boolean;
+  admin: boolean;
 }
 
-/**
- * Barra superior.
- *
- * Es un componente de servidor: pregunta `isAdmin()` y solo entonces escribe el
- * icono del portal administrativo en el HTML. Para cualquier otra persona ese
- * enlace no existe en la página (no está escondido con CSS ni con JavaScript).
- *
- * Esto es comodidad, no seguridad: quien escriba /admin a mano llega igual, y es
- * `app/admin/page.tsx` quien lo rechaza con su propia comprobación.
- */
-export async function SiteHeader({ badge }: SiteHeaderProps) {
-  const admin = await isAdmin();
-  const user = await getCurrentUser();
+// El layout obtiene estos permisos en servidor. Cada página vuelve a autorizar el acceso.
+export function SiteHeader({ signedIn, admin }: SiteHeaderProps) {
+  const pathname = usePathname();
+  const compact = pathname !== "/" && pathname !== "/edicion" && !pathname.startsWith("/temas/");
+  const links = signedIn
+    ? [{ href: "/chat", label: "Preguntar" }, { href: "/edicion", label: "Edición" }, { href: "/buscar", label: "Buscar" }, { href: "/perfil", label: "Perfil" }]
+    : [{ href: "/", label: "Inicio" }, { href: "/#acceso", label: "Iniciar sesión" }, { href: "/#instalar", label: "Instalar" }];
+  function isActive(href: string) {
+    if (href === "/edicion") return pathname === href || pathname.startsWith("/temas/") || pathname.startsWith("/noticias/");
+    if (href === "/perfil") return pathname === href || pathname === "/guardados";
+    return pathname === href;
+  }
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-compact={compact}>
       <div className={styles.utility}>
         <span>Tecnología · Economía · Finanzas</span>
-        <span>{badge ?? "Una perspectiva más amplia"}</span>
+        <span>Una perspectiva más amplia</span>
       </div>
       <Link href="/" className={styles.brand} aria-label="The Meridian Times, inicio">
         <svg
@@ -47,14 +47,13 @@ export async function SiteHeader({ badge }: SiteHeaderProps) {
       </Link>
 
       <nav className={styles.actions} aria-label="Navegación principal">
-        <Link href="/">La edición</Link>
-        {user ? <Link href="/#conversacion">Preguntar</Link> : <Link href="/#acceso">Iniciar sesión</Link>}
-        {user ? <Link href="/perfil">Mi región y perfil</Link> : <Link href="/#instalar">Instalar</Link>}
+        {links.map(({ href, label }) => <Link key={href} href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</Link>)}
 
         {admin ? (
           <Link
             href="/admin"
             className={styles.adminLink}
+            aria-current={pathname === "/admin" ? "page" : undefined}
             aria-label="Panel de administración"
             title="Panel de administración"
           >

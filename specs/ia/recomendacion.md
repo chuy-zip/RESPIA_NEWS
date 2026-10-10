@@ -181,10 +181,28 @@ cruce entre lo internacional y lo local. Cada relacionada dice el tema en común
   node --test "src/lib/recomendacion/*.test.mjs"
   ```
 
+### Incremento 3: el tema elegido no pierde contra un solo clic (rama `recomendacion`)
+
+Requisitos: `RF-10`. Decisiones: D-31, D-32. Ticket: TKT-2. Ciclo: CIC-28.
+
+- **Problema:** Backend probó el feed el 2026-10-10. Con una sola apertura, Economía pesó 1 y Tecnología, el tema
+  elegido, 0.5. `topicWeights` divide entre el tema con más señales, así que un solo clic le gana a una elección.
+- **Cambio:** el peso deja de ser relativo al tema más leído. Un tema elegido cuenta como 2 señales previas:
+  `peso = (señales + 2 × elegido) / (señales + 2 × elegido + 2)`. Las señales siguen perdiendo la mitad cada 7 días.
+
+  | Caso | Antes | Después |
+  |---|---|---|
+  | Tema elegido, sin señales | 0.5 | 0.5 |
+  | Otro tema con 1 apertura | 1 | 0.33 |
+  | Otro tema con 5 aperturas (`RF-10`) | 1 | 0.71 |
+  | Tema elegido con 1 apertura | 1 | 0.6 |
+
+- Cumple D-32: el tema elegido empieza en 0.5 y las señales lo suben hacia 1.
+- **Prueba:** `feed.test.mjs` agrega un caso con el ejemplo de Backend y ajusta el perfil L4 al peso nuevo.
+
 ### Pendiente
 
-- Guardar las señales: tabla de señales (Datos) y `POST /api/interactions` (Backend).
-- El campo de importancia ya está en `supabase/migrations/003_articles.sql`. Se ejecuta cuando llegue a `main`.
+- El campo de importancia está en `supabase/migrations/003_articles.sql`, y las señales en el script 004.
 - El catálogo de temas tiene 3: tecnología, economía y finanzas. Con tan pocos, casi todas las noticias comparten
   economía y las relacionadas se ordenan sobre todo por alcance y fecha. El cruce mejora con temas transversales,
   por ejemplo empleo, migración y remesas, e IA (Datos).

@@ -3,7 +3,7 @@
 Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, con sus fuentes y su estado.
 
 **Requisitos:** `RF-07`, `RF-12`, `RF-13`, `RF-14` · **Bitácora:** [bitacora.md](../../docs/features/chat/bitacora.md) ·
-**Decisiones:** D-24, D-25, D-26, D-30 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
+**Decisiones:** D-34 (reemplaza D-24), D-25, D-26, D-30 · **Investigación (Notion):** [CIC-17](https://app.notion.com/p/3f4f573ce6df817fa334d985f22c9866),
 [CIC-18](https://app.notion.com/p/3f4f573ce6df811d87d3e2e8e6299177), [CIC-19](https://app.notion.com/p/3f4f573ce6df8114b7a8fcaa06b79af7),
 [CIC-20](https://app.notion.com/p/3f4f573ce6df8184b77cf0d2fdd69dff), [CIC-22](https://app.notion.com/p/3f4f573ce6df8124b49ec9f981cb4615),
 [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2), [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62),
@@ -12,9 +12,10 @@ Pantalla inicial de la app. Responde preguntas sobre las noticias publicadas, co
 
 ## Comportamiento actual
 
-No existe el servicio de chat. La interfaz de demo vive en `/chat` y ofrece cuatro respuestas preparadas.
-La raíz con sesión dirige a esa ruta. La edición completa está en `/edicion`.
-La conversación vive en memoria y tiene desplazamiento propio. El diseño de servidor está en «Cambio en curso».
+`POST /api/chat` ya arma el contexto y valida la salida (sección «Backend»), pero responde `unavailable`: falta el
+módulo del modelo, `src/lib/ia/chat.ts`, que espera los créditos (D-30). La interfaz de demo vive en `/chat` y ofrece
+cuatro respuestas preparadas. La raíz con sesión dirige a esa ruta. La edición completa está en `/edicion`.
+La conversación vive en memoria y tiene desplazamiento propio. El diseño está en «Cambio en curso» (D-34).
 
 ### Backend
 
@@ -116,7 +117,7 @@ y conexión de la pantalla.
 ## Dependencias
 
 - `recomendacion`: las primeras recomendaciones del usuario.
-- Backend: la ruta `POST /api/chat` y los servicios que ejecutan las tools.
+- Backend: la ruta `POST /api/chat` y el servicio que arma el contexto (D-34).
 - Datos: la tabla de noticias con regiones, temas y estado (`RF-16`), el índice de texto completo (CIC-18) y la tabla `ai_usage`.
 - Frontend: la pantalla, el historial en memoria y las etiquetas.
 - `costos-ia`: el registro y el tope de cada llamada.
@@ -127,7 +128,7 @@ y conexión de la pantalla.
 
 | Función | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|
-| `responderChat` | Claude Haiku 5.5 por la API de Anthropic, en desarrollo y producción (D-30) | Entender la pregunta, pedir datos con tools y redactar la respuesta | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
+| `responderChat` | Claude Haiku 5.5 por la API de Anthropic, en desarrollo y producción (D-30) | Entender la pregunta y redactar la respuesta con las noticias del contexto | Plantillas o router con reglas: no cumplen `RF-12` (c) ni las preguntas mixtas (CIC-24) | USD 0.001 a 0.002 por pregunta |
 | `buscar_externo` | Ninguno: RSS de los sitios permitidos y, si no hay resultados, Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0: el RSS no cobra y Tavily queda dentro de sus 1 000 créditos gratis por mes |
 
 ## Done específico
@@ -163,25 +164,22 @@ La forma definitiva y los límites del contexto se acuerdan con Backend antes de
 Las verificaciones técnicas y anónimas están en [el registro local](../front/notion-frontend.md#registro-honesto).
 El usuario pidió no ejecutar las pruebas con sesión. No se acredita todavía el recorrido de preguntas, citas ni reapertura.
 
-### Diseño de servidor
+### Diseño de servidor (D-34)
 
-Diseño acordado el 2026-10-09 (D-24). Todavía no hay código de servidor.
+Contexto fijo, sin tools. Reemplaza el diseño con tools de D-24.
 
-### Flujo de una pregunta
+1. La app envía la pregunta, los últimos 4 turnos y, si la pregunta sale de una noticia, su `articleId`.
+2. El servidor verifica la sesión. Si llega `articleId`, registra la señal `chat` (D-31).
+3. El servidor arma el contexto: las 10 primeras noticias del feed del lector, su bloque importante y hasta 5
+   noticias de la búsqueda de texto (`articles.search`). Ningún paso llama a un modelo (`RP-03`).
+4. Si la búsqueda de texto devolvió 0, el módulo de IA busca en el RSS de los sitios permitidos y, si no hay
+   resultados, en Tavily (D-25). El servidor pasa ese dato en la entrada del módulo.
+5. El módulo verifica el tope de gasto, llama al modelo una sola vez y registra el costo. Si se alcanzó el tope,
+   lanza `AiLimitError` y el backend responde 429 `AI_LIMIT_REACHED`.
+6. El servidor valida la salida: descarta los IDs que no estaban en el contexto y las `externalUrls` que no son de
+   un sitio permitido, toma el estado de cada noticia de la base y arma el formato.
 
-1. La app envía la pregunta y los últimos 4 turnos. La conversación vive solo en la memoria de la pantalla (CIC-22).
-2. El servidor verifica la sesión y el tope de gasto (`costos-ia`).
-3. El servidor pone en el contexto las 10 primeras recomendaciones del usuario.
-4. El modelo responde con esas noticias o pide datos con una tool. Hace como máximo 2 rondas.
-5. El servidor valida la salida, arma el formato y registra el costo.
-
-### Tools
-
-| Tool | Qué devuelve | Cuándo se usa |
-|---|---|---|
-| `recomendaciones_del_usuario()` | Las primeras noticias del feed del usuario | Ya va en el contexto. Tipo (b) |
-| `buscar_noticias(texto, tema, region, desde)` | Noticias publicadas que coinciden, por SQL (CIC-18) | Tipos (a), (c) y (d) |
-| `buscar_externo(consulta)` | Noticias de los sitios permitidos: primero de su RSS y, si no hay, de Tavily (D-25) | Solo si `buscar_noticias` devolvió 0 resultados. Lo controla el servidor |
+Las tools vuelven solo si el conjunto fijo del chat (CIC-17) falla en las consultas (c) y (d) de `RF-12`.
 
 ### Formato de la respuesta
 
@@ -208,7 +206,8 @@ Fuentes externas mencionan (no verificadas por la redacción):
 1. **Alcance:** para lo que no es de noticias, la respuesta fija es «Solo puedo responder sobre noticias».
 2. **Formato:** si el modelo no devuelve el JSON esperado, el servidor manda la respuesta fija.
 3. **Sin código:** si el texto trae bloques de código, el servidor los reemplaza por la respuesta fija.
-4. **Solo fuentes reales:** el servidor descarta los IDs y las URLs que no vinieron de las tools.
+4. **Solo fuentes reales:** el servidor descarta los IDs que no estaban en el contexto y las URLs que no vinieron
+   de la búsqueda externa.
 5. **Búsqueda externa controlada:** solo con 0 resultados internos, solo en dominios permitidos, y el servidor
    comprueba el dominio de cada resultado. Tavily solo corre si el RSS no tiene resultados. Si Tavily falla o se
    acaban sus créditos, el chat responde el texto fijo de «sin cobertura».
@@ -233,7 +232,7 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 
 ### Incremento 2: modelo y salida estructurada (rama `chat`, en pausa)
 
-Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-24, D-30. Ticket: TKT-1.
+Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-34, D-30. Ticket: TKT-1.
 
 En pausa hasta comprar créditos de Anthropic (D-30). Diseño:
 
@@ -248,7 +247,10 @@ En pausa hasta comprar créditos de Anthropic (D-30). Diseño:
 
 ### Pendiente
 
-- Tavily como respaldo del RSS y la tool `buscar_externo` dentro del flujo del chat.
+- Tavily como respaldo del RSS, dentro del módulo de IA (paso 4 del diseño de servidor).
+- Agregar a `ChatModelInput` el dato de la búsqueda de texto, a `ChatModelOutput` el campo `externalUrls` y a
+  `ChatRequest` el `articleId` opcional (D-34). Son tipos de Backend: van en un PR propio de Gerardo.
+- `AiLimitError` en `src/lib/ia/`, con el módulo de costo (`costos-ia`).
 - El guardrail de alcance actúa antes de cualquier búsqueda externa. En la prueba del incremento 1, «receta de
   pastel de chocolate» encontró una receta en Infobae: sin ese filtro, el chat respondería temas ajenos a las noticias.
 - Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Rodrigo carga el valor en `.env.local` y en Vercel.

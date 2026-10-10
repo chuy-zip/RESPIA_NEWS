@@ -38,7 +38,7 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 - **`RP-02`**: cada función de IA aparece en el registro con modelo, tokens y costo. Se consultan el gasto, el
   saldo y el costo por función. Con el tope forzado, la función no llama al modelo.
 - **`RP-03`**: ordenar, filtrar y recuperar no llaman a ningún modelo. Se revisan `src/lib/recomendacion/` y
-  las tools del chat.
+  el servicio que arma el contexto del chat (D-34).
 
 ## No incluido
 
@@ -56,7 +56,7 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 
 | Función | Feature | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|---|
-| `responderChat` | `chat` | Claude Haiku 5.5 (D-30) | Entender la pregunta, pedir datos con tools y redactar | Plantillas o router con reglas (CIC-24) | USD 0.001 a 0.002 por pregunta |
+| `responderChat` | `chat` | Claude Haiku 5.5 (D-30) | Entender la pregunta y redactar con las noticias del contexto (D-34) | Plantillas o router con reglas (CIC-24) | USD 0.001 a 0.002 por pregunta |
 | `buscar_externo` | `chat` | Ninguno: RSS y Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0 dentro de los 1 000 créditos gratis de Tavily por mes |
 | `elegirImagen` | `imagenes` | El mismo modelo del chat | Proponer una imagen del banco leyendo descripciones | El administrador elige sin sugerencia (CIC-27) | Menos de USD 0.0002 por noticia |
 | Recomendador | `recomendacion` | Ninguno | Ordenar el feed | No aplica | USD 0 |

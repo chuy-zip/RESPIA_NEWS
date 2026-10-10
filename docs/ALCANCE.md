@@ -149,10 +149,10 @@ por el registro de cambios.
 | RF-04 | Pendiente | |
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
 | RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
-| RF-07 | En curso | Diseño del chat en `specs/ia/chat.md` (D-24, D-25). Sin código |
-| RF-08 a RF-11 | Pendiente | Diseño del recomendador en `specs/ia/recomendacion.md` (D-20, D-31, D-32) |
-| RF-12 a RF-14 | En curso | Diseño del chat en `specs/ia/chat.md` (D-24, D-25). Sin código |
-| RF-15 a RF-18 | Pendiente | Imágenes de banco elegidas por el modelo (D-23). Sin código |
+| RF-07 | En curso | `POST /api/chat` hecho (PR #11), sin el módulo del modelo. Diseño en `specs/ia/chat.md` (D-34, D-25) |
+| RF-08 a RF-11 | En curso | Recomendador y `GET /api/feed` hechos (PR #5, #8, #9, #11). Falta la prueba con dos cuentas reales. Spec: `specs/ia/recomendacion.md` |
+| RF-12 a RF-14 | En curso | Contexto y validación hechos (PR #11). Falta el módulo del modelo, que espera créditos (D-34, D-30) |
+| RF-15 a RF-18 | En curso | Publicación y subida de fotos hechas en el backend (PR #7 y #11). Banco Pixabay elegido (D-33). Falta la recomendación de imagen. Spec: `specs/ia/imagenes.md` |
 | RT-01 a RT-06 | Pendiente | |
 | RP-01 a RP-03 | En curso | Haiku 5.5 por la API de Anthropic y reserva del 30 % decididos (D-30). Faltan el registro y el tope |
 | RP-04 | Hecho | |

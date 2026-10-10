@@ -112,6 +112,11 @@ export interface PublicationResult {
   publicationState: "published";
 }
 
+export interface PublicationResponse {
+  data: PublicationResult;
+  meta: Record<string, never>;
+}
+
 /** Paginación de los listados. null indica que no hay otra página. */
 export interface PageMeta {
   nextCursor: string | null;

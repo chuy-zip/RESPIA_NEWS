@@ -46,8 +46,10 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 
 ## Dependencias
 
-- Datos: la tabla `ai_usage` con función, modelo, entorno, tokens y costo. Sin `user_id` mientras no haya un
-  límite por usuario (CIC-15).
+- Datos: el script `006_ai_usage.sql`, con la tabla y sus tres funciones. Lo revisa Ricardo y se ejecuta cuando
+  llegue a `main`. Sin `user_id` mientras no haya un límite por usuario (CIC-15).
+- Backend: la ruta `GET /api/admin/ai-usage`, que llama a `getAiUsageSummary()`, y la traducción de `AiLimitError` a
+  429 `AI_LIMIT_REACHED` (D-34).
 - Infra: las variables de servidor del modelo y de Tavily (`TAVILY_API_KEY`), sin `NEXT_PUBLIC_`.
 
 ## Uso de IA en el producto
@@ -71,5 +73,32 @@ Están en el ticket [TKT-3](https://app.notion.com/p/3f5f573ce6df817e8164c1d218f
 
 ## Cambio en curso
 
-Primer cambio: el módulo de costo en `src/lib/ia/` (CIC-15). Calcula el costo máximo de la llamada, lo compara
-con el tope, llama al modelo y registra el uso. Si no puede leer el gasto acumulado, no llama.
+### Incremento 1: registro de costo y tope (rama `costos-ia`)
+
+Requisitos: `RP-01`, `RP-02`. Decisiones: D-30, D-34. Ticket: TKT-3. Ciclo: CIC-15.
+
+- `src/lib/ia/cost.ts` es el único camino hacia el proveedor. Cada función de IA lo llama con su nombre:
+  `responderChat` o `elegirImagen`.
+- **Antes de llamar:** suma el gasto registrado y el costo máximo de la llamada (tokens de entrada estimados por su
+  precio, más `max_tokens` por el precio de salida). Si el total pasa el tope de la app, no llama y lanza
+  `AiLimitError`. Si no puede leer el gasto, tampoco llama: falla cerrado.
+- **Después de llamar:** guarda una fila con los tokens reales de `usage` y su costo.
+- **Tope:** USD 14 hasta la demo, con USD 6 de reserva (D-30). Para la demo, el tope sube a USD 20 con un cambio de
+  una línea.
+- **Precios:** una tabla en el código con su fecha de revisión. Haiku 5.5, por millón de tokens: USD 0.10 de
+  entrada, 0.50 de salida, 0.01 de lectura de caché y 0.125 de escritura de caché (1.25 veces la entrada).
+- **Tavily:** cada búsqueda guarda una fila con 1 crédito y costo 0, para vigilar los 1 000 créditos por mes (D-25).
+- **Tabla `ai_usage` (script 006):** fecha, función, modelo, entorno (`local`, `preview` o `production`), tokens de
+  entrada, de salida y de caché, costo en USD y créditos externos. No guarda el `user_id` ni el texto de la pregunta:
+  no es un dato del usuario y no cambia `/privacidad` (CIC-15).
+- **Acceso a la tabla:** la app no la lee ni la escribe directo. Usa tres funciones de la base: `record_ai_usage`
+  (registrar), `ai_spend_total` (gasto acumulado, para el tope) y `ai_usage_summary` (desglose por función, solo
+  administradores). Así no hace falta una llave de servicio. Riesgo aceptado: una cuenta con sesión puede llamar
+  `record_ai_usage` y sumar gasto falso. La tabla rechaza valores negativos y funciones desconocidas.
+- **Resumen para el portal (ficha 11):** `getAiUsageSummary()` devuelve moneda, gasto, saldo de la app (tope menos
+  gasto), reserva, tope, desglose por función y disponibilidad. Un dato que no se puede leer va como `null`. La ruta
+  `GET /api/admin/ai-usage` es de Backend.
+- **Segunda barrera:** el límite de gasto del workspace de Anthropic donde vive la llave. Lo configura Rodrigo.
+- **Prueba:** `node --test src/lib/ia/cost.test.mjs`, con la base simulada. Cubre el costo con tokens reales, el tope
+  que bloquea sin llamar, la falla cerrada, el registro de Tavily y el resumen con `null`. La prueba con la API real
+  espera los créditos.

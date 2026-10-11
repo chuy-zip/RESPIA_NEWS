@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { DemoBanner } from "@/components/news/DemoBanner";
 import styles from "./EditorialShell.module.css";
 
 export function EditorialShell({ children, signedIn, admin }: { children: ReactNode; signedIn: boolean; admin: boolean }) {
@@ -10,7 +9,6 @@ export function EditorialShell({ children, signedIn, admin }: { children: ReactN
       <a href="#principal" className={styles.skip}>Saltar al contenido</a>
       <SiteHeader signedIn={signedIn} admin={admin} />
       <main id="principal" className={styles.main} tabIndex={-1}>
-        {signedIn && <DemoBanner />}
         {children}
       </main>
       <footer className={styles.footer}>

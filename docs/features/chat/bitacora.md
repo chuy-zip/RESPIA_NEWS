@@ -2,6 +2,32 @@
 
 De lo más reciente a lo más antiguo.
 
+## 2026-10-10 · CIC-25 · Con 2 palabras fijas, una pregunta larga encontraba noticias ajenas
+
+**Requisitos:** `RF-14`, `RP-03` · **Notion:** [CIC-25](https://app.notion.com/p/3f4f573ce6df81f1b613d529ddfd1d62) ·
+**Ticket:** [TKT-1](https://app.notion.com/p/3f5f573ce6df81949870d08ecf84997e) · **Decisiones:** D-25, D-34 ·
+**PR:** [#14](https://github.com/chuy-zip/RESPIA_NEWS/pull/14)
+
+- **Comprensión:** `searchRss` aceptaba una noticia con 2 palabras de la pregunta en común, sin importar cuántas
+  palabras tuviera la pregunta.
+- **Hipótesis:** 2 palabras bastan para que una noticia sea del tema.
+- **Construcción:** `searchExternal` en `src/lib/ia/external-search.ts`: primero el RSS y, sin resultados, Tavily.
+- **Prueba:** dos preguntas en vivo, contra los feeds reales y Tavily. La llave no se imprimió.
+- **Observación:**
+  - «elecciones en Honduras»: el RSS no tenía nada y Tavily trajo 5 noticias del tema, en 4.9 s.
+  - «tratado de libre comercio entre Centroamérica y Corea del Sur»: el RSS trajo un terremoto en Panamá y una
+    nota de migración. Solo coincidían «sur» y «centro», la raíz de «Centroamérica». Tavily no corrió.
+  - Con el arreglo, la misma pregunta pasó a Tavily. De sus 5 resultados, solo 1 era del tema.
+- **Corrección:** una noticia del RSS necesita la mitad de las palabras de la pregunta, y nunca menos de 2. Una prueba
+  automática con ese caso falla con la regla vieja. Tavily también trae resultados ajenos: el modelo decide si
+  responden la pregunta (`covered`, D-34), y el conjunto fijo del incremento 3 lo mide.
+- **Agente:** Claude Code (Claude Opus 5.5).
+- **Pedido:** Rodrigo pidió empezar el chat.
+- **Propuesta:** el agente había escrito el mínimo de 2 palabras el 2026-10-09 y lo probó solo con preguntas cortas.
+- **Decisión:** el arreglo sigue D-25. No cambia ninguna decisión.
+- **Verificación:** `node --test src/lib/ia/external-search.test.mjs`: 5 de 5 pasan. Prueba en vivo repetida.
+- **Evidencia:** 2026-10-10, salida de la prueba en vivo en este registro. Tavily gastó unos 4 créditos.
+
 ## 2026-10-10 · CIC-24 · El chat usa contexto fijo en lugar de tools
 
 **Requisitos:** `RF-12`, `RF-14`, `RP-02`, `RP-03` · **Notion:** [CIC-24](https://app.notion.com/p/3f4f573ce6df816ebafef145e7ffe6d2) ·

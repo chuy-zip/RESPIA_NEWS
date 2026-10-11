@@ -222,8 +222,9 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26, D-34. Ticket: TKT-1.
 - La lista cubre los 7 países de Centroamérica, un medio regional y medios internacionales en español (D-26).
   Los medios de Belice publican en inglés. Un sitio entra en la lista solo si su feed respondió con el user agent
   de la app.
-- La búsqueda compara las palabras de la pregunta con el título y el resumen de cada noticia. No llama a ningún
-  modelo (`RP-03`). Devuelve como máximo 5 noticias.
+- La búsqueda compara las palabras de la pregunta con el título y el resumen de cada noticia. Una noticia entra si
+  coincide con la mitad de las palabras de la pregunta, y nunca con menos de 2. No llama a ningún modelo (`RP-03`).
+  Devuelve como máximo 5 noticias.
 - Solo se aceptan enlaces del dominio del sitio. El resumen se guarda sin HTML y con un largo máximo.
 - Cada feed tiene 5 s para responder. Un feed que falla se ignora y no detiene la búsqueda.
 - Next guarda cada feed 15 minutos, para no descargarlo en cada pregunta.

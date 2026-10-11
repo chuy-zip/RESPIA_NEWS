@@ -1,12 +1,93 @@
 # The Meridian Times: investigación y auditoría de frontend
 
-> **Obsoleto desde el 2026-10-10 (D-35).** Este archivo era una copia de traslado a Notion y ya no se actualiza. Se
-> conserva como rastro, porque varios comentarios del código citan sus «fichas». No agregue enlaces nuevos a este
+> **Obsoleto desde el 2026-10-10 (D-35).** Este archivo era una copia de traslado a Notion. Por petición explícita
+> del usuario, se agrega abajo un registro puntual de la integración del 2026-10-10. Las fichas anteriores se
+> conservan como rastro, porque varios comentarios del código las citan. No agregue enlaces nuevos a este
 > archivo. Lo vigente está en otros lugares:
 >
 > - Contratos de cada endpoint: la sección «Backend» de cada spec.
 > - Investigación de Frontend: la base Investigación (R&D) de Notion. Sergio la traslada.
 > - Tareas de Frontend: sus tickets de Notion.
+
+## Actualización de integración · 2026-10-10
+
+La integración sustituye la demo por los endpoints presentes en la rama de frontend. Conserva la identidad
+editorial, las rutas y la PWA. No modifica servicios, tipos compartidos, autenticación, migraciones ni infraestructura.
+El usuario pidió trabajar con subagentes y mantener los cambios sin commits, staging, push ni despliegue.
+Los contratos siguientes son un inventario de uso. Sus detalles vigentes permanecen en los specs enlazados.
+
+| Screen | Integration | Status |
+|---|---|---|
+| `/admin` | GET `/api/catalogs`, GET/POST `/api/admin/articles`, POST `/api/admin/images` | Código conectado: catálogo, tres pasos, importancia, foto opcional con procedencia, filtros y cursores. Prueba real pendiente |
+| `/edicion`, `/temas/[slug]` | GET `/api/feed` y catálogo | Respeta orden, prominencia y motivo. Conserva bloque importante. Paginación sin duplicados visuales |
+| `/noticias/[id]` | GET `/api/articles/[id]`, POST `/api/interactions` | Contenido real, fuentes, procedencia y compartir. Apertura no bloqueante. Backend entrega relacionadas, pendientes de mostrar |
+| `/perfil` y selector de región | GET/PATCH `/api/profile` y catálogo | Región y temas confirmados por servidor. Selección conservada ante fallos |
+| `/chat` | POST `/api/chat` y GET `/api/articles/[id]` para el contexto | Conversación temporal y citas. Modelo, fuentes externas y control de gasto incorporados en el servidor. Contexto `articleId` implementado. Prueba real pendiente |
+| `/buscar`, `/guardados` | Ninguna petición | Integración pendiente explícita. Sin simulación de resultados ni persistencia |
+| `/privacidad` | Texto actualizado | Perfil, aperturas, consultas desde noticia, imágenes públicas, pesos del recomendador y proveedores del chat |
+
+`ReaderSession` reemplaza `DemoSession`. El catálogo, el perfil y la conversación compartida viven en memoria.
+Las preferencias confirmadas se guardan mediante el backend. Los componentes reutilizan los DTOs de `src/types/`.
+El cliente HTTP compartido conserva códigos y errores por campo, usa cookies del mismo origen y no repite escrituras.
+Se retiraron fixtures y controles de simulación. No se añadieron dependencias ni almacenamiento privado persistente.
+El manifiesto, los iconos y el service worker conservan su implementación. La comprobación instalada queda pendiente.
+
+### Requerimientos para Backend
+
+| Area | Pending work | Reference |
+|---|---|---|
+| Backend | Búsqueda pública y Guardados. Acordar requisitos, contratos y tickets antes de conectar rutas nuevas | [Feed y lector](feed-y-lector.md) |
+| Backend e IA | Sugerencias de imágenes dentro del portal. Subir una foto ya está conectado, pero no ofrece una imagen cuando falta | [Imágenes](../ia/imagenes.md), [portal administrativo](../backend/portal-admin.md) |
+| Frontend | Mostrar relacionadas entregadas por `ArticleDetail.relatedArticles` y consumo disponible en GET `/api/admin/ai-usage`. Los servicios ya existen | [Feed y lector](feed-y-lector.md), [costos](../ia/costos-ia.md) |
+| Backend y recomendación | Estabilidad de paginación cuando cambia el orden del feed | [Feed y lector](feed-y-lector.md), [recomendación](../ia/recomendacion.md) |
+| IA, Backend y Frontend | Validar el chat integrado: modelo, contexto `articleId`, fuentes externas y tope. Son implementaciones existentes con verificación desplegada pendiente | [Chat](../ia/chat.md) |
+| Backend e Infra | Publicación transaccional e idempotente. Gestión de fotos subidas que quedan sin asociar | [Portal administrativo](../backend/portal-admin.md) |
+| Frontend | Validar formularios, roles, persistencia, paginación, sesión vencida y teléfonos en el despliegue de Vercel | [Pasos y evidencia](feed-y-lector.md#validación-de-integración-2026-10-10) |
+
+Los endpoints anteriores ya implementados no se presentan como propuestas nuevas. Buscar y Guardados siguen
+sin requisito formal asignado. Los contratos antiguos de este documento son históricos y no deben copiarse al código.
+El servicio del chat ya llama al módulo del modelo. Puede devolver `unavailable` cuando el proveedor o el servicio fallan.
+La existencia del código no confirma las credenciales, el gasto actual ni el funcionamiento del despliegue.
+
+### Ajuste del contexto del chat
+
+La entrada desde el lector usa `/chat?articleId=<id>`. El chat consulta el título sin registrar otra apertura.
+La pregunta se habilita cuando el contexto está disponible. Un identificador inválido o repetido se rechaza sin enviar.
+Cada pregunta contextual envía `articleId`. El servidor registra la señal `chat` y la interfaz actualiza el feed.
+El historial permanece en memoria al cambiar de noticia. «Nueva conversación» elimina mensajes y contexto.
+Los estados distinguen respuesta, falta de cobertura, pregunta fuera de alcance, indisponibilidad y límite de gasto.
+La cancelación evita incorporar respuestas obsoletas. Los errores conservan la pregunta y no causan reintentos automáticos.
+El feed se actualiza también si falla o se cancela la respuesta, porque la señal puede haberse guardado antes.
+Los avisos y las animaciones breves respetan la accesibilidad y el movimiento reducido.
+El usuario aplazó la prueba real. El [registro local](feed-y-lector.md#validación-del-contexto-del-chat-2026-10-10) recoge esta revisión sin declarar Done.
+
+### Pendientes del enunciado
+
+Esta revisión de `instructions.md` distingue implementación y evidencia. Supabase Auth con Google está aprobado en D-03.
+La instalación PWA tiene evidencia anterior. Falta comprobar las pantallas finales en los dispositivos y cuentas reales.
+
+| Requirement | Pending work | Owner |
+|---|---|---|
+| RF-17, RF-18, RT-05 | Ofrecer una imagen del banco cuando no haya foto, con procedencia y selección humana. La subida manual no completa ese flujo | Backend, IA y Frontend. TKT-4 |
+| RP-01, RP-02 | Consultar gasto y saldo, contrastarlos con el proveedor y comprobar tope y reserva. La interfaz de consumo está pendiente | IA, Backend y Frontend. TKT-3 |
+| RF-01 a RF-09, RF-15, RF-16 | Probar publicación, lectura, preferencias, roles y navegación integrada en Vercel, iPhone y Android | Equipo y usuario |
+| RF-08, RF-10, RF-11, RT-01 | Comparar regiones y cuentas. Comprobar cambios por conducta y noticias importantes fuera de preferencias | Frontend, Backend e IA |
+| RF-07, RF-12 a RF-14, RT-02 a RT-06 | Probar consultas, citas, incertidumbre y revisión humana en los recorridos finales | Equipo. El chat tiene TKT-1 |
+| RPR-01 a RPR-03 | Vincular tareas y pruebas, seleccionar ciclos reales y preparar los diez apartados de la presentación | Todo el equipo |
+
+Búsqueda y Guardados son ampliaciones solicitadas, no requisitos del enunciado. No bloquean su mínimo funcional.
+Mostrar relacionadas y unificar nombre, iconos y colores de la PWA son ajustes adicionales coordinados con sus responsables.
+Los specs de IA y la matriz de alcance conservan frases anteriores al modelo integrado. Sus responsables deben conciliarlas.
+No se cambia su evidencia ni se presume el gasto actual. Los ciclos existentes se revisan, no se inventan otros para completar una cantidad.
+
+El registro de agentes, las verificaciones y la guía completa para probar en Vercel están en
+[la validación de integración](feed-y-lector.md#validación-de-integración-2026-10-10). La prueba de Google fue
+reportada por el usuario. Ningún agente realizó publicaciones reales ni pruebas con sesión en esta entrega.
+Los tickets y ciclos propios de frontend siguen sin ID asignado. Los tickets de IA citados ya existen en sus specs.
+No se inventaron números ni se cerraron tareas.
+
+**A partir de aquí se conserva el registro anterior del 2026-10-09.** Sus referencias a demo, contratos propuestos
+y pruebas describen esa entrega, no el estado actual de la integración.
 
 **Fecha del registro:** 2026-10-09, Guatemala. **Responsable de frontend:** Sergio Orellana.
 **Estado:** unificación visual y navegación por páginas implementadas en el directorio de trabajo. Pruebas con sesión, integración y verificación móvil pendientes.

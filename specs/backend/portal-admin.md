@@ -7,16 +7,17 @@
 
 ## Comportamiento actual
 
-La puerta del portal verifica sesión y rol. El editor por pasos publica únicamente noticias ficticias en memoria.
+La puerta del portal verifica sesión y rol. El editor por pasos publica mediante POST `/api/admin/articles`.
 Comparte el marco editorial y relaciona errores con campos. El foco pasa al resumen de errores o al paso correspondiente.
-El contenido publicado usa bloques tipados para el lector. No hay publicación remota implementada.
+El contenido usa bloques tipados. La pantalla confirma únicamente HTTP 201 y enlaza al ID recibido.
+El catálogo, la subida opcional de fotos y el listado con filtros y cursores consumen los endpoints existentes.
+Ante un fallo de red al publicar, conserva el borrador y pide revisar el listado antes de reenviar.
 
 ### Backend
 
-Responsable: Gerardo Pineda. El código está en la rama `feat/backend`. Todavía no llega a `dev`: el portal no
-lo usa. Los tipos están en `src/types/news.ts`. Siguen el contrato de [notion-frontend.md](../front/notion-frontend.md),
-fichas 1 y 9, con estas diferencias: `important`, `reviewNote` en la publicación, `image` en lugar de `imageCandidateId`
-y los orígenes de imagen `event_photo` e `illustrative`.
+Responsable: Gerardo Pineda. Los endpoints están incorporados en esta rama y el portal los consume.
+Se reutilizan los tipos de `src/types/news.ts`, incluidos `important`, `reviewNote`, `image`
+y los orígenes `event_photo` e `illustrative`. Esta integración no cambia los servicios ni sus contratos.
 
 Las tablas están en `supabase/migrations/003_articles.sql`. El script se ejecutó en Supabase el 2026-10-10, antes de
 llegar a `main` (excepción a la regla 10 de `AGENTS.md`). No lo edite: un cambio va en un script nuevo.
@@ -233,15 +234,15 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 | 2026-10-10 | Local, sesión de administrador | `GET /api/articles/[id]`: 200 con `body`, `sources`, `reviewNote`, una región y un tema que coinciden con el catálogo. 404 `ARTICLE_NOT_FOUND` con un UUID inexistente y con un id que no es UUID | Pasó |
 
 Pendiente: 403 en el portal y 200 en el lector con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel
-y conexión del portal.
+y prueba de la pantalla conectada. El código de integración no acredita esos resultados.
 
 ## Criterios de aceptación
 
 - Mantener 404 para cuentas sin rol administrativo y pedir sesión a visitantes.
 - Preparar contenido, fuentes, fecha, temas, regiones, estado y procedencia antes de revisar.
-- Mostrar vista previa y exigir confirmación humana para la publicación simulada.
+- Mostrar vista previa y exigir confirmación humana antes de enviar la publicación.
 - Mostrar errores por campo sin descartar el texto escrito.
-- Identificar la simulación. No prometer escritura en Supabase ni consumo medido.
+- Confirmar la publicación solo con HTTP 201. Mostrar consumo de IA no disponible hasta integrar su servicio.
 
 ## No incluido
 
@@ -249,8 +250,9 @@ Endpoints, permisos nuevos, roles, archivos SQL, validación editorial del servi
 
 ## Dependencias
 
-GET/POST `/api/admin/articles` y GET `/api/admin/ai-usage`, propuestos a Gerardo y Rodrigo.
-Los límites se consultarán al servidor. La demo no presenta ceros como gasto real.
+GET/POST `/api/admin/articles`, POST `/api/admin/images` y GET `/api/catalogs` están conectados.
+GET `/api/admin/ai-usage` y las sugerencias de imágenes siguen pendientes de Backend e IA.
+La pantalla no presenta ceros ni reservas inventadas como gasto real.
 
 ## Uso de IA en el producto
 
@@ -258,17 +260,31 @@ Ninguno en esta entrega.
 
 ## Done específico
 
-Verificar con administrador y usuario común. Publicar y comprobar la noticia en otro teléfono cuando exista Backend.
+Verificar con administrador y usuario común. Publicar y comprobar la noticia en otro teléfono en Vercel.
 
 ## Tareas
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Editor por pasos, revisión y publicación temporal | RF-15, RF-16, RT-03, RT-04 | Código actualizado. [Verificación local](../front/notion-frontend.md#registro-honesto). Pruebas con administrador pendientes |
+| En curso | Editor por pasos, revisión y publicación real | RF-15, RF-16, RT-03, RT-04 | Código conectado. [Validación de integración](../front/feed-y-lector.md#validación-de-integración-2026-10-10). Pruebas con administrador pendientes |
 | En curso | Mostrar consumo no disponible y dependencia del servidor | RP-02 | Código conservado. Prueba con sesión pendiente |
-| Pendiente | Integración y validación editorial en servidor | RF-03, RF-15, RT-03 | Contratos pendientes |
+| En curso | Consumir validación del servidor y mostrar errores por campo | RF-03, RF-15, RT-03 | Contratos existentes conectados. Pruebas 401, 403 y 422 pendientes en Vercel |
+| En curso | Subir foto opcional y declarar su procedencia | RF-17, RF-18 | Subida y asociación implementadas. Sustituir la foto exige completar de nuevo su procedencia. Pruebas reales pendientes |
 
 ## Cambio en curso
+
+### Integración de la pantalla · 2026-10-10
+
+Requisitos: RF-03, RF-15, RF-16, RF-17, RF-18, RT-03 y RT-04. Ticket de frontend pendiente de asignación.
+El usuario aprobó conectar la pantalla a los endpoints existentes sin modificar su contrato ni sus servicios.
+Se conservarán los tres pasos y la revisión humana. Se cargarán catálogos, se enviarán IDs y se añadirá la marca de importancia.
+La foto será opcional, con subida PNG/JPEG/WebP de hasta 4 MB y procedencia obligatoria cuando exista.
+Solo una respuesta 201 confirmará la publicación. Los errores conservarán el borrador y señalarán campo y paso.
+El listado tendrá filtros y paginación del servidor. Consumo de IA y sugerencias de imágenes seguirán pendientes.
+El usuario hará las publicaciones de prueba en Vercel. Los agentes solo implementarán y comprobarán el código, sin localhost ni commits.
+
+La [validación de integración](../front/feed-y-lector.md#validación-de-integración-2026-10-10) distingue las comprobaciones técnicas de las pruebas funcionales pendientes.
+Los registros del 2026-10-09 que siguen describen la demo anterior.
 
 2026-10-09: construir una demo protegida sin operaciones remotas.
 La regla demostrativa impide Confirmado mientras el editor declare fuente insuficiente o contradicción sin resolver.

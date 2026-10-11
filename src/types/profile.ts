@@ -24,8 +24,8 @@ export interface ProfileResponse {
   meta: Record<string, never>;
 }
 
-/** Señal de lectura (RF-10, D-31). Por ahora solo «abrió la noticia». */
-export type InteractionType = "open";
+/** Señal de lectura (RF-10, D-31): «abrió la noticia» o «preguntó al chat desde ella». */
+export type InteractionType = "open" | "chat";
 
 /** Cuerpo de POST /api/interactions. */
 export interface InteractionInput {

@@ -204,9 +204,10 @@ Requisitos: `RF-10`. Decisiones: D-31, D-32. Ticket: TKT-2. Ciclo: CIC-28.
 
 - El campo de importancia está en `supabase/migrations/003_articles.sql`, y las señales en el script 004.
 - El catálogo de temas tiene 3: tecnología, economía y finanzas. Con tan pocos, casi todas las noticias comparten
-  economía y las relacionadas se ordenan sobre todo por alcance y fecha. El cruce mejora con temas transversales,
-  por ejemplo empleo, migración y remesas, e IA (Datos).
-- `relatedArticles` en `ArticleDetail` y en `getArticle` (Backend).
+  economía y las relacionadas se ordenan sobre todo por alcance y fecha. El script `007_topics.sql` agrega empleo,
+  migración y remesas, e inteligencia artificial. Rodrigo lo ejecuta cuando su PR llegue a `main`.
+- `relatedArticles` en `ArticleDetail` y en `getArticle`: hecho en la rama `chat`. Cada elemento trae `article`
+  (el resumen de la noticia), `sharedTopicIds` y `reach`. Sin prueba contra la base real. Backend lo revisa.
 - Los temas elegidos en el perfil y la pantalla de onboarding (D-32).
-- La señal `chat`, cuando exista el chat.
+- La señal `chat`: la registra el servicio del chat cuando `POST /api/chat` recibe `articleId`.
 - La prueba con dos cuentas reales (`RF-08`), cuando exista el endpoint.

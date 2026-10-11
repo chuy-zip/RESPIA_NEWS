@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  * guarde un dato nuevo (ubicación simulada, intereses, noticias leídas…), hay que
  * actualizar esta página y la fecha de abajo en el mismo cambio.
  */
-const LAST_UPDATE = "9 de octubre de 2026";
+const LAST_UPDATE = "10 de octubre de 2026";
 
 export default function PrivacidadPage() {
   return (
@@ -49,6 +49,15 @@ export default function PrivacidadPage() {
                 correo quedan en una lista que indica quién puede entrar al
                 portal administrativo.
               </li>
+              <li>
+                <strong>Tu región de demostración y tus temas de interés</strong>,
+                si los eliges. Los puedes cambiar en tu perfil.
+              </li>
+              <li>
+                <strong>Qué noticias abres y desde cuáles preguntas al chat.</strong>{" "}
+                Se guarda una señal por noticia y por tipo, con su fecha. Se
+                borra con tu cuenta.
+              </li>
             </ul>
           </section>
 
@@ -65,22 +74,34 @@ export default function PrivacidadPage() {
               <li>
                 No usamos publicidad, analítica ni cookies de seguimiento.
               </li>
+              <li>
+                No guardamos el texto de tus preguntas al chat ni la
+                conversación. El registro de costo de la IA no guarda tu cuenta
+                ni tus preguntas.
+              </li>
             </ul>
           </section>
 
           <section className={styles.block}>
             <h2 className={styles.subhead}>Para qué se usan</h2>
             <p className={styles.text}>
-              Solo para iniciar tu sesión, mantenerla y distinguir a los
+              Para iniciar tu sesión, mantenerla y distinguir a los
               administradores de los demás usuarios. Tu nombre y tu foto se
               muestran en la app mientras estás conectado.
+            </p>
+            <p className={styles.text}>
+              Tu región, tus temas y las noticias que abres ordenan tu feed. El
+              orden suma cuatro cosas: tu región (35 %), tus intereses (30 %), qué
+              tan reciente es la noticia (20 %) y si la redacción la marcó como
+              importante (15 %). Tus intereses pierden la mitad de su peso cada
+              siete días. Cada tarjeta dice por qué quedó en su lugar.
             </p>
           </section>
 
           <section className={styles.block}>
             <h2 className={styles.subhead}>Con quién se comparten</h2>
             <p className={styles.text}>
-              No vendemos ni cedemos tus datos. Para funcionar dependemos de tres
+              No vendemos ni cedemos tus datos. Para funcionar dependemos de cinco
               proveedores que los procesan por nosotros:
             </p>
             <ul className={styles.list}>
@@ -94,8 +115,30 @@ export default function PrivacidadPage() {
               <li>
                 <strong>Vercel</strong>, donde está alojada la aplicación.
               </li>
+              <li>
+                <strong>Anthropic</strong>, cuyo modelo de IA redacta las
+                respuestas del chat.
+              </li>
+              <li>
+                <strong>Tavily</strong>, un buscador de noticias que el chat usa
+                en algunos casos.
+              </li>
             </ul>
-            <p className={styles.text}>La interfaz de noticias usa ejemplos locales. No envía tus preguntas a un proveedor de IA ni consulta fuentes externas automáticamente. Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
+            <p className={styles.text}>
+              Cuando el chat responde con el servicio de IA, Anthropic recibe tu
+              pregunta, los últimos cuatro mensajes de la conversación, el
+              nombre de tu región y el texto de las noticias que sirven de
+              contexto. No recibe tu nombre, tu correo ni tu identificador.
+            </p>
+            <p className={styles.text}>
+              Si la app no tiene noticias sobre tu pregunta, el servidor busca en
+              los feeds públicos de una lista fija de medios. Esa descarga no
+              incluye tu pregunta. Si los feeds no encuentran nada, el servidor
+              envía tu pregunta a Tavily, limitada a esos mismos medios. Las
+              respuestas con estas fuentes llevan la etiqueta «Fuente externa, no
+              verificada por la redacción».
+            </p>
+            <p className={styles.text}>La interfaz de demostración usa ejemplos locales y no envía tus preguntas a ningún proveedor. Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
           </section>
 
           <section className={styles.block}>

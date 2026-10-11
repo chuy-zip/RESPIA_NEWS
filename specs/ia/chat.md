@@ -214,9 +214,9 @@ Fuentes externas mencionan (no verificadas por la redacción):
 6. **Contenido como dato:** el texto de las noticias y de las páginas externas no da instrucciones al modelo.
 7. **Límites:** largo máximo de la pregunta, últimos 4 turnos y tope de tokens de salida.
 
-### Incremento 1: lector RSS (rama `chat`)
+### Incremento 1: búsqueda externa, RSS y Tavily (rama `chat`)
 
-Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
+Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26, D-34. Ticket: TKT-1.
 
 - `src/lib/ia/rss.ts` guarda la lista de sitios permitidos y la función de búsqueda.
 - La lista cubre los 7 países de Centroamérica, un medio regional y medios internacionales en español (D-26).
@@ -229,8 +229,24 @@ Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-26.
 - Next guarda cada feed 15 minutos, para no descargarlo en cada pregunta.
 - Dependencia nueva: `fast-xml-parser`, para leer el XML de los feeds.
 - Prueba: preguntas de ejemplo contra los feeds reales. Se anota cuántos feeds responden y qué devuelve cada pregunta.
+- `src/lib/ia/external-search.ts` exporta `searchExternal(query)`. Primero busca en el RSS. Si no hay resultados,
+  busca en Tavily: `search_depth: "basic"` (1 crédito), `topic: "news"`, 5 resultados como máximo e
+  `include_domains` con los dominios de la lista. Sin SDK: un `fetch` a `https://api.tavily.com/search`.
+- Cada resultado se valida contra los dominios permitidos. Devuelve la URL, el sitio, el título, el resumen, la fecha
+  y el origen (`rss` o `tavily`).
+- Si Tavily falla, falta la llave o se acabaron los créditos, devuelve una lista vacía: el chat responde «sin
+  cobertura». La consulta no se guarda. Tavily recibe la pregunta, por eso va en `/privacidad` (D-25).
+- Una pregunta ajena a las noticias puede encontrar resultados, por ejemplo una receta. El alcance lo filtra el
+  modelo (incremento 3).
+- Prueba automática: `node --test src/lib/ia/external-search.test.mjs`, con `fetch` simulado. Cubre el orden RSS y
+  después Tavily, la validación de dominios y los fallos. Prueba manual: una consulta real a Tavily.
 
-### Incremento 2: modelo y salida estructurada (rama `chat`, en pausa)
+### Incremento 2: registro de costo y tope (spec `costos-ia`, TKT-3)
+
+El módulo de costo va antes del modelo: verifica el tope, registra cada llamada y lanza `AiLimitError` (D-34). El
+diseño está en [costos-ia.md](costos-ia.md).
+
+### Incremento 3: modelo y salida estructurada (rama `chat`, en pausa)
 
 Requisitos: `RF-12`, `RF-13`, `RF-14`. Decisiones: D-34, D-30. Ticket: TKT-1.
 
@@ -247,7 +263,6 @@ En pausa hasta comprar créditos de Anthropic (D-30). Diseño:
 
 ### Pendiente
 
-- Tavily como respaldo del RSS, dentro del módulo de IA (paso 4 del diseño de servidor).
 - Agregar a `ChatModelInput` el dato de la búsqueda de texto, a `ChatModelOutput` el campo `externalUrls` y a
   `ChatRequest` el `articleId` opcional (D-34). Son tipos de Backend: van en un PR propio de Gerardo.
 - `AiLimitError` en `src/lib/ia/`, con el módulo de costo (`costos-ia`).

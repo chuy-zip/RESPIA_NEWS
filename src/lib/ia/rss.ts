@@ -137,12 +137,12 @@ function toText(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function cleanSummary(html: string): string {
+export function cleanSummary(html: string): string {
   const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   return text.length > MAX_SUMMARY_LENGTH ? `${text.slice(0, MAX_SUMMARY_LENGTH)}…` : text;
 }
 
-function isFromDomain(url: string, domain: string): boolean {
+export function isFromDomain(url: string, domain: string): boolean {
   try {
     const { protocol, hostname } = new URL(url);
     return (protocol === "https:" || protocol === "http:") && (hostname === domain || hostname.endsWith(`.${domain}`));

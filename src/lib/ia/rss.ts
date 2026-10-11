@@ -199,10 +199,12 @@ export async function readFeed(site: AllowedSite): Promise<RssItem[]> {
 /**
  * Busca la consulta en los feeds de todos los sitios permitidos.
  *
- * Una noticia entra si coincide con al menos 2 palabras de la consulta, o con la
- * única que tenga. Con una sola palabra en común, «Honduras» traería cualquier
- * noticia de Honduras aunque la pregunta sea sobre sus elecciones. Las palabras
- * del título valen el doble. Ante un empate gana la más reciente.
+ * Una noticia entra si coincide con la mitad de las palabras de la consulta, y
+ * nunca con menos de 2 (o con la única que tenga). Con una sola palabra en común,
+ * «Honduras» traería cualquier noticia de Honduras aunque la pregunta sea sobre sus
+ * elecciones. Con 2 fijas, una pregunta larga coincidía con palabras genéricas como
+ * «sur» y «centro» (de «Centroamérica»). Las palabras del título valen el doble.
+ * Ante un empate gana la más reciente.
  */
 export async function searchRss(query: string): Promise<RssItem[]> {
   const keywords = keywordsOf(query);
@@ -211,7 +213,7 @@ export async function searchRss(query: string): Promise<RssItem[]> {
     return [];
   }
 
-  const minMatches = Math.min(2, keywords.length);
+  const minMatches = Math.max(Math.min(2, keywords.length), Math.ceil(keywords.length / 2));
   const results = await Promise.allSettled(ALLOWED_SITES.map(readFeed));
   const scored: { item: RssItem; score: number }[] = [];
 

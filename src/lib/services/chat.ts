@@ -1,5 +1,6 @@
 import "server-only";
 
+import { responderChat } from "@/lib/ia/chat";
 import { getCatalog } from "@/lib/services/catalogs";
 import { getFeed } from "@/lib/services/feed";
 import { getProfile } from "@/lib/services/profile";
@@ -43,13 +44,9 @@ export class ChatStoreError extends Error {
   }
 }
 
-/**
- * El módulo del modelo todavía no existe: espera los créditos de Anthropic
- * (D-30). Cuando exista src/lib/ia/chat.ts con el tipo `ChatModel`, esta función
- * lo devuelve y el chat empieza a responder.
- */
+/** El módulo del modelo es de IA: src/lib/ia/chat.ts (D-34). */
 function getChatModel(): ChatModel | null {
-  return null;
+  return responderChat;
 }
 
 export function validateChatRequest(raw: unknown): ChatRequest {

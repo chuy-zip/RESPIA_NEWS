@@ -10,14 +10,9 @@
 --
 -- Cómo funciona:
 --   - Nadie lee ni escribe la tabla directo: no tiene GRANT. La app usa tres
---     funciones security definer:
---       record_ai_usage     registra una fila. Cualquier cuenta con sesión.
---       ai_spend_total      devuelve el gasto acumulado en USD. Cualquier cuenta
---                           con sesión: el módulo de costo lo lee antes de llamar.
---       ai_usage_summary    desglose por función. Solo administradores.
---   - Así no hace falta una llave de servicio. Riesgo aceptado: una cuenta con
---     sesión puede llamar record_ai_usage y sumar gasto falso. Los checks
---     rechazan valores negativos y funciones desconocidas.
+--     funciones security definer: record_ai_usage y ai_spend_total (cuentas con
+--     sesión) y ai_usage_summary (solo administradores). Detalle y riesgo
+--     aceptado en specs/ia/costos-ia.md: no hace falta una llave de servicio.
 --   - No guarda user_id ni el texto de la pregunta: no es un dato del usuario
 --     y no cambia /privacidad (RF-06).
 --

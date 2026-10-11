@@ -14,7 +14,7 @@ export default async function ProfilePage() {
   return <>
     <ProfilePanel />
     <div className={styles.settings}>
-      <section className={styles.account} aria-labelledby="account-title"><h2 id="account-title">Tu cuenta</h2><UserBadge user={user} /><p>La sesión de Google es real. Tu nombre se consulta desde esa cuenta y no se modifica en esta demo.</p><p>El tema claro u oscuro sigue la configuración de tu dispositivo.</p></section>
+      <section className={styles.account} aria-labelledby="account-title"><h2 id="account-title">Tu cuenta</h2><UserBadge user={user} /><p>Tu nombre y tu foto se consultan desde Google. Puedes cambiarlos en esa cuenta.</p><p>El tema claro u oscuro sigue la configuración de tu dispositivo.</p></section>
       <div className={styles.install}><InstallPrompt /></div>
     </div>
   </>;

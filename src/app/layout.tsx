@@ -4,7 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { getSiteUrl } from "@/lib/site";
 import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
-import { DemoSession } from "@/components/news/DemoSession";
+import { ReaderSession } from "@/components/news/ReaderSession";
 import { EditorialShell } from "@/components/layout/EditorialShell";
 
 import "@/styles/globals.css";
@@ -73,9 +73,9 @@ export default async function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body>
-        <DemoSession key={user?.id ?? "visitor"}>
+        <ReaderSession key={user?.id ?? "visitor"} signedIn={!!user}>
           <EditorialShell signedIn={!!user} admin={admin}>{children}</EditorialShell>
-        </DemoSession>
+        </ReaderSession>
         <ServiceWorkerRegistrar />
       </body>
     </html>

@@ -6,6 +6,11 @@
 .transcript { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; padding: var(--space-4); }
 .context { max-width: var(--reading-width); margin-inline: auto; }
 .region { font-family: var(--font-display); font-size: var(--text-xl); }
+.articleContext { padding: var(--space-4); margin-block: var(--space-4); border-inline-start: var(--rule-width) solid var(--color-accent); background: var(--color-accent-soft); overflow-wrap: anywhere; }
+.articleContext p { font-size: var(--text-base); line-height: var(--leading-normal); }
+.articleTitle { display: block; min-height: var(--touch-target); padding-block: var(--space-2); font-family: var(--font-display); font-size: var(--text-lg); line-height: var(--leading-snug); }
+.contextAction { display: inline-flex; align-items: center; min-height: var(--touch-target); margin-top: var(--space-2); font-size: var(--text-base); }
+.articleContext .contextError { color: var(--color-signal-fail); }
 .examplesToggle { min-height: var(--touch-target); padding: 0; border: none; background: transparent; text-decoration: underline; font-size: var(--text-sm); }
 .suggestions { display: grid; gap: var(--space-2); }
 .suggestions[hidden] { display: none; }
@@ -14,6 +19,12 @@
 .suggestions button:disabled { opacity: 0.5; cursor: not-allowed; }
 .messages { display: grid; gap: var(--space-4); max-width: var(--reading-width); margin-inline: auto; }
 .message { padding-block: var(--space-4); border-top: var(--border-hairline); overflow-wrap: anywhere; line-height: 1.75; }
+.message p { white-space: pre-wrap; }
+.messageEnter { animation: message-enter var(--duration-base) var(--ease-out) both; }
+.pendingStatus { color: var(--color-ink-muted); border-inline-start: var(--rule-width) solid var(--color-accent); padding-inline-start: var(--space-3); margin-top: var(--space-3); }
+@keyframes message-enter { from { opacity: 0.65; transform: translateY(var(--space-1)); } to { opacity: 1; transform: translateY(0); } }
+.segment + .segment { margin-top: var(--space-5); }
+.citationLabel { font-size: var(--text-sm); color: var(--color-ink-muted); }
 .message:first-child { margin-top: var(--space-5); }
 .message[data-role="reader"] { background: var(--color-surface-sunken); margin-inline-start: var(--space-5); padding: var(--space-4); border: none; }
 .author { font-size: var(--text-sm); margin-bottom: var(--space-3); color: var(--color-ink-muted); font-weight: 600; }
@@ -25,4 +36,6 @@
 .inputRow input { min-width: 0; width: 100%; min-height: var(--touch-target); border: var(--border-width) solid var(--color-line-strong); padding: var(--space-2); background: var(--color-surface-raised); font-size: var(--text-md); }
 .inputRow button { width: auto; flex-shrink: 0; padding-inline: var(--space-3); }
 .dock p { margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-ink-muted); }
+.dock .fieldError { color: var(--color-signal-fail); font-size: var(--text-sm); }
 @media (min-width: 40rem) { .suggestions { grid-template-columns: repeat(2, minmax(0, 1fr)); } .transcript { padding: var(--space-5); } }
+@media (prefers-reduced-motion: reduce) { .messageEnter { animation: none; } }

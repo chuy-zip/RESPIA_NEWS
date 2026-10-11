@@ -13,8 +13,8 @@ export default async function SavedPage() {
     <header><p className={styles.kicker}>Tu espacio de lectura</p><h1 id="saved-title">Lecturas para volver.</h1><p className={styles.lead}>Algunas noticias merecen una segunda mirada.</p></header>
     <div className={styles.notice}>
       <svg viewBox="0 0 40 48" width="40" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M8 4h24v38L20 33 8 42V4Z" /><path d="M14 13h12M14 19h12" /></svg>
-      <div><h2>El guardado todavía no está disponible.</h2><p>Esta función está pendiente de integración. La demo no guarda noticias en tu cuenta ni en el dispositivo.</p><Link href="/edicion">Explorar la edición</Link></div>
+      <div><h2>El guardado todavía no está disponible.</h2><p>Esta función está pendiente de integración. No se guarda una biblioteca de noticias en tu cuenta ni en el dispositivo.</p><Link href="/edicion">Explorar la edición</Link></div>
     </div>
-    <p className={styles.note}>Puedes seguir abriendo noticias y consultando sus fuentes. Tus lecturas temporales aparecen en <Link href="/perfil">tu perfil</Link> mientras mantengas abierta esta demo.</p>
+    <p className={styles.note}>Puedes seguir abriendo noticias y consultando sus fuentes. En <Link href="/perfil">tu perfil</Link> puedes elegir la región y los temas de tu edición.</p>
   </section>;
 }

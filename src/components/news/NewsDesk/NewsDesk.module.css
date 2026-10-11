@@ -11,6 +11,7 @@
 .sectionHead span, .results { font-size: var(--text-sm); color: var(--color-ink-muted); }
 .sectionHead a { display: inline-flex; align-items: center; min-height: var(--touch-target); font-size: var(--text-sm); }
 .results { margin-block: var(--space-3) var(--space-5); }
+.pagination { margin-block: var(--space-5); }
 .feed { display: grid; gap: var(--space-6); }
 .perspective { margin-top: var(--space-6); }
 .perspective > p { margin-bottom: var(--space-3); color: var(--color-ink-muted); }

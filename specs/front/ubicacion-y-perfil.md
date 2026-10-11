@@ -7,15 +7,15 @@
 
 ## Comportamiento actual
 
-Existe un selector de región y un perfil de demostración en memoria. No hay persistencia de perfil de noticias.
+El selector y el perfil consultan catálogos reales y guardan región y temas en la cuenta mediante PATCH.
+La pantalla confirma la respuesta del servidor. Un error conserva la selección pendiente.
 La pantalla comparte el marco editorial y agrupa cuenta, región, instalación y enlace a Guardados.
 No permite editar la identidad de Google. El tema sigue la configuración del dispositivo.
 
 ### Backend
 
-Responsable: Gerardo Pineda. El código está en la rama `feat/back-chat`. Todavía no llega a `dev`: la pantalla no
-lo usa. Los tipos están en `src/types/profile.ts`. Siguen las fichas 2 y 3 de [notion-frontend.md](notion-frontend.md),
-más los temas elegidos de D-32: `topicIds` no estaba en el contrato.
+Responsable: Gerardo Pineda. Los endpoints están incorporados en esta rama y la pantalla los consume.
+Se reutilizan los tipos de `src/types/profile.ts`, incluidos los temas elegidos de D-32.
 
 Las tablas están en `supabase/migrations/004_reader_profile.sql`: `profiles`, `reader_topics` e `interactions`. El
 script se ejecutó en Supabase el 2026-10-10, antes de llegar a `main` (excepción a la regla 10 de `AGENTS.md`). No
@@ -56,11 +56,13 @@ Cualquier cuenta con sesión.
 | Campo | Regla |
 |---|---|
 | `articleId` | Id de una noticia publicada |
-| `type` | Solo `open`. `chat` se habilita cuando exista el chat |
+| `type` | Solo `open`. La señal `chat` se registra dentro de POST `/api/chat`, no en esta ruta |
 | `eventId` | Texto de 100 caracteres como máximo. Obligatorio por el contrato, pero no se guarda |
 
 La señal cuenta una vez por lector, noticia y tipo. Si ya existía, la respuesta es `duplicate: true` y no se
 guarda otra. El cliente no envía ningún peso: el recomendador lo calcula con la fecha de la señal.
+Preguntar desde una noticia envía su `articleId` al chat. Consultar el título para mostrar ese contexto no genera una apertura.
+El frontend no envía una segunda petición para la señal `chat`. `/privacidad` explica su uso en la personalización.
 
 | Status | `code` | Cuándo |
 |---|---|---|
@@ -126,22 +128,23 @@ tiene una sola fila para esa noticia.
 | 2026-10-10 | Local, sesión de administrador | Perfil vacío al inicio. Región guardada. Dos temas y luego uno: la lista se reemplaza. El `GET` final conserva la región y un tema. 422 con región inexistente y con cuerpo vacío | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `POST /api/interactions`: 200 con `duplicate: false` la primera vez y `duplicate: true` la segunda. 404 con una noticia inexistente. 422 con `type: chat` y sin `eventId` | Pasó |
 
-Pendiente: prueba con una cuenta común, prueba en la preview de Vercel, conexión de la pantalla y actualización
-de `/privacidad`.
+La pantalla está conectada y `/privacidad` describe los datos guardados. Pendiente: prueba de esta integración
+con una cuenta común y en Vercel. Las pruebas anteriores de Backend no validan la pantalla nueva.
 
 ## Criterios de aceptación
 
-Cambiar entre escenarios de región sin solicitar GPS. Mantener la selección al navegar dentro de la demo.
-Explicar que se pierde al recargar. Mostrar lecturas de ejemplo sin presentarlas como intereses inferidos.
-La integración real debe guardar la región y actualizar privacidad conforme al esquema aprobado.
+Elegir región sin solicitar GPS. Guardar región y temas en la cuenta y conservarlos después de recargar.
+Confirmar solo los valores que devuelve el servidor y mantener el borrador si falla el guardado.
+Registrar la apertura sin bloquear la lectura. Explicar perfil, señales y personalización en privacidad.
 
 ## No incluido
 
-Persistencia, GPS, edición de identidad y cálculo de intereses.
+Cambios en el servicio de persistencia, GPS, edición de identidad y cálculo de intereses.
 
 ## Dependencias
 
-GET `/api/catalogs`, GET/PATCH `/api/profile` y POST `/api/interactions`, propuestos a Backend.
+GET `/api/catalogs`, GET/PATCH `/api/profile` y POST `/api/interactions` ya están conectados.
+La deduplicación persistente de aperturas corresponde al servidor. No se guarda historial privado en el navegador.
 
 ## Uso de IA en el producto
 
@@ -155,10 +158,30 @@ Comprobar cambio de región con dos cuentas y datos reales después de integrar 
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| En curso | Selector, perfil y explicación de datos temporales | RF-04, RF-06 | Código unificado. [Verificación local](notion-frontend.md#registro-honesto). Pruebas con sesión pendientes |
-| Pendiente | Guardar región y enviar señales según contrato aprobado | RF-04, RF-10 | Backend y recomendación pendientes |
+| En curso | Selector, perfil y explicación de datos guardados | RF-04, RF-06 | Código y privacidad actualizados. [Validación técnica](feed-y-lector.md#validación-de-integración-2026-10-10). Prueba con sesión pendiente |
+| En curso | Guardar región y temas y enviar aperturas | RF-04, RF-10 | Servicios conectados. Persistencia, deduplicación y efecto en el feed pendientes de prueba en Vercel |
 
 ## Cambio en curso
+
+### Señal del chat desde una noticia · 2026-10-10
+
+Requisitos: RF-06 y RF-10. El usuario aprobó conectar el contexto de una noticia sin cambiar el contrato de interacciones.
+Se documentará la señal `chat` en privacidad. Solo el servidor la registra al recibir `articleId` en POST `/api/chat`.
+La consulta del título no envía `open`. La interfaz actualizará el feed después de la pregunta contextual.
+El [registro del chat](feed-y-lector.md#validación-del-contexto-del-chat-2026-10-10) conservará la evidencia local.
+La comprobación con cuentas y datos reales queda pendiente. No se ejecutará en esta entrega.
+
+### Integración con servicios · 2026-10-10
+
+Requisitos: RF-04, RF-06 y señales de RF-10. Ticket pendiente de asignación.
+Se cargarán región y temas desde GET /api/profile y GET /api/catalogs. PATCH guardará solo los valores elegidos.
+La interfaz confirmará la respuesta del servidor, conservará los cambios pendientes ante errores y actualizará el feed.
+Se retirará el historial ficticio. La conversación permanecerá en memoria y no se guardará en el navegador.
+Privacidad describirá perfil, aperturas, publicación e imágenes y los componentes del recomendador.
+El usuario confirmó que Google funciona en Vercel. Esa observación no valida aún la integración del perfil.
+Las pruebas funcionales y los teléfonos quedan a cargo del usuario en Vercel. No se levantará localhost ni se harán commits.
+
+Los registros del 2026-10-09 que siguen son históricos. Esta integración reemplaza el perfil de demo.
 
 2026-10-09: añadir perfil protegido y selector compartido mediante estado en memoria.
 Las lecturas se deduplican por ID durante la demo. No se envían eventos ni preguntas a un servicio.

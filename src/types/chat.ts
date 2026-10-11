@@ -21,6 +21,8 @@ export interface ChatRequest {
   question: string;
   /** Turnos anteriores. El servidor usa solo los últimos 4. */
   messages: ChatMessage[];
+  /** La noticia desde la que el lector pregunta. Registra la señal `chat` (D-31, D-34). */
+  articleId?: string;
 }
 
 /** El estado sale de la base, nunca del modelo (RF-13). */
@@ -32,7 +34,7 @@ export interface ArticleCitation {
   contentType: ContentType;
 }
 
-/** Fuente externa de un sitio permitido (D-24). Todavía no se genera. */
+/** Fuente externa de un sitio permitido (D-25, D-34). */
 export interface ExternalCitation {
   kind: "external";
   url: string;
@@ -50,10 +52,11 @@ export interface ChatSegment {
 
 /**
  * - answered: hay respuesta con sus citas.
- * - no_coverage: no hay noticias publicadas sobre la pregunta (RF-14).
+ * - no_coverage: no hay noticias publicadas ni fuentes externas sobre la pregunta (RF-14).
+ * - out_of_scope: la pregunta no es sobre noticias (CIC-26). `segments` trae la respuesta fija.
  * - unavailable: el modelo no está disponible. La pantalla no inventa una respuesta.
  */
-export type ChatStatus = "answered" | "no_coverage" | "unavailable";
+export type ChatStatus = "answered" | "no_coverage" | "out_of_scope" | "unavailable";
 
 export interface ChatResponseData {
   status: ChatStatus;
@@ -87,6 +90,8 @@ export interface ChatModelInput {
   region: string | null;
   /** Primero las recomendaciones del lector, después las que coinciden con la pregunta. */
   articles: ChatContextArticle[];
+  /** Noticias que devolvió la búsqueda de texto. Con 0, el módulo busca fuentes externas (D-34). */
+  textSearchCount: number;
 }
 
 export interface ChatModelOutput {
@@ -95,6 +100,10 @@ export interface ChatModelOutput {
   articleIds: string[];
   /** false si las noticias del contexto no responden la pregunta. */
   covered: boolean;
+  /** false si la pregunta no es sobre noticias. */
+  inScope: boolean;
+  /** URLs de la búsqueda externa que usó el modelo. El servidor revisa su dominio. */
+  externalUrls: string[];
 }
 
 /** La función que exporta src/lib/ia/chat.ts. */

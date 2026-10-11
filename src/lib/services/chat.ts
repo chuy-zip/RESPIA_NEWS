@@ -1,9 +1,11 @@
 import "server-only";
 
 import { responderChat } from "@/lib/ia/chat";
+import { AiLimitError } from "@/lib/ia/cost";
+import { ALLOWED_SITES, isFromDomain } from "@/lib/ia/rss";
 import { getCatalog } from "@/lib/services/catalogs";
 import { getFeed } from "@/lib/services/feed";
-import { getProfile } from "@/lib/services/profile";
+import { getProfile, InteractionArticleNotFoundError, recordInteraction } from "@/lib/services/profile";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ArticleCitation,
@@ -12,6 +14,7 @@ import type {
   ChatModel,
   ChatRequest,
   ChatResponseData,
+  ExternalCitation,
 } from "@/types/chat";
 import type { ContentType, EditorialStatus } from "@/types/news";
 
@@ -28,6 +31,8 @@ const MAX_TURN = 2000;
 const HISTORY_TURNS = 4;
 const RECOMMENDED = 10;
 const SEARCHED = 5;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EXTERNAL_LABEL = "Fuente externa, no verificada por la redacción";
 
 export class ChatValidationError extends Error {
   constructor(readonly fields: Record<string, string>) {
@@ -54,7 +59,7 @@ export function validateChatRequest(raw: unknown): ChatRequest {
     throw new ChatValidationError({ body: "El cuerpo de la petición no es válido." });
   }
 
-  const { question, messages } = raw as Record<string, unknown>;
+  const { question, messages, articleId } = raw as Record<string, unknown>;
   const fields: Record<string, string> = {};
 
   const text = typeof question === "string" ? question.trim() : "";
@@ -75,12 +80,20 @@ export function validateChatRequest(raw: unknown): ChatRequest {
     }
   }
 
+  if (articleId !== undefined && (typeof articleId !== "string" || !UUID.test(articleId))) {
+    fields.articleId = "La noticia no es válida.";
+  }
+
   if (Object.keys(fields).length > 0) {
     throw new ChatValidationError(fields);
   }
 
   // Solo los últimos turnos: acota el costo y la conversación no se guarda (RF-07).
-  return { question: text, messages: history.slice(-HISTORY_TURNS) };
+  return {
+    question: text,
+    messages: history.slice(-HISTORY_TURNS),
+    ...(articleId !== undefined && { articleId: articleId as string }),
+  };
 }
 
 interface ContextRow {
@@ -95,11 +108,11 @@ interface ContextRow {
 }
 
 /**
- * Noticias que el modelo puede citar: primero las recomendaciones del lector
- * (consultas sobre su región) y después las que coinciden con la pregunta
- * (recientes, de otro país o de un tema).
+ * Noticias que el modelo puede citar: la noticia desde la que pregunta el lector,
+ * sus recomendaciones (consultas sobre su región) y las que coinciden con la
+ * pregunta (recientes, de otro país o de un tema).
  */
-async function buildContext(userId: string, question: string) {
+async function buildContext(userId: string, question: string, articleId: string | undefined) {
   const supabase = await createClient();
   const [catalog, profile, feed, search] = await Promise.all([
     getCatalog(),
@@ -118,6 +131,7 @@ async function buildContext(userId: string, question: string) {
 
   const ids = [
     ...new Set([
+      ...(articleId ? [articleId] : []),
       ...feed.data.items.map((item) => item.article.id),
       ...feed.data.importantItems.map((item) => item.article.id),
       ...search.data.map((row) => row.id as string),
@@ -127,8 +141,10 @@ async function buildContext(userId: string, question: string) {
   const regionLabels = new Map(catalog.regions.map((region) => [region.id, region.label]));
   const region = profile.regionId ? (regionLabels.get(profile.regionId) ?? null) : null;
 
+  const textSearchCount = search.data.length;
+
   if (ids.length === 0) {
-    return { region, articles: [] };
+    return { region, articles: [], textSearchCount };
   }
 
   const { data, error } = await supabase
@@ -162,16 +178,26 @@ async function buildContext(userId: string, question: string) {
     ];
   });
 
-  return { region, articles };
+  return { region, articles, textSearchCount };
+}
+
+/** Preguntar desde una noticia suma 1 a su interés (D-31). Si falla, el chat responde igual. */
+async function recordChatSignal(userId: string, articleId: string) {
+  try {
+    await recordInteraction(userId, { articleId, type: "chat", eventId: "chat" });
+  } catch (failure) {
+    if (!(failure instanceof InteractionArticleNotFoundError)) {
+      console.error("[chat] no se pudo registrar la señal", failure);
+    }
+  }
 }
 
 export async function answerQuestion(userId: string, request: ChatRequest): Promise<ChatResponseData> {
-  const { region, articles } = await buildContext(userId, request.question);
-
-  // Sin noticias no hay de dónde responder: no se llama al modelo (RF-14, CIC-20).
-  if (articles.length === 0) {
-    return { status: "no_coverage", segments: [] };
+  if (request.articleId) {
+    await recordChatSignal(userId, request.articleId);
   }
+
+  const { region, articles, textSearchCount } = await buildContext(userId, request.question, request.articleId);
 
   const model = getChatModel();
   if (!model) {
@@ -180,8 +206,12 @@ export async function answerQuestion(userId: string, request: ChatRequest): Prom
 
   let output;
   try {
-    output = await model({ question: request.question, history: request.messages, region, articles });
+    output = await model({ question: request.question, history: request.messages, region, articles, textSearchCount });
   } catch (failure) {
+    // El tope de gasto no es una falla del modelo: la ruta responde 429 (D-34).
+    if (failure instanceof AiLimitError) {
+      throw failure;
+    }
     console.error("[chat] el modelo no respondió", failure);
     return { status: "unavailable", segments: [] };
   }
@@ -195,10 +225,20 @@ export async function answerQuestion(userId: string, request: ChatRequest): Prom
       : [];
   });
 
-  // Una respuesta sin una noticia que la respalde no se muestra: nada se afirma sin fuente (RF-14).
-  if (!output.covered || citations.length === 0 || !output.text.trim()) {
+  // Las fuentes externas se revisan otra vez aquí: solo cuentan las de un sitio permitido (D-34).
+  const external: ExternalCitation[] = [...new Set(output.externalUrls)].flatMap((url) => {
+    const site = ALLOWED_SITES.find((allowed) => isFromDomain(url, allowed.domain));
+    return site ? [{ kind: "external", url, name: site.name, label: EXTERNAL_LABEL }] : [];
+  });
+
+  if (!output.inScope) {
+    return { status: "out_of_scope", segments: [{ text: output.text.trim(), citations: [] }] };
+  }
+
+  // Una respuesta sin una fuente que la respalde no se muestra: nada se afirma sin fuente (RF-14).
+  if (!output.covered || citations.length + external.length === 0 || !output.text.trim()) {
     return { status: "no_coverage", segments: [] };
   }
 
-  return { status: "answered", segments: [{ text: output.text.trim(), citations }] };
+  return { status: "answered", segments: [{ text: output.text.trim(), citations: [...citations, ...external] }] };
 }

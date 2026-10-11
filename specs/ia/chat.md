@@ -27,9 +27,9 @@ La segunda es el contrato con el módulo del modelo, tomado del «Incremento 2»
 
 | Tipo | Contenido |
 |---|---|
-| `ChatModelInput` | `question`, `history` (últimos 4 turnos), `region` (nombre de la región del lector o `null`) y `articles` |
+| `ChatModelInput` | `question`, `history` (últimos 4 turnos), `region` (nombre de la región del lector o `null`), `articles` y `textSearchCount` (noticias de la búsqueda de texto) |
 | `ChatContextArticle` | `id`, `title`, `summary`, `status`, `contentType`, `publishedAt`, y los nombres de `topics` y `regions` |
-| `ChatModelOutput` | `text`, `articleIds` (noticias usadas) y `covered` |
+| `ChatModelOutput` | `text`, `articleIds` (noticias usadas), `covered`, `inScope` y `externalUrls` (fuentes externas usadas) |
 | `ChatModel` | La función que exporta `src/lib/ia/chat.ts`: recibe `ChatModelInput` y devuelve `ChatModelOutput` |
 
 Para conectar el modelo, `getChatModel()` de `src/lib/services/chat.ts` devuelve esa función.
@@ -46,26 +46,32 @@ Cualquier cuenta con sesión. El cuerpo es `{ "question", "messages"? }`:
 |---|---|
 | `question` | Obligatorio. 500 caracteres como máximo |
 | `messages` | Opcional. Turnos `{ "role": "reader" \| "assistant", "text" }`, de 2 000 caracteres como máximo. El servidor usa los últimos 4 |
+| `articleId` | Opcional. UUID de la noticia desde la que pregunta el lector. La noticia entra primero en el contexto y el servidor registra la señal `chat` (D-31). Si el registro falla, el chat responde igual |
 
 Flujo:
 
-1. El servidor arma el contexto: las 10 primeras noticias del feed del lector, su bloque importante y hasta 5
-   noticias que coinciden con la pregunta en `articles.search`. Ningún paso llama a un modelo (`RP-03`).
-2. Sin noticias en el contexto, responde `no_coverage` sin llamar al modelo (`RF-14`, CIC-20).
-3. Sin módulo del modelo, o si el modelo falla, responde `unavailable`.
-4. Con respuesta del modelo, descarta los ids que no estaban en el contexto y toma el estado de cada noticia de la
-   base (`RF-13`). Si no queda ninguna cita o `covered` es `false`, responde `no_coverage`.
+1. El servidor arma el contexto: la noticia de `articleId`, las 10 primeras noticias del feed del lector, su bloque
+   importante y hasta 5 noticias que coinciden con la pregunta en `articles.search`. Ningún paso llama a un modelo
+   (`RP-03`).
+2. El módulo del modelo recibe el contexto y `textSearchCount`. Con 0, busca fuentes externas (RSS y después Tavily).
+   Sin noticias ni fuentes externas, no llama al modelo y devuelve «sin cobertura» (`RF-14`, CIC-20).
+3. Sin módulo del modelo, o si el modelo falla, responde `unavailable`. Si se alcanzó el tope de gasto, responde 429.
+4. Con respuesta del modelo, descarta los ids que no estaban en el contexto y las URLs externas que no son de un
+   sitio permitido, y toma el estado de cada noticia de la base (`RF-13`). Una fuente externa lleva la etiqueta
+   «Fuente externa, no verificada por la redacción».
+5. Si `inScope` es `false`, responde `out_of_scope` con la respuesta fija. Si no queda ninguna cita, ni de noticia
+   ni externa, o `covered` es `false`, responde `no_coverage`.
 
 | Status | `code` | Cuándo |
 |---|---|---|
-| 200 | | `data` es `{ "status", "segments" }`. `status` es `answered`, `no_coverage` o `unavailable` |
+| 200 | | `data` es `{ "status", "segments" }`. `status` es `answered`, `no_coverage`, `out_of_scope` o `unavailable` |
 | 400 | `INVALID_BODY` | El cuerpo no es JSON |
 | 401 | `UNAUTHORIZED` | No hay sesión |
-| 422 | `VALIDATION_ERROR` | La pregunta está vacía o es larga, o el historial no es válido. `fields` dice cuál |
+| 422 | `VALIDATION_ERROR` | La pregunta está vacía o es larga, o el historial o `articleId` no son válidos. `fields` dice cuál |
+| 429 | `AI_LIMIT_REACHED` | El gasto de IA llegó al tope (`AiLimitError`). La pantalla debe mostrar el estado de límite |
 | 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
 
-No incluido todavía: fuentes externas (`buscar_externo`, D-25), el tope de gasto y el registro de costo
-(`costos-ia`), los guardrails que dependen del modelo y la señal `chat` de `POST /api/interactions`.
+La señal `chat` la registra el servicio del chat, no `POST /api/interactions`: esa ruta solo acepta `open`.
 
 #### Probar el chat
 
@@ -95,8 +101,9 @@ Resultado: `200` con `status: "unavailable"` y tres `422`.
 | 2026-10-10 | Local, sin sesión | `POST /api/chat`: 401 `UNAUTHORIZED` | Pasó |
 | 2026-10-10 | Local, sesión de administrador | Pregunta válida: 200 `unavailable`. La búsqueda en `articles.search` no falló: la `005` está aplicada. 422 con pregunta vacía, con 501 caracteres y con un rol de historial inválido | Pasó |
 
-Pendiente: `no_coverage` sin noticias publicadas, `answered` con el modelo conectado, pruebas en la preview de Vercel
-y conexión de la pantalla.
+Pendiente: `no_coverage` sin noticias publicadas, `answered` con el modelo conectado, la señal `chat` con
+`articleId`, las respuestas con fuentes externas, el 429 con el tope forzado, pruebas en la preview de Vercel y
+conexión de la pantalla.
 
 ## Criterios de aceptación
 
@@ -269,24 +276,36 @@ Requisitos: `RF-12`, `RF-13`, `RF-14`, `RT-04`, `RP-02`. Decisiones: D-34, D-30.
   - Si `in_scope` es falso o la respuesta trae un bloque de código, devuelve «Solo puedo responder sobre noticias.»
     sin citas.
   - Si `stop_reason` es `refusal` o `max_tokens`, o el JSON no tiene la forma esperada, devuelve «sin cobertura».
-- **Limitación:** con el contrato actual, Backend muestra «sin cobertura» también para una pregunta fuera de alcance.
-  Un estado propio para ese caso es de Gerardo.
+- **Fuera de alcance:** el módulo devuelve `inScope: false` y el servidor responde el estado `out_of_scope` con la
+  respuesta fija. Ya no se confunde con «sin cobertura».
 - **Prueba:** `node --test src/lib/ia/chat.test.mjs`, con el SDK y la base simulados. Prueba en vivo: preguntas de
   ejemplo con noticias ficticias (D-15), con el costo medido.
 
-### Incremento 3b y 3c
+### Incremento 3b: búsqueda externa dentro de `responderChat` (rama `chat`)
 
-- **3b:** la búsqueda externa dentro de `responderChat`, cuando `ChatModelInput` traiga el dato de la búsqueda de
-  texto y `ChatModelOutput` el campo `externalUrls` (D-34, tipos de Backend).
+Requisitos: `RF-14`, `RP-03`. Decisiones: D-25, D-34. Ticket: TKT-1.
+
+- Los tipos de D-34 ya existen: `ChatModelInput.textSearchCount`, `ChatModelOutput.externalUrls` e `inScope`, y
+  `ChatRequest.articleId`. Los agregó la parte de IA con la aprobación de Rodrigo. Backend los revisa.
+- Con `textSearchCount` igual a 0, `responderChat` llama a `searchExternal` antes del modelo y pasa las fuentes dentro
+  de `<fuentes_externas>`, como dato (guardrail 6). El esquema de salida agrega `external_urls`.
+- El módulo descarta las URLs que no vinieron de la búsqueda. El servidor vuelve a revisar su dominio
+  (guardrail 4) y arma la cita `external` con el nombre del sitio y la etiqueta fija.
+- Cada búsqueda en Tavily registra 1 crédito en `ai_usage`, haya o no resultados.
+- **Alcance:** el modelo decide `in_scope` en la misma llamada, después de la búsqueda. Una pregunta ajena a las
+  noticias puede gastar 1 crédito de Tavily (1 000 gratis por mes), pero el lector no ve la respuesta: recibe
+  `out_of_scope`.
+- **Prueba:** `node --test "src/lib/ia/*.test.mjs"`. Cubre la búsqueda solo con 0 resultados de texto, la URL
+  inventada, el modelo sin llamar cuando no hay fuentes y el registro del crédito.
+
+### Incremento 3c
+
 - **3c:** `scripts/eval-chat.mjs` con el conjunto fijo: 12 noticias ficticias y 21 preguntas (CIC-17).
 
 ### Pendiente
 
-- Agregar a `ChatModelInput` el dato de la búsqueda de texto, a `ChatModelOutput` el campo `externalUrls` y a
-  `ChatRequest` el `articleId` opcional (D-34). Son tipos de Backend: van en un PR propio de Gerardo.
-- `AiLimitError` en `src/lib/ia/`, con el módulo de costo (`costos-ia`).
-- El guardrail de alcance actúa antes de cualquier búsqueda externa. En la prueba del incremento 1, «receta de
-  pastel de chocolate» encontró una receta en Infobae: sin ese filtro, el chat respondería temas ajenos a las noticias.
-- Variable de servidor `TAVILY_API_KEY`, sin `NEXT_PUBLIC_`. Rodrigo carga el valor en `.env.local` y en Vercel.
-  El nombre se agrega a `.env.example` junto con el código que la usa.
+- En la prueba del incremento 1, «receta de pastel de chocolate» encontró una receta en Infobae. El guardrail de
+  alcance del modelo la filtra, pero la búsqueda ya gastó un crédito (ver incremento 3b).
+- Rodrigo carga `ANTHROPIC_API_KEY` y `TAVILY_API_KEY` en `.env.local` y en Vercel. Los nombres ya están en
+  `.env.example`.
 - Límite diario de preguntas por usuario: guarda el `user_id`, así que obliga a actualizar `/privacidad`.

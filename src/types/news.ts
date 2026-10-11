@@ -93,6 +93,15 @@ export interface ArticleSummary {
   image: ImageProvenance | null;
 }
 
+/** Una noticia que comparte temas con la que el lector tiene abierta (D-31). */
+export interface RelatedArticle {
+  article: ArticleSummary;
+  /** Temas que comparte con la noticia abierta. La pantalla muestra sus etiquetas (RT-01). */
+  sharedTopicIds: string[];
+  /** Alcance de la relacionada, no del lector: `international` si no es relevante para ningún país de Centroamérica. */
+  reach: "local" | "regional" | "international";
+}
+
 /** Respuesta de GET /api/articles/[id]. Solo noticias publicadas. */
 export interface ArticleDetail extends ArticleSummary {
   author: string | null;
@@ -103,6 +112,8 @@ export interface ArticleDetail extends ArticleSummary {
   reviewNote: string;
   /** El recomendador la usa para no ocultar lo importante (RF-11, D-31). */
   important: boolean;
+  /** Hasta 3 noticias con temas en común. Vacía si no hay o si la consulta falló. */
+  relatedArticles: RelatedArticle[];
 }
 
 /**

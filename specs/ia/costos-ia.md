@@ -49,7 +49,7 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 - Datos: el script `006_ai_usage.sql`, con la tabla y sus tres funciones. Lo revisa Ricardo y se ejecuta cuando
   llegue a `main`. Sin `user_id` mientras no haya un límite por usuario (CIC-15).
 - Backend: la ruta `GET /api/admin/ai-usage`, que llama a `getAiUsageSummary()`, y la traducción de `AiLimitError` a
-  429 `AI_LIMIT_REACHED` (D-34).
+  429 `AI_LIMIT_REACHED` (D-34). Ambas existen en la rama `chat`; Backend las revisa.
 - Infra: las variables de servidor del modelo y de Tavily (`TAVILY_API_KEY`), sin `NEXT_PUBLIC_`.
 
 ## Uso de IA en el producto

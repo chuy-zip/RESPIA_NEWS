@@ -1,5 +1,6 @@
 import "server-only";
 
+import { recordExternalSearch } from "@/lib/ia/cost";
 import { ALLOWED_SITES, cleanSummary, isFromDomain, searchRss, type RssItem } from "@/lib/ia/rss";
 
 /**
@@ -53,6 +54,9 @@ async function searchTavily(query: string): Promise<ExternalResult[]> {
   if (!response.ok) {
     throw new Error(`Tavily respondió ${response.status}.`);
   }
+
+  // Cada búsqueda gasta 1 crédito del plan gratis, haya o no resultados (D-25). Un fallo del registro no tira la búsqueda.
+  await recordExternalSearch().catch((failure) => console.warn("[tavily] no se pudo registrar el crédito", failure));
 
   const data = (await response.json()) as { results?: TavilyResult[] };
 

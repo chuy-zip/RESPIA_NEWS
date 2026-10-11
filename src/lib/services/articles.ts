@@ -1,5 +1,6 @@
 import "server-only";
 
+import { relatedArticles, type RelatedCandidate } from "@/lib/recomendacion/related";
 import { getCatalog } from "@/lib/services/catalogs";
 import { isUploadId, resolveUploadedImage, UploadNotFoundError } from "@/lib/services/images";
 import { createClient } from "@/lib/supabase/server";
@@ -14,6 +15,7 @@ import type {
   PublicationResult,
   PublishArticleInput,
   PublishImageInput,
+  RelatedArticle,
   Source,
 } from "@/types/news";
 
@@ -414,6 +416,86 @@ interface ArticleDetailRow extends ArticleSummaryRow {
   regions: { region_id: string }[];
 }
 
+/** Noticias recientes entre las que se buscan relacionadas. */
+const RELATED_CANDIDATES = 50;
+
+/** El slug de la región que no es un país de Centroamérica (D-26). */
+const INTERNATIONAL_SLUG = "internacional";
+
+interface RelatedRow extends ArticleSummaryRow {
+  regions: { region_id: string }[];
+}
+
+/**
+ * Noticias que comparten temas con la abierta, ordenadas por el recomendador
+ * (D-31). No llama a ningún modelo (RP-03). Si falla, el lector se muestra sin
+ * relacionadas: no es un motivo para negarle la noticia.
+ */
+async function findRelated(article: ArticleDetail): Promise<RelatedArticle[]> {
+  if (article.topicIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const supabase = await createClient();
+    const [catalog, candidates] = await Promise.all([
+      getCatalog(),
+      supabase
+        .from("articles")
+        .select(
+          "id, title, summary, published_at, status, content_type, image, " +
+            "topics:article_topics(topic_id), regions:article_regions(region_id), " +
+            "topic_filter:article_topics!inner(topic_id)",
+        )
+        .in("topic_filter.topic_id", article.topicIds)
+        .neq("id", article.id)
+        .order("published_at", { ascending: false })
+        .limit(RELATED_CANDIDATES),
+    ]);
+
+    if (candidates.error) {
+      throw new ArticleStoreError(candidates.error);
+    }
+
+    const rows = candidates.data as unknown as RelatedRow[];
+    const toCandidate = (row: RelatedRow): RelatedCandidate => ({
+      id: row.id,
+      topicIds: row.topics.map((topic) => topic.topic_id),
+      regionIds: row.regions.map((region) => region.region_id),
+      publishedAt: row.published_at,
+    });
+    const byId = new Map(rows.map((row) => [row.id, row]));
+
+    return relatedArticles(
+      { id: article.id, topicIds: article.topicIds, regionIds: article.regionIds, publishedAt: article.publishedAt },
+      rows.map(toCandidate),
+      { centralAmericaRegionIds: catalog.regions.filter((region) => region.slug !== INTERNATIONAL_SLUG).map((region) => region.id) },
+    ).flatMap((item) => {
+      const row = byId.get(item.articleId);
+      if (!row) return [];
+      return [
+        {
+          article: {
+            id: row.id,
+            title: row.title,
+            summary: row.summary,
+            topicIds: row.topics.map((topic) => topic.topic_id),
+            publishedAt: row.published_at,
+            status: row.status,
+            contentType: row.content_type,
+            image: row.image,
+          },
+          sharedTopicIds: item.sharedTopicIds,
+          reach: item.reach,
+        },
+      ];
+    });
+  } catch (failure) {
+    console.error("[articles] no se pudieron buscar noticias relacionadas", failure);
+    return [];
+  }
+}
+
 /**
  * Una noticia completa, o null si no existe. Lo usa el lector con cualquier
  * cuenta con sesión: RLS no entrega nada sin sesión (RF-02).
@@ -443,7 +525,7 @@ export async function getArticle(id: string): Promise<ArticleDetail | null> {
 
   const row = data as unknown as ArticleDetailRow;
 
-  return {
+  const article: ArticleDetail = {
     id: row.id,
     title: row.title,
     summary: row.summary,
@@ -458,5 +540,8 @@ export async function getArticle(id: string): Promise<ArticleDetail | null> {
     sources: row.sources,
     reviewNote: row.review_note,
     important: row.important,
+    relatedArticles: [],
   };
+
+  return { ...article, relatedArticles: await findRelated(article) };
 }

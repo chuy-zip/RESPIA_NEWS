@@ -7,10 +7,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 // Node no resuelve el alias @/ de Next ni las importaciones sin extensión, y server-only
 // falla fuera de Next. Este resolvedor los traduce para que la prueba corra con node --test.
+const fakeSupabase = "export async function createClient() { return { rpc: (name, args) => globalThis.fakeRpc(name, args) }; }";
 const src = path.resolve(import.meta.dirname, "../..");
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === "server-only") return { url: "data:text/javascript,", shortCircuit: true };
+    if (specifier === "@/lib/supabase/server") return { url: `data:text/javascript,${encodeURIComponent(fakeSupabase)}`, shortCircuit: true };
     const base = specifier.startsWith("@/")
       ? path.join(src, specifier.slice(2))
       : specifier.startsWith(".") && context.parentURL
@@ -35,6 +37,7 @@ const FEED = `<?xml version="1.0"?><rss><channel><item>
 const realFetch = globalThis.fetch;
 const realWarn = console.warn;
 let calls;
+let recorded;
 
 /** Simula los feeds y Tavily. Solo Proceso Digital responde. Los demás feeds fallan, como en la vida real. */
 function mockFetch({ feed = "", tavily = { status: 200, body: { results: [] } } } = {}) {
@@ -51,6 +54,11 @@ function mockFetch({ feed = "", tavily = { status: 200, body: { results: [] } } 
 const tavilyCalls = () => calls.filter((call) => call.url.startsWith("https://api.tavily.com"));
 
 beforeEach(() => {
+  recorded = [];
+  globalThis.fakeRpc = async (name, args) => {
+    recorded.push({ name, args });
+    return { data: null, error: null };
+  };
   process.env.TAVILY_API_KEY = "tvly-prueba";
   console.warn = () => {};
 });
@@ -109,10 +117,28 @@ test("Una pregunta larga no entra al RSS por dos palabras genéricas: pasa a Tav
   assert.equal(tavilyCalls().length, 1);
 });
 
-test("Si Tavily falla, devuelve una lista vacía", async () => {
+test("Si Tavily falla, devuelve una lista vacía y no registra el crédito", async () => {
   mockFetch({ tavily: { status: 432, body: { detail: "sin créditos" } } });
 
   assert.deepEqual(await searchExternal("acuerdo comercial regional"), []);
+  assert.equal(recorded.length, 0);
+});
+
+test("RP-02: cada búsqueda en Tavily registra 1 crédito, haya o no resultados", async () => {
+  mockFetch();
+  await searchExternal("acuerdo comercial regional");
+
+  assert.equal(recorded.length, 1);
+  assert.equal(recorded[0].args.p_function_name, "buscarExterno");
+  assert.equal(recorded[0].args.p_external_credits, 1);
+  assert.equal(recorded[0].args.p_cost_usd, 0);
+});
+
+test("Con resultados del RSS no registra ningún crédito", async () => {
+  mockFetch({ feed: FEED });
+  await searchExternal("elecciones en Honduras");
+
+  assert.equal(recorded.length, 0);
 });
 
 test("Sin llave de Tavily no la llama", async () => {

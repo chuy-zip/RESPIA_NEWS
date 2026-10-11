@@ -21,7 +21,7 @@ export interface FeedArticle {
 
 export interface ReaderProfile {
   regionId: string | null;
-  /** Peso de 0 a 1 por ID de tema. */
+  /** Peso de 0 a 1 por ID de tema. Sale de topicWeights. */
   topicWeights: Record<string, number>;
 }
 
@@ -47,8 +47,27 @@ export interface Feed {
   importantItems: RankedItem[];
 }
 
+export type SignalType = "open" | "chat";
+
+export interface Signal {
+  articleId: string;
+  topicIds: string[];
+  /** `open`: abrió la noticia. `chat`: preguntó al chat desde la noticia. */
+  type: SignalType;
+  /** Fecha ISO de la señal. */
+  createdAt: string;
+}
+
 const WEIGHTS: ScoreComponents = { region: 0.35, interest: 0.3, recency: 0.2, importance: 0.15 };
 const RECENCY_HALF_LIFE_HOURS = 24;
+const INTEREST_HALF_LIFE_DAYS = 7;
+/** Preguntar al chat desde una noticia vale 1 más que abrirla (D-31). */
+const SIGNAL_VALUES: Record<SignalType, number> = { open: 1, chat: 1 };
+/**
+ * Señales que llevan un tema a peso 0.5. Un tema elegido en el onboarding cuenta como esa
+ * cantidad de señales: empieza en 0.5 y las señales lo suben hacia 1 (D-32).
+ */
+const SIGNALS_FOR_HALF_WEIGHT = 2;
 
 /** Ámbito de una noticia para un lector. El bloque importante lleva una por ámbito (D-31). */
 type Scope = "country" | "centralAmerica" | "international";
@@ -172,4 +191,39 @@ export function buildFeed(
   const importantItems = rank(articles, profile, now).filter((item) => importantIds.has(item.articleId));
 
   return { items, importantItems };
+}
+
+/**
+ * Convierte las señales del lector en pesos por tema (RF-10). El peso crece con
+ * cada señal y se acerca a 1, sin compararse con el tema más leído: así un solo
+ * clic no le gana a un tema elegido. Cada tipo de señal cuenta una vez por
+ * noticia, para que recargar o volver atrás no infle un tema (D-31). Cada señal
+ * pierde la mitad de su valor cada 7 días, para que un interés viejo no domine
+ * el feed.
+ */
+export function topicWeights(signals: Signal[], chosenTopicIds: string[], now: Date): Record<string, number> {
+  // La base guarda solo la primera señal por noticia y tipo. La regla se repite aquí por si llegan duplicadas.
+  const firstSignals = new Map<string, Signal>();
+  for (const signal of signals) {
+    const key = `${signal.articleId}:${signal.type}`;
+    const kept = firstSignals.get(key);
+    if (!kept || Date.parse(signal.createdAt) < Date.parse(kept.createdAt)) firstSignals.set(key, signal);
+  }
+
+  const totals: Record<string, number> = {};
+  for (const signal of firstSignals.values()) {
+    const ageDays = (now.getTime() - new Date(signal.createdAt).getTime()) / 86_400_000;
+    const value = SIGNAL_VALUES[signal.type] * halfLife(ageDays, INTEREST_HALF_LIFE_DAYS);
+    for (const topicId of signal.topicIds) {
+      totals[topicId] = (totals[topicId] ?? 0) + value;
+    }
+  }
+
+  for (const topicId of chosenTopicIds) {
+    totals[topicId] = (totals[topicId] ?? 0) + SIGNALS_FOR_HALF_WEIGHT;
+  }
+
+  return Object.fromEntries(
+    Object.entries(totals).map(([topicId, total]) => [topicId, total / (total + SIGNALS_FOR_HALF_WEIGHT)]),
+  );
 }

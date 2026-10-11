@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * El portal conserva la autorización en servidor incluso durante la demo.
+ * El portal comprueba la autorización en servidor.
  *
  * El control está aquí, en el servidor, y no en el icono de la barra superior:
  *

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  * guarde un dato nuevo (ubicación simulada, intereses, noticias leídas…), hay que
  * actualizar esta página y la fecha de abajo en el mismo cambio.
  */
-const LAST_UPDATE = "9 de octubre de 2026";
+const LAST_UPDATE = "10 de octubre de 2026";
 
 export default function PrivacidadPage() {
   return (
@@ -49,6 +49,22 @@ export default function PrivacidadPage() {
                 correo quedan en una lista que indica quién puede entrar al
                 portal administrativo.
               </li>
+              <li>
+                <strong>Tu región simulada y los temas que eliges</strong>, asociados
+                a tu cuenta. Puedes cambiar estas preferencias en tu perfil. Elegirlas es opcional.
+              </li>
+              <li>
+                <strong>Las noticias que abres y desde cuáles preguntas al chat</strong>: guardamos el identificador de
+                la noticia, tu identificador de cuenta, el tipo de interacción y la fecha.
+                Se guarda una señal por noticia, tipo y cuenta. Recargar no suma otra apertura.
+                Estas señales se borran con tu cuenta.
+              </li>
+              <li>
+                <strong>Si publicas noticias</strong>, guardamos tu identificador como
+                responsable de la publicación, el contenido, sus fuentes y la revisión editorial.
+                Las imágenes subidas se guardan en un espacio público de Supabase, incluso antes de publicar la noticia.
+                La noticia conserva el origen, el autor, la licencia y el texto alternativo de su imagen.
+              </li>
             </ul>
           </section>
 
@@ -60,10 +76,15 @@ export default function PrivacidadPage() {
               </li>
               <li>
                 No usamos el GPS ni la ubicación de tu dispositivo. La región
-                de demostración es una opción que tú eliges.
+                simulada es una opción que tú eliges.
               </li>
               <li>
                 No usamos publicidad, analítica ni cookies de seguimiento.
+              </li>
+              <li>
+                No guardamos el texto de tus preguntas al chat ni la
+                conversación. El registro de costo de la IA no guarda tu cuenta
+                ni tus preguntas.
               </li>
             </ul>
           </section>
@@ -71,16 +92,32 @@ export default function PrivacidadPage() {
           <section className={styles.block}>
             <h2 className={styles.subhead}>Para qué se usan</h2>
             <p className={styles.text}>
-              Solo para iniciar tu sesión, mantenerla y distinguir a los
-              administradores de los demás usuarios. Tu nombre y tu foto se
-              muestran en la app mientras estás conectado.
+              Los datos de cuenta mantienen tu sesión y permiten comprobar quién puede publicar.
+              Tu nombre y tu foto se muestran en la app mientras estás conectado.
+              La región, los temas elegidos y las aperturas permiten personalizar el orden de las noticias.
+              Las fuentes y la procedencia de las imágenes permiten conocer el origen de lo publicado.
+            </p>
+          </section>
+
+          <section className={styles.block}>
+            <h2 className={styles.subhead}>Cómo se ordena tu edición</h2>
+            <p className={styles.text}>
+              El puntaje combina región (35 %), intereses (30 %), actualidad (20 %) e importancia editorial (15 %).
+              La región corresponde al país que elegiste, no a tu ubicación real.
+              Los temas elegidos empiezan con un peso de 0.5. Tus lecturas pueden aumentarlo hasta 1.
+            </p>
+            <p className={styles.text}>
+              El peso de actualidad pierde la mitad cada 24 horas. El peso de las señales de lectura pierde la mitad cada siete días.
+              La posición determina la prominencia visual. Cada tarjeta explica su relevancia.
+              Un bloque adicional conserva noticias importantes aunque no coincidan con tus preferencias.
+              Este cálculo no llama a un modelo de IA.
             </p>
           </section>
 
           <section className={styles.block}>
             <h2 className={styles.subhead}>Con quién se comparten</h2>
             <p className={styles.text}>
-              No vendemos ni cedemos tus datos. Para funcionar dependemos de tres
+              No vendemos ni cedemos tus datos. Para funcionar dependemos de cinco
               proveedores que los procesan por nosotros:
             </p>
             <ul className={styles.list}>
@@ -89,19 +126,41 @@ export default function PrivacidadPage() {
               </li>
               <li>
                 <strong>Supabase</strong>, donde se guardan los datos de tu
-                cuenta y la sesión.
+                cuenta, sesión, preferencias, aperturas, noticias e imágenes.
               </li>
               <li>
                 <strong>Vercel</strong>, donde está alojada la aplicación.
               </li>
+              <li>
+                <strong>Anthropic</strong>, cuyo modelo de IA redacta las
+                respuestas del chat.
+              </li>
+              <li>
+                <strong>Tavily</strong>, un buscador de noticias que el chat usa
+                en algunos casos.
+              </li>
             </ul>
-            <p className={styles.text}>La interfaz de noticias usa ejemplos locales. No envía tus preguntas a un proveedor de IA ni consulta fuentes externas automáticamente. Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
+            <p className={styles.text}>
+              Cuando el chat responde con el servicio de IA, Anthropic recibe tu
+              pregunta, los últimos cuatro mensajes de la conversación, el
+              nombre de tu región y el texto de las noticias que sirven de
+              contexto. No recibe tu nombre, tu correo ni tu identificador.
+            </p>
+            <p className={styles.text}>
+              Si la app no tiene noticias sobre tu pregunta, el servidor busca en
+              los feeds públicos de una lista fija de medios. Esa descarga no
+              incluye tu pregunta. Si los feeds no encuentran nada, el servidor
+              envía tu pregunta a Tavily, limitada a esos mismos medios. Las
+              respuestas con estas fuentes llevan la etiqueta «Fuente externa, no
+              verificada por la redacción».
+            </p>
+            <p className={styles.text}>Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
           </section>
 
           <section className={styles.block}>
             <h2 className={styles.subhead}>En tu dispositivo</h2>
-            <p className={styles.text}>La demo mantiene en memoria la región elegida, las noticias abiertas, la conversación y las publicaciones simuladas. No guarda esos datos en la base, localStorage ni sessionStorage. Se pierden al recargar o cerrar la pestaña. No introduzcas datos personales en los ejemplos.</p>
-            <p className={styles.text}>La dirección de la página de búsqueda incluye el término, el tema y el orden elegidos. Esos valores pueden quedar en el historial del navegador y se incluyen si compartes el enlace. No escribas datos personales en la búsqueda. Guardados todavía no almacena noticias.</p>
+            <p className={styles.text}>Los borradores sin enviar y la conversación viven en la memoria de la app. Se pierden al recargar o cerrar la pestaña. La conversación también se vacía al iniciar una nueva o cambiar de sesión. No se guardan en localStorage ni sessionStorage. Evita incluir datos personales en tus preguntas.</p>
+            <p className={styles.text}>La región y los temas confirmados, las aperturas y las publicaciones permanecen en el servidor. Las fotografías se envían al seleccionar la acción de subida, antes de confirmar la publicación. Buscar y Guardados todavía no están conectados y no guardan una lista de noticias.</p>
             <p className={styles.text}>
               Al instalar la app, tu navegador guarda archivos de la propia
               aplicación (imágenes, estilos y una pantalla de aviso sin

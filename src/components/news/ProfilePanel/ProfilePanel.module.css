@@ -6,8 +6,10 @@
 .regions legend { margin-bottom: var(--space-3); font-weight: 600; }
 .regions label { display: flex; align-items: center; gap: var(--space-3); min-height: var(--touch-target); padding: var(--space-4); border: var(--border-hairline); cursor: pointer; }
 .regions label[data-selected="true"] { border-color: var(--color-ink); background: var(--color-surface-sunken); }
-.regions label span:last-child { margin-inline-start: auto; }
+.regions label span[aria-hidden="true"] { margin-inline-start: auto; }
 .regions input { accent-color: var(--color-accent); }
+.regions:disabled label { cursor: wait; opacity: 0.65; }
+.fieldError { color: var(--color-signal-fail); font-size: var(--text-sm); margin-top: var(--space-2); }
 .note { font-size: var(--text-sm); color: var(--color-ink-muted); margin-top: var(--space-4); }
 .link, .readings a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
 .links { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); }

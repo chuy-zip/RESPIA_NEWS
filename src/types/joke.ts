@@ -42,5 +42,7 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
+    /** Solo en errores de validación: un mensaje por campo. */
+    fields?: Record<string, string>;
   };
 }

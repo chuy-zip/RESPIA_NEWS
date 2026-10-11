@@ -492,7 +492,7 @@ de la sección 13 ("RLS en toda tabla") no es opcional.
 ```
 prod/
 ├─ AGENTS.md                      Reglas para agentes de IA (CLAUDE.md lo importa)
-├─ specs/                         Un spec por feature
+├─ specs/                         Un spec por feature, en carpetas por parte: ia, front, backend, infra
 ├─ docs/                          Esta documentación y el enunciado en PDF
 ├─ supabase/migrations/           Scripts SQL numerados de Supabase (se ejecutan en el SQL Editor)
 ├─ public/

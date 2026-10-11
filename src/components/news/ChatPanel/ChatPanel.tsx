@@ -1,23 +1,80 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useDemoSession } from "@/components/news/DemoSession";
-import { ArticleMeta } from "@/components/news/ArticleMeta";
+import { useReaderSession } from "@/components/news/ReaderSession";
+import { apiRequest, ApiError, asApiError, isAbortError } from "@/components/news/ReaderSession/api";
+import { ApiErrorNotice } from "@/components/news/ApiErrorNotice";
+import { CONTENT_TYPE_LABELS, STATUS_LABELS } from "@/components/news/ArticleMeta";
 import { Button } from "@/components/ui/Button";
+import type { ChatCitation, ChatRequest, ChatResponse } from "@/types/chat";
+import type { ArticleDetailResponse } from "@/types/news";
 import styles from "./ChatPanel.module.css";
 
 const questions = ["Resume lo reciente", "¿Qué importa en mi región?", "Explícame una noticia de otro país", "Novedades de tecnología"];
 
-export function ChatPanel() {
-  const { articles, region, messages, addMessages, clearMessages, preview } = useDemoSession();
+function Citation({ citation }: { citation: ChatCitation }) {
+  if (citation.kind === "article") return <>
+    <Link href={`/noticias/${encodeURIComponent(citation.articleId)}`}>{citation.title} ↗</Link>
+    <p className={styles.citationLabel}>{STATUS_LABELS[citation.status]} · {CONTENT_TYPE_LABELS[citation.contentType]}</p>
+  </>;
+  let href: string | undefined;
+  try {
+    const url = new URL(citation.url);
+    if (url.protocol === "https:" || url.protocol === "http:") href = url.href;
+  } catch { /* Una cita inválida no debe convertirse en un enlace ejecutable. */ }
+  return <>
+    {href ? <a href={href} target="_blank" rel="noopener noreferrer">{citation.name} ↗</a> : <span>{citation.name}</span>}
+    <p className={styles.citationLabel}>{citation.label}</p>
+  </>;
+}
+
+export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: string; invalidArticle?: boolean }) {
+  const router = useRouter();
+  const { catalog, profile, messages, appendMessages, clearMessages, conversationRevision, refreshFeed } = useReaderSession();
   const [question, setQuestion] = useState("");
   const [showExamples, setShowExamples] = useState(messages.length === 0);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
+  const [articleTitle, setArticleTitle] = useState<string | null>(null);
+  const [articleLoading, setArticleLoading] = useState(Boolean(articleId));
+  const [articleError, setArticleError] = useState<ApiError | null>(null);
+  const [articleRevision, setArticleRevision] = useState(0);
+  const [resettingContext, setResettingContext] = useState(false);
+  const [enteringReply, setEnteringReply] = useState<string | null>(null);
   const conversation = useRef<HTMLElement>(null);
   const transcript = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const errorSummary = useRef<HTMLDivElement>(null);
+  const request = useRef<AbortController | null>(null);
   const followReply = useRef(false);
-  const paused = preview === "loading" || preview === "error" || preview === "offline" || preview === "limit";
+  const region = catalog?.regions.find((item) => item.id === profile?.regionId)?.label;
+  const pending = pendingQuestion !== null;
+  const contextBlocked = invalidArticle || resettingContext || Boolean(error?.fields?.articleId) || Boolean(articleId && (articleLoading || articleError || !articleTitle));
+
+  useEffect(() => {
+    if (!articleId) return;
+    const controller = new AbortController();
+    apiRequest<ArticleDetailResponse>(`/api/articles/${encodeURIComponent(articleId)}`, { signal: controller.signal })
+      .then(({ data }) => {
+        if (!controller.signal.aborted) setArticleTitle(data.title);
+      })
+      .catch((failure: unknown) => {
+        if (!controller.signal.aborted && !isAbortError(failure)) setArticleError(asApiError(failure));
+      })
+      .finally(() => { if (!controller.signal.aborted) setArticleLoading(false); });
+    return () => controller.abort();
+  }, [articleId, articleRevision]);
+
+  useEffect(() => () => {
+    request.current?.abort();
+    request.current = null;
+  }, [conversationRevision]);
+
+  useEffect(() => {
+    if (error) errorSummary.current?.focus();
+  }, [error]);
 
   useEffect(() => {
     const panel = conversation.current;
@@ -43,68 +100,137 @@ export function ChatPanel() {
     if (!followReply.current || !transcript.current) return;
     transcript.current.scrollTop = transcript.current.scrollHeight;
     followReply.current = false;
-  }, [messages.length]);
+  }, [messages.length, pendingQuestion]);
 
-  function send(text: string, example?: number) {
-    if (!text.trim() || paused) return;
-    let selected = articles.slice(0, 3);
-    if (example === 1) selected = articles.filter((article) => article.regions.includes(region)).slice(0, 3);
-    if (example === 2) selected = articles.filter((article) => !article.regions.includes(region)).slice(0, 1);
-    if (example === 3) selected = articles.filter((article) => article.topic === "Tecnología").slice(0, 3);
-    const available = example !== undefined && preview !== "empty" && selected.length > 0;
-    const reply = available
-      ? `Respuesta preparada de demostración: ${selected.map((article) => article.summary).join(" ")} Estas noticias son ficticias. Sus etiquetas no constituyen una verificación del chat.`
-      : preview === "empty"
-        ? "No hay noticias publicadas en este escenario de demostración. No puedo elaborar una respuesta con fuentes."
-        : "Esta demostración no procesa consultas libres. Puedes explorar las cuatro preguntas de ejemplo. La respuesta real quedará disponible al conectar el servicio de noticias.";
-    followReply.current = true;
-    addMessages([
-      { id: crypto.randomUUID(), role: "reader", text: text.trim(), articleIds: [] },
-      { id: crypto.randomUUID(), role: "assistant", text: reply, articleIds: available ? selected.map((article) => article.id) : [] },
-    ]);
-    setQuestion("");
-    if (example !== undefined) transcript.current?.focus({ preventScroll: true });
+  async function send(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || request.current || contextBlocked) return;
+    if (trimmed.length > 500) {
+      setError(new ApiError("La pregunta admite 500 caracteres.", 422, "VALIDATION_ERROR", { question: "Reduce la pregunta a 500 caracteres." }));
+      return;
+    }
+    const controller = new AbortController();
+    request.current = controller;
+    setQuestion(text);
+    setError(null);
+    setPendingQuestion(trimmed);
     setShowExamples(false);
+    followReply.current = true;
+    const body: ChatRequest = {
+      question: trimmed,
+      messages: messages.slice(-4).map(({ role, text: previous }) => ({ role, text: previous.slice(0, 2000) })),
+      ...(articleId && { articleId }),
+    };
+    try {
+      const { data } = await apiRequest<ChatResponse>("/api/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal,
+      });
+      if (controller.signal.aborted || request.current !== controller) return;
+      let answer: string;
+      switch (data.status) {
+        case "answered":
+        case "out_of_scope":
+          answer = data.segments.map((segment) => segment.text).join("\n\n");
+          break;
+        case "no_coverage":
+          answer = "No hay cobertura suficiente para responder esta consulta. Puedes seguir leyendo la edición.";
+          break;
+        case "unavailable":
+          answer = "El chat no está disponible en este momento. Puedes seguir leyendo la edición y volver a intentarlo después.";
+          break;
+        default:
+          throw new ApiError("No se recibió una respuesta válida. Tu pregunta sigue disponible para intentarlo después.", 502, "INVALID_RESPONSE");
+      }
+      if (!answer.trim()) throw new ApiError("No se recibió una respuesta. Tu pregunta sigue disponible para intentarlo después.", 502, "INVALID_RESPONSE");
+      followReply.current = true;
+      const replyId = crypto.randomUUID();
+      setEnteringReply(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? null : replyId);
+      appendMessages([
+        { id: crypto.randomUUID(), role: "reader", text: trimmed },
+        { id: replyId, role: "assistant", text: answer, segments: data.status === "answered" || data.status === "out_of_scope" ? data.segments : undefined },
+      ]);
+      if (data.status !== "unavailable") setQuestion("");
+    } catch (failure) {
+      if (!controller.signal.aborted && request.current === controller && !isAbortError(failure)) setError(asApiError(failure));
+    } finally {
+      // El servidor puede registrar la señal antes de responder con un error.
+      if (articleId) refreshFeed();
+      if (request.current === controller) {
+        request.current = null;
+        setPendingQuestion(null);
+      }
+    }
+  }
+
+  function reloadArticle() {
+    setArticleError(null);
+    setError(null);
+    setArticleLoading(true);
+    setArticleRevision((current) => current + 1);
+  }
+
+  function newConversation() {
+    request.current?.abort();
+    request.current = null;
+    setPendingQuestion(null);
+    setError(null);
+    clearMessages();
+    setQuestion("");
+    setShowExamples(true);
+    setEnteringReply(null);
+    if (articleId || invalidArticle) {
+      setResettingContext(true);
+      router.replace("/chat", { scroll: false });
+    }
+    requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const index = questions.indexOf(question.trim());
-    send(question, index < 0 ? undefined : index);
+    void send(question);
   }
 
   return (
     <section id="conversacion" ref={conversation} className={styles.chat} aria-labelledby="chat-title">
       <div className={styles.heading}><h2 id="chat-title">Tu conversación</h2>
-        {messages.length > 0 && <button type="button" onClick={() => { clearMessages(); setShowExamples(true); input.current?.focus({ preventScroll: true }); }}>Nueva conversación</button>}
+        {(messages.length > 0 || pending || articleId || invalidArticle) && <button type="button" onClick={newConversation} disabled={resettingContext}>Nueva conversación</button>}
       </div>
       <div ref={transcript} className={styles.transcript} role="region" tabIndex={0} aria-label="Historial de esta conversación">
-        <div className={styles.context}><p className={styles.region}>Edición de {region}</p><p className={styles.hint}>El chat resume noticias, no las verifica. Las respuestas de esta demo están preparadas y sus noticias son ficticias.</p>
+        <div className={styles.context}><p className={styles.region}>{region ? `Edición de ${region}` : "Sin región elegida"}</p><p className={styles.hint}>El chat resume noticias, no las verifica. Consulta las fuentes y el estado de cada noticia.</p>
+          {(articleId || invalidArticle) && <aside className={styles.articleContext} aria-label="Noticia de esta conversación" aria-busy={articleLoading}>
+            {invalidArticle ? <p role="alert">El enlace de la noticia no es válido. Abre una noticia desde la edición o continúa sin seleccionarla.</p>
+              : articleLoading ? <p role="status">Cargando la noticia de esta conversación…</p>
+                : articleError?.status === 404 ? <p role="alert">Esta noticia ya no está disponible. Puedes preguntar sobre la edición.</p>
+                  : articleError ? <ApiErrorNotice error={articleError} retry={reloadArticle} />
+                    : <><p>Estás preguntando sobre esta noticia</p><Link className={styles.articleTitle} href={`/noticias/${encodeURIComponent(articleId!)}`}>{articleTitle}</Link></>}
+            {error?.fields?.articleId && <p id="chat-article-error" className={styles.contextError} role="alert">{error.fields.articleId}</p>}
+            <Link className={styles.contextAction} href="/chat" scroll={false}>Preguntar sobre la edición</Link>
+          </aside>}
           <button className={styles.examplesToggle} type="button" aria-expanded={showExamples} aria-controls="chat-examples" onClick={() => setShowExamples((current) => !current)}>{showExamples ? "Ocultar preguntas de ejemplo" : "Ver preguntas de ejemplo"}</button>
-          <div id="chat-examples" className={styles.suggestions} hidden={!showExamples} aria-label="Consultas de demostración">
-            {questions.map((text, index) => <button key={text} type="button" disabled={paused} onClick={() => send(text, index)}>{text} <span aria-hidden="true">↗</span></button>)}
+          <div id="chat-examples" className={styles.suggestions} hidden={!showExamples} aria-label="Preguntas sugeridas">
+            {questions.map((text) => <button key={text} type="button" disabled={pending || contextBlocked} onClick={() => { void send(text); }}>{text} <span aria-hidden="true">↗</span></button>)}
           </div>
         </div>
         <div className={styles.messages} role="log" aria-label="Conversación temporal" aria-live="polite" aria-relevant="additions">
-        {messages.map((message) => <article key={message.id} className={styles.message} data-role={message.role}>
-          <p className={styles.author}>{message.role === "reader" ? "Tu pregunta" : "Meridian · respuesta de ejemplo"}</p>
-          <p>{message.text}</p>
-          {message.articleIds.length > 0 && <ul className={styles.citations} aria-label="Fuentes de esta respuesta">
-            {message.articleIds.map((id) => {
-              const article = articles.find((item) => item.id === id);
-              return article ? <li key={id}><Link href={`/noticias/${id}`}>{article.title} ↗</Link><ArticleMeta article={article} /></li> : null;
-            })}
-          </ul>}
+        {messages.map((message) => <article key={message.id} className={`${styles.message}${enteringReply === message.id ? ` ${styles.messageEnter}` : ""}`} data-role={message.role} onAnimationEnd={() => { if (enteringReply === message.id) setEnteringReply(null); }}>
+          <p className={styles.author}>{message.role === "reader" ? "Tu pregunta" : "Meridian · conversación"}</p>
+          {message.segments?.length ? message.segments.map((segment, index) => <div className={styles.segment} key={index}>
+            <p>{segment.text}</p>
+            {segment.citations.length > 0 && <ul className={styles.citations} aria-label="Fuentes de este texto">{segment.citations.map((citation, citationIndex) => <li key={`${citation.kind}-${citationIndex}`}><Citation citation={citation} /></li>)}</ul>}
+          </div>) : <p>{message.text}</p>}
         </article>)}
+        {pendingQuestion && <article className={`${styles.message} ${styles.messageEnter}`} data-role="reader"><p className={styles.author}>Tu pregunta</p><p>{pendingQuestion}</p><p className={styles.pendingStatus} role="status">Consultando las noticias…</p></article>}
         </div>
+        {error && <div ref={errorSummary} tabIndex={-1}><ApiErrorNotice error={error} /></div>}
       </div>
       <form className={styles.dock} onSubmit={submit}>
-        <label htmlFor="news-question">Pregunta sobre tu edición</label>
+        <label htmlFor="news-question">{articleId ? "Pregunta sobre esta noticia" : "Pregunta sobre tu edición"}</label>
         <div className={styles.inputRow}>
-          <input ref={input} id="news-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="¿Qué está cambiando?" maxLength={1000} disabled={paused} required autoComplete="off" enterKeyHint="send" aria-describedby="chat-note" />
-          <Button type="submit" disabled={paused || !question.trim()}>Enviar <span aria-hidden="true">↗</span></Button>
+          <input ref={input} id="news-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="¿Qué está cambiando?" maxLength={500} disabled={pending || resettingContext} required autoComplete="off" enterKeyHint="send" aria-invalid={Boolean(error?.fields?.question)} aria-describedby={`${error?.fields?.question ? "chat-question-error " : ""}${error?.fields?.articleId ? "chat-article-error " : ""}chat-note`} />
+          <Button type="submit" disabled={pending || contextBlocked || !question.trim()}>{pending ? "Enviando…" : "Enviar"} <span aria-hidden="true">↗</span></Button>
         </div>
-        <p id="chat-note" role="status">{preview === "limit" ? "Límite de IA simulado. Puedes seguir leyendo. No se hará ningún reintento automático." : paused ? "Consulta pausada por el estado de demostración. Usa «Probar estados» para volver al contenido." : "Demo sin IA conectada · conversación temporal · no es asesoría de inversión"}</p>
+        {error?.fields?.question && <p id="chat-question-error" className={styles.fieldError}>{error.fields.question}</p>}
+        <p id="chat-note">Conversación temporal · máximo 500 caracteres · no es asesoría de inversión</p>
       </form>
     </section>
   );

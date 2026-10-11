@@ -20,5 +20,8 @@
   .standard { grid-column: span 4; }
   .compact { grid-column: 1 / -1; }
   .compact .copy { grid-template-columns: 1fr 3fr 2fr; align-items: baseline; }
+  .compact .topic { grid-column: 1; }
+  .compact h3 { grid-column: 2; }
   .compact .source { grid-column: 2; }
+  .compact .reason { grid-column: 2 / -1; }
 }

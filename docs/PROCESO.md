@@ -23,7 +23,7 @@ vive en la documentación; Git evita que dos partes se pisen.
 | Archivo | Contenido |
 |---|---|
 | [ALCANCE.md](ALCANCE.md) | Requisitos con ID, criterios de aceptación y matriz de estado |
-| `specs/<feature>.md` | Spec de la feature: comportamiento actual, criterios y cambio en curso |
+| `specs/<parte>/<feature>.md` | Spec de la feature: comportamiento actual, criterios y cambio en curso. La parte es la del responsable: `ia`, `front`, `backend` o `infra` (D-35) |
 | `docs/features/<feature>/bitacora.md` | Ciclos que cambiaron una decisión, con el registro del agente |
 | [DECISIONES.md](DECISIONES.md) | Todas las decisiones duraderas, una fila por decisión |
 
@@ -31,7 +31,7 @@ vive en la documentación; Git evita que dos partes se pisen.
 
 **Comprensión → Hipótesis → Construcción → Prueba → Observación → Corrección**
 
-1. Escriba el cambio en `specs/<feature>.md`, sección «Cambio en curso»: requisitos y
+1. Escriba el cambio en `specs/<parte>/<feature>.md`, sección «Cambio en curso»: requisitos y
    criterios de aceptación. Si la funcionalidad no tiene ticket, créelo y escriba sus tareas en él.
 2. Construya con el agente. El agente lee [AGENTS.md](../AGENTS.md) y el spec.
 3. Ejecute la prueba. Registre la fecha, el entorno, lo observado y el resultado.
@@ -68,7 +68,7 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 | Framework | Qué demuestra | Dónde se ve |
 |---|---|---|
 | First principles, Lean, Systems thinking | El problema se analizó antes de elegir la solución | Notion (hechos base); spec («No incluido», «Dependencias») |
-| SDD (spec-driven) | El plan existe antes del código | `specs/<feature>.md` |
+| SDD (spec-driven) | El plan existe antes del código | `specs/<parte>/<feature>.md` |
 | TDD (test-driven) | El criterio de aceptación existe antes del código | Criterios del spec, `*.test.ts`, `e2e/` |
 | EDD (evidence-driven) | Cada cierre y cada decisión tienen evidencia | Bitácora, `DECISIONES.md` |
 | Context engineering | Qué información recibe el agente | `AGENTS.md`, spec |
@@ -90,7 +90,7 @@ por qué) se documenta en el spec de cada feature, sección «Uso de IA en el pr
 | Test de lógica | 1 archivo por módulo con riesgo: costo de IA, roles, validaciones, feed. 1 test por criterio. Al lado del módulo (`*.test.ts`) |
 | Test e2e | 5 como máximo, con Playwright, en `e2e/`. Solo el camino principal del flujo. Sin estilos ni snapshots |
 | UI sin e2e | Prueba manual en Vercel y en un teléfono real. Pruebe carga, vacío, error, sin conexión y cada rol |
-| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más. Hoy hay 2: `asd-ste100` y `developer-documentation` (ver [AGENTS.md](../AGENTS.md)) |
+| Skills | 3 como máximo, en `.claude/skills/`. Solo para un procedimiento que se repite 3 veces o más. Hoy hay 3: `asd-ste100`, `developer-documentation` y `killspec` (ver [AGENTS.md](../AGENTS.md)) |
 | Capturas | 0 por defecto. Si hace falta una: `docs/features/<feature>/evidencia/AAAA-MM-DD-descripcion.ext`, sin llaves, tokens, cookies ni correos |
 | Tamaño de un PR | Un cambio por PR. 400 líneas como máximo, sin contar `package-lock.json` ni archivos de terceros copiados sin modificar. Si es mayor, divídalo o explique en el PR por qué no se puede dividir |
 
@@ -139,6 +139,7 @@ hotfix/<descripcion> --PR, squash-->        main  --merge-->  dev
 
 - **Nadie sube directo a `main`.**
 - **La documentación va directo a `dev`**, sin rama ni PR: `docs/`, `specs/`, `AGENTS.md` y `README.md`. Antes de subir, ejecute `git pull` y revise `git diff --stat`.
+- **El hook `.githooks/pre-commit` revisa specs y enlaces** (D-36). Un error detiene el commit. Un aviso no lo detiene: se limpia con `/killspec`. Actívelo una vez por copia: `git config core.hooksPath .githooks`.
 - **El código va en la rama de su feature.** La rama se llama como la feature de [docs/README.md](README.md): `chat`, `recomendacion`, `portal-admin`. No cree una rama por cada cambio pequeño.
 - La rama vive hasta que la feature está terminada. Después, bórrela. Traiga `dev` a su rama cada día:
 
@@ -168,7 +169,7 @@ Cada persona modifica solo las carpetas de su parte, aunque comparta la rama de 
 | `src/app/api/`, `src/app/actions/` (excepto `auth.ts`), `src/lib/services/`, `src/lib/http/`, `src/types/` | Backend · Gerardo Pineda |
 | `src/lib/ia/`, `src/lib/recomendacion/` | IA · Rodrigo Mansilla |
 | `supabase/migrations/`, `src/lib/supabase/`, `src/lib/auth/`, `src/proxy.ts`, `src/app/auth/`, `src/app/actions/auth.ts`, `public/sw.js`, `src/app/manifest.ts`, `next.config.ts`, `.env.example`, `package.json` | Infra · Ricardo Chuy |
-| `specs/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
+| `specs/<parte>/<feature>.md`, `docs/features/<feature>/` | Responsable de la feature |
 | `AGENTS.md`, `docs/PROCESO.md`, `docs/ALCANCE.md`, `docs/DECISIONES.md` | Todo el equipo |
 
 ### Archivos compartidos: reglas para evitar conflictos
@@ -214,12 +215,12 @@ No active «Require review from Code Owners»: bloquearía los PR en los que el 
 
 ## 9. Plantillas
 
-### Spec (`specs/<feature>.md`)
+### Spec (`specs/<parte>/<feature>.md`)
 
 ```markdown
 # <Feature>
 
-**Requisitos:** `RF-xx` · **Bitácora:** [bitacora.md](../docs/features/<feature>/bitacora.md) ·
+**Requisitos:** `RF-xx` · **Bitácora:** [bitacora.md](../../docs/features/<feature>/bitacora.md) ·
 **Investigación:** <enlace a Notion> · **Responsable:** <nombre>
 
 ## Comportamiento actual

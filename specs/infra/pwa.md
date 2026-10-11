@@ -2,9 +2,9 @@
 
 Instalación en iPhone y Android sin tiendas, y la forma de compartir la app para probarla.
 
-**Requisitos:** `RF-01`, `RF-05` · **Bitácora:** [bitacora.md](../docs/features/pwa/bitacora.md) ·
+**Requisitos:** `RF-01`, `RF-05` · **Bitácora:** [bitacora.md](../../docs/features/pwa/bitacora.md) ·
 **Decisiones:** D-01, D-05 · **Investigación:** [Notion](https://app.notion.com/p/bcf3b3eb862b4a0fa01d068850f4d198) ·
-**Detalle técnico:** [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md)
+**Detalle técnico:** [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md)
 
 ## Comportamiento actual
 
@@ -47,8 +47,8 @@ Toda pantalla nueva se probó en un iPhone y un Android reales, ya instalada.
 
 | Estado | Tarea | Req. | Evidencia |
 |---|---|---|---|
-| ✅ | Manifiesto, iconos y service worker | `RF-01` | Commit `1fdcb81`; ver [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
-| ✅ | Instalación y apertura a pantalla completa en Android e iOS | `RF-01` | Tabla de pruebas de [INFRA_HANDOFF.md](../docs/INFRA_HANDOFF.md) |
+| ✅ | Manifiesto, iconos y service worker | `RF-01` | Commit `1fdcb81`; ver [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md) |
+| ✅ | Instalación y apertura a pantalla completa en Android e iOS | `RF-01` | Tabla de pruebas de [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md) |
 | ✅ | Botón de instalación en Android | `RF-05` | Bitácora 2026-09-10, commit `84ce854` |
 | ✅ | Instrucciones de instalación para iPhone | `RF-05` | Bitácora 2026-09-10, commit `e3567fd` |
 | ✅ | Pantalla de aviso sin conexión | `RF-01` | Bitácora 2026-09-23 (prueba con el servidor detenido): `/contenido` cae en `offline.html` |
@@ -68,5 +68,5 @@ El frontend conserva las áreas seguras, controles táctiles, movimiento reducid
 Los colores de tema del layout coinciden con el papel claro y oscuro. El manifiesto conserva sus colores anteriores.
 No se añade almacenamiento de respuestas privadas ni noticias para leer sin conexión.
 La fase de implementación no escribió en Git. La entrega posterior autoriza commits locales, sin publicación automática. Las pruebas en teléfonos y preview siguen pendientes.
-La consulta del manifiesto y las cabeceras HTTP anónimas se registran en [la evidencia local](../notion-frontend.md#registro-honesto).
+La consulta del manifiesto y las cabeceras HTTP anónimas se registran en [la evidencia local](../front/notion-frontend.md#registro-honesto).
 No hubo prueba nueva de instalación, actualización ni desconexión real. El usuario pidió dejar pendientes todas las pruebas con sesión.

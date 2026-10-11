@@ -3,7 +3,7 @@
 ## 2026-10-09 · Demostración independiente antes de integrar servicios
 
 **Requisitos:** RF-01, RF-08, RF-09, RPR-01, RPR-03.
-**Notion:** pendiente de traslado e ID. [Registro propio](../../../notion-frontend.md).
+**Notion:** pendiente de traslado e ID. [Registro propio](../../../specs/front/notion-frontend.md).
 
 - **Comprensión:** la interfaz aún es una prueba técnica. No existen endpoints de noticias.
 - **Hipótesis:** una demo identificada permite revisar navegación y jerarquía antes de integrar datos.
@@ -30,12 +30,12 @@ Es una corrección de procedencia, no un resultado de prueba ni una aprobación 
 ## 2026-10-09 · Separar conversación y edición sin perder la identidad
 
 **Requisitos:** RF-01, RF-02, RF-07, RF-08, RF-09, RPR-01, RPR-03.
-**Notion:** ID pendiente. [Registro de traslado](../../../notion-frontend.md).
+**Notion:** ID pendiente. [Registro de traslado](../../../specs/front/notion-frontend.md).
 
 - **Comprensión:** el usuario reportó que el chat y sus botones prolongaban una sola página. También vio una pantalla antigua después de entrar con Google.
 - **Hipótesis:** páginas separadas, conectadas por una navegación común, permiten leer y conversar sin desplazar el feed con cada respuesta.
 - **Construcción:** se implementaron rutas separadas de chat, edición, temas y búsqueda. Guardados presenta la integración pendiente. El layout, el acceso y los estados comparten identidad editorial. El lector incluye bloques tipados, compartir y relacionados de demo.
-- **Prueba:** auditoría estática, verificaciones técnicas, HTTP anónimo y revisión de navegador público. Los resultados y sus límites están en [el registro de evidencia](../../../notion-frontend.md#registro-honesto).
+- **Prueba:** auditoría estática, verificaciones técnicas, HTTP anónimo y revisión de navegador público. Los resultados y sus límites están en [el registro de evidencia](../../../specs/front/notion-frontend.md#registro-honesto).
 - **Observación:** el mensaje antiguo no existe en la rama actual. Sí está en las referencias locales de main y dev. El usuario cree que el login terminó en Vercel, pero no se verificó ese retorno.
 - **Corrección:** la raíz con sesión dirige al chat en el código. La edición completa está en otra ruta. No se modifica OAuth para corregir una pantalla de una versión distinta. La revisión retiró una carga global que podía anticipar HTTP 200 antes del rechazo administrativo.
 - **Agente:** Codex, con subagentes de páginas, experiencia e integración. Identificador exacto del modelo no disponible.
@@ -43,7 +43,7 @@ Es una corrección de procedencia, no un resultado de prueba ni una aprobación 
 - **Propuesta:** reutilizar componentes, separar rutas y conservar la demo explícita hasta que existan servicios.
 - **Decisión:** el usuario aprobó chat y edición separados, Guardados sin persistencia y dependencia de Infra para la marca instalada y offline.
 - **Verificación:** el coordinador ejecutó tipos, lint, build y recorridos públicos. El subagente contrastó contratos, revisó errores y validó los documentos. El usuario pidió mantener todas las pruebas con sesión pendientes. No se marcó ninguna tarea funcional como Done.
-- **Evidencia:** 2026-10-09, Windows y navegador integrado sobre producción local. [Resultados y limitaciones](../../../notion-frontend.md#registro-honesto). El reporte inicial proviene del usuario. Los viewports públicos no constituyen pruebas en teléfonos reales.
+- **Evidencia:** 2026-10-09, Windows y navegador integrado sobre producción local. [Resultados y limitaciones](../../../specs/front/notion-frontend.md#registro-honesto). El reporte inicial proviene del usuario. Los viewports públicos no constituyen pruebas en teléfonos reales.
 
 La primera implementación de esta revisión añadió `loading.tsx` en la raíz.
 La revisión del agente detectó que el fallback podía fijar HTTP 200 antes de `notFound()` en el portal.

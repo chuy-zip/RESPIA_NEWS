@@ -2,8 +2,8 @@
 
 Registro de cada llamada a un modelo, tope de gasto y reserva para la demo.
 
-**Requisitos:** `RP-01`, `RP-02`, `RP-03` · **Bitácora:** [bitacora.md](../docs/features/costos-ia/bitacora.md) ·
-**Decisiones:** D-23 a D-25, D-29 · **Investigación (Notion):** [CIC-14](https://app.notion.com/p/3f4f573ce6df81c0a2fdef4150ce5938),
+**Requisitos:** `RP-01`, `RP-02`, `RP-03` · **Bitácora:** [bitacora.md](../../docs/features/costos-ia/bitacora.md) ·
+**Decisiones:** D-23 a D-25, D-30 · **Investigación (Notion):** [CIC-14](https://app.notion.com/p/3f4f573ce6df81c0a2fdef4150ce5938),
 [CIC-15](https://app.notion.com/p/3f4f573ce6df8133b74ac33fb3932d13), [CIC-16](https://app.notion.com/p/3f4f573ce6df813eaee5d41ff0675832) ·
 **Estimación por proveedor y por pregunta:** [Arquitectura y costo del chat](https://app.notion.com/p/3f4f573ce6df8168a4e8d347d5b4c749) ·
 **Responsable:** Rodrigo Mansilla (IA). Tabla del registro: Ricardo Chuy.
@@ -13,7 +13,7 @@ Registro de cada llamada a un modelo, tope de gasto y reserva para la demo.
 Todavía no hay llamadas a modelos. Gasto acumulado: USD 0. La API de créditos de OpenRouter lo confirmó el
 2026-10-10.
 
-### Presupuesto (D-29)
+### Presupuesto (D-30)
 
 | Parte | Monto | Uso |
 |---|---|---|
@@ -25,15 +25,12 @@ Estimación de la demo: 300 preguntas × USD 0.001 = USD 0.30 de chat (CIC-16). 
 La búsqueda externa no gasta presupuesto: el RSS es gratis y Tavily queda en su plan gratis de 1 000 créditos por
 mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vigilar ese límite.
 
-### Modelos (D-29)
+### Modelos (D-30)
 
-- **Pruebas:** modelos `:free` de OpenRouter, solo con datos de ejemplo, porque pueden entrenar con lo que
-  reciben. Límite: 50 peticiones por día y cuenta sin compra de créditos.
-- **Producción:** Claude Haiku 5.5. El conjunto fijo del chat (CIC-17) valida su calidad antes de la demo.
-- **Proveedor:** OpenRouter o la API oficial de Anthropic. Se decide antes de comprar créditos. El precio por
-  token es el mismo. OpenRouter cobra 5.5 % por compra de créditos (mínimo USD 0.80).
-- **Un solo código:** con OpenRouter, entre pruebas y producción solo cambia `IA_MODEL`. La llave es
-  `OPENROUTER_API_KEY`.
+- **Desarrollo y producción:** Claude Haiku 5.5 (`claude-haiku-5-5`) por la API oficial de Anthropic, la opción
+  sin comisión. No se usan modelos `:free`.
+- **Llave:** `ANTHROPIC_API_KEY`, variable de servidor. El código del modelo se escribe cuando haya créditos.
+- **Costo de desarrollo:** el conjunto fijo del chat (CIC-17) cuesta entre USD 0.01 y 0.04 por ejecución.
 
 ## Criterios de aceptación
 
@@ -41,7 +38,7 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 - **`RP-02`**: cada función de IA aparece en el registro con modelo, tokens y costo. Se consultan el gasto, el
   saldo y el costo por función. Con el tope forzado, la función no llama al modelo.
 - **`RP-03`**: ordenar, filtrar y recuperar no llaman a ningún modelo. Se revisan `src/lib/recomendacion/` y
-  las tools del chat.
+  el servicio que arma el contexto del chat (D-34).
 
 ## No incluido
 
@@ -59,7 +56,7 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 
 | Función | Feature | Modelo | Para qué | Alternativa más barata considerada | Costo estimado |
 |---|---|---|---|---|---|
-| `responderChat` | `chat` | Claude Haiku 5.5 (D-29) | Entender la pregunta, pedir datos con tools y redactar | Plantillas o router con reglas (CIC-24) | USD 0.001 a 0.002 por pregunta |
+| `responderChat` | `chat` | Claude Haiku 5.5 (D-30) | Entender la pregunta y redactar con las noticias del contexto (D-34) | Plantillas o router con reglas (CIC-24) | USD 0.001 a 0.002 por pregunta |
 | `buscar_externo` | `chat` | Ninguno: RSS y Tavily (D-25) | Fuentes externas cuando la app no tiene noticias | Responder solo «no hay noticias» (CIC-25) | USD 0 dentro de los 1 000 créditos gratis de Tavily por mes |
 | `elegirImagen` | `imagenes` | El mismo modelo del chat | Proponer una imagen del banco leyendo descripciones | El administrador elige sin sugerencia (CIC-27) | Menos de USD 0.0002 por noticia |
 | Recomendador | `recomendacion` | Ninguno | Ordenar el feed | No aplica | USD 0 |

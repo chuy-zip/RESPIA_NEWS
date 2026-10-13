@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ArticleImport } from "@/components/admin/ArticleImport";
 import { AccessPrompt } from "@/components/auth/AccessPrompt";
 import { EditorialDesk } from "@/components/admin/EditorialDesk";
 import { getCurrentUser, isAdmin } from "@/lib/auth/dal";
@@ -39,7 +40,10 @@ export default async function AdminPage() {
   return (
     <>
       {user ? (
-        <EditorialDesk />
+        <>
+          <EditorialDesk />
+          <ArticleImport />
+        </>
       ) : (
         <AccessPrompt title="La mesa de edición." description="Inicia sesión con una cuenta administradora para preparar y revisar noticias." />
       )}

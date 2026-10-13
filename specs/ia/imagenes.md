@@ -59,6 +59,16 @@ Están en el ticket [TKT-4](https://app.notion.com/p/3f5f573ce6df81feb6e3fb92c20
 
 ## Cambio en curso
 
+### Buscar en Pixabay y copiar al bucket (backend, rama `feat/back-import`) · 2026-10-12
+
+Requisitos: `RF-17`, `RF-18`, `RT-05`. Decisiones: D-23, D-33. Responsable: Gerardo Pineda.
+
+- `POST /api/admin/images/preview` busca candidatas en Pixabay y descarta las que tienen la etiqueta «ai generado».
+  Devuelve `suggestedId: null` hasta que exista `elegirImagen`. El contrato no cambia cuando llegue.
+- `POST /api/admin/articles` acepta `image: { "pixabayId", "alt" }`. El servidor vuelve a pedir la imagen a Pixabay,
+  la copia al bucket y guarda el autor, la página y la licencia que da Pixabay, no los del cliente.
+- Detalle de los endpoints en la sección «Backend» de [portal-admin.md](../backend/portal-admin.md).
+
 ### Elegir la imagen con el modelo (rama `imagenes`, espera créditos)
 
 Requisitos: `RF-17`, `RT-05`. Decisiones: D-23, D-33. Ticket: TKT-4. Ciclo: CIC-27.

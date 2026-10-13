@@ -67,7 +67,7 @@ Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
 | `contentType` | Un valor de `contentTypes` |
 | `reviewNote` | Obligatorio. 1 500 caracteres como máximo |
 | `important` | `true` o `false` |
-| `image` | `null` (sin imagen) o una foto subida con `POST /api/admin/images`: `{ "uploadId", "alt", "author", "license", "origin" }`. `origin` es `event_photo` (foto del hecho) o `illustrative`. Los cinco campos son obligatorios (`RF-18`). Errores en `image.<campo>` |
+| `image` | `null` (sin imagen), una foto subida con `POST /api/admin/images`: `{ "uploadId", "alt", "author", "license", "origin" }`, o una imagen de banco de `POST /api/admin/images/preview`: `{ "pixabayId", "alt" }`. En la foto subida, `origin` es `event_photo` (foto del hecho) o `illustrative`, y los cinco campos son obligatorios (`RF-18`). Errores en `image.<campo>` |
 | `reviewConfirmed` | Siempre `true`: una persona revisó la noticia (`RT-04`) |
 
 | Status | `code` | Cuándo |
@@ -81,6 +81,67 @@ Publica una noticia. Solo un administrador. El cuerpo es `PublishArticleInput`:
 
 Límite conocido: la noticia, sus regiones y sus temas se guardan en tres inserciones. Si la conexión falla entre la
 primera y las otras, la noticia queda sin regiones o sin temas. Una función SQL con una transacción lo evitaría.
+
+#### `PATCH /api/admin/articles/[id]`
+
+Cambia el estado editorial de una noticia publicada (RT-03, RT-04). Solo un administrador. El cuerpo es
+`{ "status", "reviewNote" }`. Los dos son obligatorios: un estado nuevo necesita su razón.
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data` es `{ "id", "status", "reviewNote" }` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 404 | `ARTICLE_NOT_FOUND` | El id no existe o no es un UUID |
+| 422 | `VALIDATION_ERROR` | Estado inválido, razón vacía o de más de 1 500 caracteres, o `confirmed` con menos de dos fuentes |
+| 503 | `SERVICE_UNAVAILABLE` | La base no respondió |
+
+Solo se actualizan `status` y `review_note`. El título, el contenido, las fuentes y la imagen no cambian.
+
+#### `POST /api/admin/articles/import`
+
+Publica varias noticias de un archivo JSON. Solo un administrador. El cuerpo es `{ "items": [...] }`, con 20
+noticias como máximo. Cada noticia sigue las reglas de `POST /api/admin/articles`, con dos diferencias:
+
+- Solo se admiten `title`, `summary`, `body`, `sources`, `publishedAt`, `topicIds`, `regionIds`, `status`,
+  `contentType`, `important` e `image`. Otro campo, incluidos `reviewNote` y `reviewConfirmed`, es un error.
+- El servidor guarda `reviewNote` como «Aprobado». Subir el archivo es la confirmación de la persona (`RT-04`).
+
+Cada noticia se publica por separado, en el orden del archivo. Una noticia con errores no detiene las demás.
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data` es `{ "published", "failed", "results" }`. Cada resultado es `{ "index", "id" }` o `{ "index", "fields" }` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 422 | `VALIDATION_ERROR` | `items` no es una lista, está vacía o tiene más de 20 noticias. Error en `fields.items` |
+| 503 | `SERVICE_UNAVAILABLE` | No se pudo comprobar el rol |
+
+Ejemplo de archivo. Los IDs salen de `GET /api/catalogs`:
+
+```json
+{
+  "items": [
+    {
+      "title": "Título",
+      "summary": "Entradilla",
+      "body": [{ "type": "paragraph", "text": "Contenido" }],
+      "sources": [{ "name": "Medio", "url": "https://ejemplo.com/nota" }],
+      "publishedAt": "2026-10-12T08:00:00-06:00",
+      "topicIds": ["<id de tema>"],
+      "regionIds": ["<id de región>"],
+      "status": "developing",
+      "contentType": "summary",
+      "important": false,
+      "image": null
+    }
+  ]
+}
+```
+
+Límite conocido: importar dos veces el mismo archivo publica dos veces cada noticia.
 
 #### `POST /api/admin/images`
 
@@ -110,6 +171,35 @@ El bucket se creó con `supabase/migrations/002_storage_article_images.sql`. El 
 2026-10-10, antes de llegar a `main` (excepción a la regla 10 de `AGENTS.md`).
 
 Límite conocido: una foto que se sube y no se publica queda en el bucket. Se borra a mano desde Supabase.
+
+#### `POST /api/admin/images/preview`
+
+Busca imágenes de banco para una noticia sin foto (`RF-17`, D-23, D-33). Solo un administrador. El cuerpo es
+`{ "query" }`, de 2 a 100 caracteres. El servidor busca en Pixabay con `lang=es` y `safesearch=true` y guarda cada
+búsqueda en caché 24 horas. Descarta las candidatas con la etiqueta «ai generado» (`RT-05`).
+
+| Status | `code` | Cuándo |
+|---|---|---|
+| 200 | | `data` es `{ "source", "license", "licenseUrl", "candidates", "suggestedId" }`. Cada candidata es `{ "id", "type", "tags", "previewUrl", "author", "pageUrl" }` |
+| 400 | `INVALID_BODY` | El cuerpo no es JSON |
+| 401 | `UNAUTHORIZED` | No hay sesión |
+| 403 | `FORBIDDEN` | La cuenta no es administradora |
+| 422 | `VALIDATION_ERROR` | Falta `query` o es muy larga. Error en `fields.query` |
+| 503 | `SERVICE_UNAVAILABLE` | Falta `PIXABAY_API_KEY` o Pixabay no respondió |
+
+`previewUrl` sirve solo para mostrar la candidata en el portal: Pixabay no permite enlazarla de forma permanente.
+`suggestedId` es `null` hasta que exista `elegirImagen` (parte de IA). La pantalla debe mostrar que las imágenes
+vienen de Pixabay y su licencia.
+
+Para publicar con una candidata, `POST /api/admin/articles` recibe `image: { "pixabayId", "alt" }`. El servidor:
+
+1. Vuelve a pedir la imagen a Pixabay con su id. No usa datos del cliente.
+2. Rechaza la imagen si tiene la etiqueta «ai generado».
+3. Descarga la versión grande, revisa sus primeros bytes y la copia al bucket en `stock/`.
+4. Guarda `origin: stock`, la etiqueta «Imagen ilustrativa», el autor y la página de Pixabay y la licencia
+   «Pixabay Content License».
+
+Un id que no existe da 422 con `fields["image.pixabayId"]`. Si Pixabay o el bucket no responden, la respuesta es 503.
 
 #### `GET /api/admin/articles`
 
@@ -232,6 +322,8 @@ Requisitos: `npm run dev` y una cuenta de Google registrada en `public.admins`.
 | 2026-10-10 | Local, sesión de administrador | `GET /api/admin/articles`: 200 sin filtros, con `q`, con `topic` y con `status`, cada uno con las noticias esperadas. 400 con `status`, `topic` y `cursor` inválidos | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `POST /api/admin/images`: 201 con un PNG. 422 con un texto declarado como PNG, con un GIF y con 5 MB. `POST /api/admin/articles` con la foto: 201, y el lector devuelve `image` con la URL del bucket, `origin: event_photo` y la etiqueta «Fotografía del hecho». 422 con un `uploadId` inexistente y con `origin: stock`. 201 con `image: null` | Pasó |
 | 2026-10-10 | Local, sesión de administrador | `GET /api/articles/[id]`: 200 con `body`, `sources`, `reviewNote`, una región y un tema que coinciden con el catálogo. 404 `ARTICLE_NOT_FOUND` con un UUID inexistente y con un id que no es UUID | Pasó |
+| 2026-10-12 | Local, sesión de administrador, con `008` ejecutado | `PATCH /api/admin/articles/[id]`: 422 al confirmar una noticia con una fuente, 422 con la razón vacía, 422 con un estado inválido, 404 con un UUID inexistente y 200 al confirmar una noticia con dos fuentes | Pasó |
+| 2026-10-12 | Local, sesión de administrador | `POST /api/admin/articles/import` con tres noticias: una válida, una con `reviewNote` y una sin título. 200 con `published: 1`, `failed: 2`. El índice 0 trae su `id`, y los índices 1 y 2 traen `fields`. Con `items: []`, 422 `VALIDATION_ERROR` | Pasó |
 
 Pendiente: 403 en el portal y 200 en el lector con una cuenta común, página siguiente del listado con dos noticias o más, prueba en la preview de Vercel
 y prueba de la pantalla conectada. El código de integración no acredita esos resultados.
@@ -272,6 +364,24 @@ Verificar con administrador y usuario común. Publicar y comprobar la noticia en
 | En curso | Subir foto opcional y declarar su procedencia | RF-17, RF-18 | Subida y asociación implementadas. Sustituir la foto exige completar de nuevo su procedencia. Pruebas reales pendientes |
 
 ## Cambio en curso
+
+### Cambiar el estado de una noticia publicada · 2026-10-12
+
+Requisitos: RT-03 y RT-04. Ticket pendiente (`TKT-NN`).
+Hoy el estado solo se elige al publicar. `PATCH /api/admin/articles/[id]` deja que un administrador lo cambie después,
+por ejemplo de `developing` a `confirmed` cuando aparece la segunda fuente. Cada cambio exige una razón nueva (RT-03).
+No hay borradores: la noticia sigue publicada. Solo cambian `status` y `review_note`.
+Necesita `supabase/migrations/008_article_status_update.sql`, que da permiso de actualizar solo esas dos columnas.
+El script se ejecutó en Supabase el 2026-10-12, antes de llegar a `main` (excepción a la regla 10 de `AGENTS.md`).
+
+### Importar noticias desde un archivo · 2026-10-12
+
+Requisitos: RF-15 y RF-16. Ticket pendiente (`TKT-NN`).
+El administrador publica varias noticias con un JSON en `POST /api/admin/articles/import`.
+Cada noticia acepta solo los campos permitidos. Un campo desconocido es un error de esa noticia.
+Por pedido del usuario, la importación aprueba de una vez: el servidor pone `reviewNote` en «Aprobado» y
+`reviewConfirmed` en `true`. Quien sube el archivo es la persona que revisó y decidió el estado (`RT-04`).
+«Aprobado» no explica por qué la noticia tiene su estado, como pide `RT-03`. El equipo debe aceptar esa diferencia.
 
 ### Integración de la pantalla · 2026-10-10
 

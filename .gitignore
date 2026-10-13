@@ -34,3 +34,6 @@ yarn-error.log*
 # skills instaladas localmente (las skills compartidas de .claude siguen versionadas)
 /.agents/
 /skills-lock.json
+
+# cargas de noticias de prueba (POST /api/admin/articles/import), solo locales
+carga-*.json

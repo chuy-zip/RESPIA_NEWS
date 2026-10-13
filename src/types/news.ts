@@ -80,6 +80,33 @@ export interface ImageUploadResponse {
   meta: Record<string, never>;
 }
 
+/** Imagen de Pixabay que el portal muestra como opción (D-33). */
+export interface StockImageCandidate {
+  /** Id de Pixabay. Se envía al publicar como `image.pixabayId`. */
+  id: number;
+  type: "photo" | "illustration" | "vector/svg";
+  tags: string[];
+  /** Solo para la vista previa: Pixabay no permite enlazarla de forma permanente. */
+  previewUrl: string;
+  author: string;
+  pageUrl: string;
+}
+
+/** Respuesta de POST /api/admin/images/preview. */
+export interface ImagePreviewResult {
+  source: "Pixabay";
+  license: string;
+  licenseUrl: string;
+  candidates: StockImageCandidate[];
+  /** La candidata que propone el modelo, o null si no propone ninguna (D-23). */
+  suggestedId: number | null;
+}
+
+export interface ImagePreviewResponse {
+  data: ImagePreviewResult;
+  meta: Record<string, never>;
+}
+
 /** Lo que muestran las listas: portal, feed y búsqueda. */
 export interface ArticleSummary {
   id: string;
@@ -129,6 +156,16 @@ export interface PublishImageInput {
   origin: "event_photo" | "illustrative";
 }
 
+/**
+ * Imagen de banco elegida en el portal. El autor, la licencia y la URL los toma
+ * el servidor de Pixabay, no del cliente.
+ */
+export interface PublishStockImageInput {
+  pixabayId: number;
+  /** Descripción para lectores de pantalla. */
+  alt: string;
+}
+
 /** Cuerpo de POST /api/admin/articles. El servidor valida cada campo. */
 export interface PublishArticleInput {
   title: string;
@@ -142,8 +179,8 @@ export interface PublishArticleInput {
   contentType: ContentType;
   reviewNote: string;
   important: boolean;
-  /** Foto subida con POST /api/admin/images, o null si la noticia va sin imagen. */
-  image: PublishImageInput | null;
+  /** Foto subida con POST /api/admin/images, imagen de banco, o null si la noticia va sin imagen. */
+  image: PublishImageInput | PublishStockImageInput | null;
   /** Una persona revisó la noticia antes de publicar (RT-04). */
   reviewConfirmed: true;
 }
@@ -168,6 +205,27 @@ export interface ArticleListResponse {
 
 export interface PublicationResponse {
   data: PublicationResult;
+  meta: Record<string, never>;
+}
+
+/** Cuerpo de PATCH /api/admin/articles/[id]. Un estado nuevo necesita su razón (RT-03). */
+export interface StatusUpdateInput {
+  status: EditorialStatus;
+  reviewNote: string;
+}
+
+/** Respuesta de PATCH /api/admin/articles/[id]. */
+export interface StatusUpdateResponse {
+  data: { id: string; status: EditorialStatus; reviewNote: string };
+  meta: Record<string, never>;
+}
+
+/** Resultado de una noticia del archivo. `index` es su posición en `items`. */
+export type ArticleImportItem = { index: number; id: string } | { index: number; fields: Record<string, string> };
+
+/** Respuesta de POST /api/admin/articles/import. */
+export interface ArticleImportResponse {
+  data: { published: number; failed: number; results: ArticleImportItem[] };
   meta: Record<string, never>;
 }
 

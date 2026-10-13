@@ -4,7 +4,7 @@ Este documento explica qué cambió en el backend en la rama `feat/back-import` 
 de IA para usarlo. Los endpoints llegan a `dev` con el PR de esa rama.
 
 El detalle de cada endpoint (campos, reglas y códigos) está en la sección «Backend» de
-[portal-admin.md](specs/backend/portal-admin.md). El plan de imágenes está en [imagenes.md](specs/ia/imagenes.md).
+[portal-admin.md](portal-admin.md). El plan de imágenes está en [imagenes.md](../ia/imagenes.md).
 
 ## Qué hay de nuevo
 
@@ -58,7 +58,7 @@ Cómo usa el panel el endpoint:
 
 Cada noticia lleva los mismos campos que `PublishArticleInput`, sin `reviewNote` ni `reviewConfirmed`: el servidor los
 pone. Un campo que no está permitido es un error de esa noticia. El formato completo y un ejemplo de archivo están en
-la sección «`POST /api/admin/articles/import`» de [portal-admin.md](specs/backend/portal-admin.md).
+la sección «`POST /api/admin/articles/import`» de [portal-admin.md](portal-admin.md).
 
 ### F2. Imágenes de banco en el editor
 
@@ -160,7 +160,7 @@ Falta la sugerencia del modelo.
 
 ### I2. Llave de Pixabay
 
-Según [imagenes.md](specs/ia/imagenes.md), usted carga `PIXABAY_API_KEY` en Vercel. Sin la llave, la búsqueda
+Según [imagenes.md](../ia/imagenes.md), usted carga `PIXABAY_API_KEY` en Vercel. Sin la llave, la búsqueda
 responde 503 en la preview y en producción. El nombre ya está en `.env.example`.
 
 ### I3. Prueba de 10 noticias

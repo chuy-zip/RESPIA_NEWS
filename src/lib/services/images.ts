@@ -1,5 +1,6 @@
 import "server-only";
 
+import { elegirImagen, type ImageArticle } from "@/lib/ia/imagenes";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ImagePreviewResult,
@@ -139,6 +140,7 @@ const PIXABAY_LICENSE_URL = "https://pixabay.com/service/license-summary/";
 const STOCK = "stock";
 const CANDIDATES = 12;
 const MAX_QUERY = 100;
+const MAX_ARTICLE_TEXT = 600;
 const DAY_SECONDS = 24 * 60 * 60;
 // La copia va al bucket, que admite 5 MB por archivo.
 const MAX_STOCK_BYTES = 5 * 1024 * 1024;
@@ -201,17 +203,27 @@ async function pixabay(params: Record<string, string>): Promise<PixabayHit[] | n
 
 const tagList = (tags: string) => tags.split(",").map((tag) => tag.trim()).filter(Boolean);
 
+export interface PreviewInput {
+  query: string;
+  /** La noticia que el modelo lee para proponer una candidata. Sin ella, propone con la consulta. */
+  article: ImageArticle | null;
+}
+
 /** Lee el cuerpo de POST /api/admin/images/preview. */
-export function validatePreviewInput(raw: unknown): string {
+export function validatePreviewInput(raw: unknown): PreviewInput {
   const query = isRecord(raw) && typeof raw.query === "string" ? raw.query.trim() : "";
   if (query.length < 2 || query.length > MAX_QUERY) {
     throw new ImageValidationError({ query: `Escribe de 2 a ${MAX_QUERY} caracteres para buscar.` });
   }
-  return query;
+
+  const article = isRecord(raw) && isRecord(raw.article) ? raw.article : null;
+  const title = typeof article?.title === "string" ? article.title.trim().slice(0, MAX_ARTICLE_TEXT) : "";
+  const summary = typeof article?.summary === "string" ? article.summary.trim().slice(0, MAX_ARTICLE_TEXT) : "";
+  return { query, article: title ? { title, summary } : null };
 }
 
 /** Candidatas de Pixabay para una noticia sin foto. Ninguna está marcada como generada con IA. */
-export async function searchStockImages(query: string): Promise<ImagePreviewResult> {
+export async function searchStockImages({ query, article }: PreviewInput): Promise<ImagePreviewResult> {
   const hits = (await pixabay({ q: query, per_page: String(CANDIDATES) })) ?? [];
 
   const candidates: StockImageCandidate[] = hits
@@ -225,8 +237,9 @@ export async function searchStockImages(query: string): Promise<ImagePreviewResu
       pageUrl: hit.pageURL,
     }));
 
-  // `elegirImagen` (parte de IA) todavía no existe: el administrador elige sin sugerencia.
-  return { source: "Pixabay", license: PIXABAY_LICENSE, licenseUrl: PIXABAY_LICENSE_URL, candidates, suggestedId: null };
+  // `elegirImagen` no lanza: si falla, el administrador elige sin sugerencia.
+  const choice = await elegirImagen(article ?? { title: query, summary: "" }, candidates);
+  return { source: "Pixabay", license: PIXABAY_LICENSE, licenseUrl: PIXABAY_LICENSE_URL, candidates, suggestedId: choice.id };
 }
 
 /**

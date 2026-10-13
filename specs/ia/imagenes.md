@@ -80,3 +80,7 @@ Requisitos: `RF-17`, `RT-05`. Decisiones: D-23, D-33. Ticket: TKT-4. Ciclo: CIC-
   de otra región, y escenas que podrían pasar por el hecho real. Buscar solo «ai» da falsos positivos (CIC-27).
 - Si hay empate, se prefiere una ilustración o un vector: nadie los confunde con una foto del hecho. La prueba decide.
 - **Prueba:** 10 noticias de ejemplo con trampas y candidatas reales de Pixabay. Se arma antes de comprar créditos.
+- **Hecho (2026-10-12):** `elegirImagen(article, candidates)` en `src/lib/ia/imagenes.ts`, con pruebas simuladas en
+  `imagenes.test.mjs`. Nunca lanza: ante un fallo, el tope de gasto o un ID ajeno devuelve `id: null`. Quedó
+  conectada en `searchStockImages`, y el cuerpo de la preview acepta `article: { title, summary }`. Frontend debe enviarlo.
+  La prueba de 10 noticias con el modelo real sigue pendiente.

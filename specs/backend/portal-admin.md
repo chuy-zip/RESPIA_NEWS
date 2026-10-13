@@ -175,7 +175,7 @@ Límite conocido: una foto que se sube y no se publica queda en el bucket. Se bo
 #### `POST /api/admin/images/preview`
 
 Busca imágenes de banco para una noticia sin foto (`RF-17`, D-23, D-33). Solo un administrador. El cuerpo es
-`{ "query" }`, de 2 a 100 caracteres. El servidor busca en Pixabay con `lang=es` y `safesearch=true` y guarda cada
+`{ "query", "article"? }`. `query` tiene de 2 a 100 caracteres. `article` es `{ "title", "summary" }` y es opcional: es la noticia que lee el modelo. El servidor busca en Pixabay con `lang=es` y `safesearch=true` y guarda cada
 búsqueda en caché 24 horas. Descarta las candidatas con la etiqueta «ai generado» (`RT-05`).
 
 | Status | `code` | Cuándo |
@@ -188,7 +188,7 @@ búsqueda en caché 24 horas. Descarta las candidatas con la etiqueta «ai gener
 | 503 | `SERVICE_UNAVAILABLE` | Falta `PIXABAY_API_KEY` o Pixabay no respondió |
 
 `previewUrl` sirve solo para mostrar la candidata en el portal: Pixabay no permite enlazarla de forma permanente.
-`suggestedId` es `null` hasta que exista `elegirImagen` (parte de IA). La pantalla debe mostrar que las imágenes
+`suggestedId` es el ID que propone `elegirImagen` (parte de IA), o `null` si el modelo no propone ninguna o falla. La pantalla debe mostrar que las imágenes
 vienen de Pixabay y su licencia.
 
 Para publicar con una candidata, `POST /api/admin/articles` recibe `image: { "pixabayId", "alt" }`. El servidor:

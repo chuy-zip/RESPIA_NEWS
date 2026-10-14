@@ -2,10 +2,17 @@ import "server-only";
 
 import { relatedArticles, type RelatedCandidate } from "@/lib/recomendacion/related";
 import { getCatalog } from "@/lib/services/catalogs";
-import { isUploadId, resolveUploadedImage, UploadNotFoundError } from "@/lib/services/images";
+import {
+  isUploadId,
+  resolveStockImage,
+  resolveUploadedImage,
+  StockImageError,
+  UploadNotFoundError,
+} from "@/lib/services/images";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ArticleDetail,
+  ArticleImportItem,
   ArticleSummary,
   ContentBlock,
   ContentType,
@@ -17,6 +24,8 @@ import type {
   PublishImageInput,
   RelatedArticle,
   Source,
+  StatusUpdateInput,
+  StatusUpdateResponse,
 } from "@/types/news";
 
 /**
@@ -149,8 +158,18 @@ export function validatePublishInput(raw: unknown): PublishArticleInput {
 
   if (typeof raw.important !== "boolean") fields.important = "Indica si la noticia es importante.";
 
-  let image: PublishImageInput | null = null;
-  if (raw.image !== null && raw.image !== undefined) {
+  let image: PublishArticleInput["image"] = null;
+  if (isRecord(raw.image) && "pixabayId" in raw.image) {
+    // Imagen de banco: el autor y la licencia los pone el servidor al publicar.
+    const pixabayId = raw.image.pixabayId;
+    const alt = text(raw.image.alt);
+    const validId = typeof pixabayId === "number" && Number.isSafeInteger(pixabayId) && pixabayId > 0;
+
+    if (!validId) fields["image.pixabayId"] = "Elige una imagen del banco.";
+    if (!alt || alt.length > MAX_IMAGE.alt) fields["image.alt"] = "Describe la imagen para quien no puede verla.";
+
+    image = { pixabayId: validId ? pixabayId : 0, alt };
+  } else if (raw.image !== null && raw.image !== undefined) {
     const input = isRecord(raw.image) ? raw.image : {};
     const uploadId = text(input.uploadId);
     const alt = text(input.alt);
@@ -214,10 +233,13 @@ export async function publishArticle(input: PublishArticleInput): Promise<Public
   let image: ImageProvenance | null = null;
   if (input.image) {
     try {
-      image = await resolveUploadedImage(input.image);
+      image = "pixabayId" in input.image ? await resolveStockImage(input.image) : await resolveUploadedImage(input.image);
     } catch (failure) {
       if (failure instanceof UploadNotFoundError) {
         throw new ArticleValidationError({ "image.uploadId": failure.message });
+      }
+      if (failure instanceof StockImageError) {
+        throw new ArticleValidationError({ "image.pixabayId": failure.message });
       }
       throw new ArticleStoreError(failure);
     }
@@ -257,6 +279,102 @@ export async function publishArticle(input: PublishArticleInput): Promise<Public
   }
 
   return { id: article.id, publicationState: "published" };
+}
+
+// Cambio de estado -------------------------------------------------------------
+
+/** Lee el cuerpo de PATCH /api/admin/articles/[id]. Lanza `ArticleValidationError` con los campos que fallan. */
+export function validateStatusUpdate(raw: unknown): StatusUpdateInput {
+  const fields: FieldErrors = {};
+  const status = (isRecord(raw) ? raw.status : undefined) as EditorialStatus;
+  const reviewNote = isRecord(raw) ? text(raw.reviewNote) : "";
+
+  if (!STATUSES.includes(status)) fields.status = "Selecciona un estado editorial.";
+  if (!reviewNote) fields.reviewNote = "Explica por qué la noticia tiene este estado.";
+  else if (reviewNote.length > MAX.reviewNote) fields.reviewNote = `La razón admite ${MAX.reviewNote} caracteres.`;
+
+  if (Object.keys(fields).length > 0) {
+    throw new ArticleValidationError(fields);
+  }
+  return { status, reviewNote };
+}
+
+/**
+ * Cambia el estado y su razón. Devuelve null si la noticia no existe. Las
+ * fuentes no cambian, así que la regla de RT-03 se revisa con las guardadas.
+ */
+export async function updateArticleStatus(id: string, input: StatusUpdateInput): Promise<StatusUpdateResponse["data"] | null> {
+  if (!UUID.test(id)) return null;
+
+  const supabase = await createClient();
+  const { data: article, error: readError } = await supabase.from("articles").select("sources").eq("id", id).maybeSingle();
+  if (readError) throw new ArticleStoreError(readError);
+  if (!article) return null;
+
+  if (input.status === "confirmed" && (!Array.isArray(article.sources) || article.sources.length < 2)) {
+    throw new ArticleValidationError({ status: "Para marcarla como confirmada se necesitan al menos dos fuentes." });
+  }
+
+  // Con la sesión del administrador: la política de 008 vuelve a comprobar el rol.
+  const { data: updated, error } = await supabase
+    .from("articles")
+    .update({ status: input.status, review_note: input.reviewNote })
+    .eq("id", id)
+    .select("id, status, review_note")
+    .maybeSingle();
+
+  if (error || !updated) throw new ArticleStoreError(error ?? new Error("La base no devolvió la noticia actualizada"));
+  return { id: updated.id, status: updated.status, reviewNote: updated.review_note };
+}
+
+// Importación desde un archivo ------------------------------------------------
+
+const IMPORT_LIMIT = 20;
+const IMPORT_FIELDS = new Set([
+  "title",
+  "summary",
+  "body",
+  "sources",
+  "publishedAt",
+  "topicIds",
+  "regionIds",
+  "status",
+  "contentType",
+  "important",
+  "image",
+]);
+
+/**
+ * Publica cada noticia del archivo por separado: una con errores no detiene las
+ * demás. Subir el archivo es la revisión de la persona (RT-04), así que el
+ * servidor la aprueba con una razón fija. Lanza `ArticleValidationError` solo si
+ * `items` no se puede leer.
+ */
+export async function importArticles(raw: unknown): Promise<ArticleImportItem[]> {
+  const items = isRecord(raw) ? raw.items : undefined;
+  if (!Array.isArray(items) || items.length === 0 || items.length > IMPORT_LIMIT) {
+    throw new ArticleValidationError({ items: `Envía entre 1 y ${IMPORT_LIMIT} noticias en «items».` });
+  }
+
+  const results: ArticleImportItem[] = [];
+  for (const [index, item] of items.entries()) {
+    try {
+      const unknown = isRecord(item) ? Object.keys(item).filter((key) => !IMPORT_FIELDS.has(key)) : [];
+      if (unknown.length > 0) {
+        throw new ArticleValidationError(Object.fromEntries(unknown.map((key) => [key, "Este campo no se admite."])));
+      }
+      const input = validatePublishInput(isRecord(item) ? { ...item, reviewNote: "Aprobado", reviewConfirmed: true } : item);
+      results.push({ index, id: (await publishArticle(input)).id });
+    } catch (failure) {
+      if (!(failure instanceof ArticleValidationError)) {
+        console.error("[services/articles] no se pudo importar la noticia", index, failure);
+      }
+      const fields = failure instanceof ArticleValidationError ? failure.fields : { item: "No se pudo guardar. Intenta de nuevo." };
+      results.push({ index, fields });
+    }
+  }
+
+  return results;
 }
 
 // Listado del portal --------------------------------------------------------

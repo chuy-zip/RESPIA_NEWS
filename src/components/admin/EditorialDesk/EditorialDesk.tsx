@@ -10,7 +10,10 @@ import { ApiErrorNotice } from "@/components/news/ApiErrorNotice";
 import { StateNotice } from "@/components/news/StateNotice";
 import { ArticleMeta, CONTENT_TYPE_LABELS, STATUS_LABELS } from "@/components/news/ArticleMeta";
 import { ArticleVisual } from "@/components/news/ArticleVisual";
-import type { ArticleListResponse, ArticleSummary, ContentType, EditorialStatus, ImageProvenance, ImageUploadResponse, ImageUploadResult, PublicationResponse, PublishArticleInput, PublishImageInput, Source } from "@/types/news";
+import { ArticleStatusEditor } from "@/components/admin/ArticleStatusEditor";
+import { AiUsagePanel } from "@/components/admin/AiUsagePanel";
+import { StockImagePicker, type StockImageSelection } from "@/components/admin/StockImagePicker";
+import type { ArticleListResponse, ArticleSummary, ContentType, EditorialStatus, ImageProvenance, ImageUploadResponse, ImageUploadResult, PublicationResponse, PublishArticleInput, PublishImageInput, Source, StatusUpdateResponse } from "@/types/news";
 import styles from "./EditorialDesk.module.css";
 
 interface Draft {
@@ -49,6 +52,7 @@ const FIELD_TARGETS: Record<string, { id: string; step: number }> = {
   contentType: { id: "contentType", step: 0 }, important: { id: "important", step: 0 },
   sources: { id: "sources", step: 1 }, status: { id: "status", step: 1 }, reviewNote: { id: "reviewNote", step: 1 },
   image: { id: "file", step: 1 }, file: { id: "file", step: 1 }, "image.uploadId": { id: "file", step: 1 },
+  "image.pixabayId": { id: "stock-selection", step: 1 },
   "image.alt": { id: "image-alt", step: 1 }, "image.author": { id: "image-author", step: 1 },
   "image.license": { id: "image-license", step: 1 }, "image.origin": { id: "image-origin", step: 1 },
   reviewConfirmed: { id: "consent", step: 2 },
@@ -79,16 +83,20 @@ export function EditorialDesk() {
   const [publishing, setPublishing] = useState(false);
   const [publicationError, setPublicationError] = useState<ApiError | null>(null);
   const [upload, setUpload] = useState<ImageUploadResult | null>(null);
+  const [stockImage, setStockImage] = useState<StockImageSelection | null>(null);
   const [imageSelected, setImageSelected] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<ApiError | null>(null);
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
   const [filters, setFilters] = useState({ q: "", topic: "", status: "" });
+  const activeFilters = useRef(filters);
   const [filterDraft, setFilterDraft] = useState(filters);
   const [listVersion, setListVersion] = useState(0);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState<ApiError | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [listNotice, setListNotice] = useState("");
+  const listNoticeRef = useRef<HTMLParagraphElement>(null);
   const publishLock = useRef(false);
   const uploadLock = useRef(false);
   const listRequest = useRef<AbortController | null>(null);
@@ -122,6 +130,10 @@ export function EditorialDesk() {
   useEffect(() => {
     if (Object.keys(errors).length > 0) errorSummary.current?.focus();
   }, [errors]);
+
+  useEffect(() => {
+    if (listNotice) listNoticeRef.current?.focus();
+  }, [listNotice]);
 
   useEffect(() => {
     if (pendingField.current) {
@@ -175,8 +187,8 @@ export function EditorialDesk() {
       if (draft.status === "confirmed" && draft.issue !== "none") next.status = "Resuelve la insuficiencia o contradicción antes de marcar Confirmado.";
       if (draft.status === "confirmed" && draft.sources.length < 2) next.status = "Para marcar Confirmado se necesitan al menos dos fuentes.";
       if (imageSelected && !upload) next.file = "Sube la imagen correctamente o quítala para publicar sin imagen.";
+      if ((upload || stockImage) && !draft.imageAlt.trim()) next["image.alt"] = "Describe la imagen para quien no puede verla.";
       if (upload) {
-        if (!draft.imageAlt.trim()) next["image.alt"] = "Describe la imagen para quien no puede verla.";
         if (!draft.imageAuthor.trim()) next["image.author"] = "Indica el autor de la imagen.";
         if (!draft.imageLicense.trim()) next["image.license"] = "Indica la licencia o el permiso de uso.";
         if (!draft.imageOrigin) next["image.origin"] = "Selecciona el origen de la imagen.";
@@ -202,7 +214,7 @@ export function EditorialDesk() {
       topicIds: [draft.topic], regionIds: [...draft.regions], contentType: draft.contentType,
       sources: draft.sources.map((source) => ({ name: source.name.trim(), url: source.url.trim() })),
       status: draft.status, reviewNote: draft.reviewNote.trim(), important: draft.important, reviewConfirmed: true,
-      image: upload && draft.imageOrigin ? { uploadId: upload.uploadId, alt: draft.imageAlt.trim(), author: draft.imageAuthor.trim(), license: draft.imageLicense.trim(), origin: draft.imageOrigin } : null,
+      image: stockImage ? { pixabayId: stockImage.candidate.id, alt: draft.imageAlt.trim() } : upload && draft.imageOrigin ? { uploadId: upload.uploadId, alt: draft.imageAlt.trim(), author: draft.imageAuthor.trim(), license: draft.imageLicense.trim(), origin: draft.imageOrigin } : null,
     };
     publishLock.current = true;
     setPublishing(true);
@@ -224,7 +236,7 @@ export function EditorialDesk() {
 
   async function uploadPhoto(file: File | undefined) {
     if (!file || uploadLock.current || publishLock.current) return;
-    setConsent(false); setUpload(null); setImageSelected(true); setUploadError(null);
+    setConsent(false); setUpload(null); setStockImage(null); setImageSelected(true); setUploadError(null);
     setDraft((current) => ({ ...current, imageAlt: "", imageAuthor: "", imageLicense: "", imageOrigin: "" }));
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 4 * 1024 * 1024 || file.size === 0) {
       setErrors({ file: "Selecciona una imagen PNG, JPEG o WebP de hasta 4 MB." });
@@ -248,9 +260,31 @@ export function EditorialDesk() {
   }
 
   function removeImage() {
-    setUpload(null); setImageSelected(false); setUploadError(null); setConsent(false); setErrors({});
+    setUpload(null); setStockImage(null); setImageSelected(false); setUploadError(null); setConsent(false); setErrors({});
     const input = document.getElementById("file") as HTMLInputElement | null;
     if (input) input.value = "";
+  }
+
+  function selectStockImage(selection: StockImageSelection) {
+    if (uploadLock.current || publishLock.current || stockImage?.candidate.id === selection.candidate.id) return;
+    setStockImage(selection); setUpload(null); setImageSelected(false); setUploadError(null); setConsent(false); setErrors({});
+    setDraft((current) => ({ ...current, imageAlt: "", imageAuthor: "", imageLicense: "", imageOrigin: "" }));
+  }
+
+  function updateArticleStatus(data: StatusUpdateResponse["data"]) {
+    const filteredOut = !!activeFilters.current.status && activeFilters.current.status !== data.status;
+    setArticles((current) => current.flatMap((article) => article.id !== data.id ? [article]
+      : filteredOut ? [] : [{ ...article, status: data.status }]));
+    setListNotice(`Estado actualizado: ${STATUS_LABELS[data.status]}.${filteredOut ? " La noticia dejó de coincidir con el filtro de estado." : ""}`);
+    reloadList();
+    refreshFeed();
+  }
+
+  function removeMissingArticle(id: string) {
+    setArticles((current) => current.filter((article) => article.id !== id));
+    setListNotice("Esta noticia ya no está disponible. Se retiró del listado.");
+    reloadList();
+    refreshFeed();
   }
 
   function reloadList() {
@@ -283,16 +317,20 @@ export function EditorialDesk() {
     event.preventDefault();
     listRequest.current?.abort();
     setArticles([]); setNextCursor(null); setListError(null); setListLoading(true);
-    setFilters({ ...filterDraft });
+    activeFilters.current = { ...filterDraft };
+    setFilters(activeFilters.current);
   }
 
   function reset() {
     focusStep.current = true;
     setDraft({ ...INITIAL, date: localDate() }); setStep(0); setErrors({}); setConsent(false); setPublishedId(null);
-    setUpload(null); setImageSelected(false); setUploadError(null); setPublicationError(null);
+    setUpload(null); setStockImage(null); setImageSelected(false); setUploadError(null); setPublicationError(null);
   }
 
-  const previewImage: ImageProvenance | null = upload && draft.imageOrigin ? {
+  const previewImage: ImageProvenance | null = stockImage ? {
+    url: stockImage.candidate.previewUrl, alt: draft.imageAlt, author: stockImage.candidate.author,
+    license: stockImage.license, origin: "stock", sourceUrl: stockImage.candidate.pageUrl, label: "Imagen ilustrativa",
+  } : upload && draft.imageOrigin ? {
     url: upload.url, alt: draft.imageAlt, author: draft.imageAuthor, license: draft.imageLicense, origin: draft.imageOrigin,
     sourceUrl: null, label: draft.imageOrigin === "event_photo" ? "Fotografía del hecho" : "Imagen ilustrativa",
   } : null;
@@ -300,7 +338,8 @@ export function EditorialDesk() {
   return (
     <div className={styles.desk}>
       <header className={styles.intro}><p className={styles.eyebrow}>Mesa de edición</p><h1>El criterio es humano.</h1><p>Prepara una noticia, revisa sus fuentes y decide cómo presentarla.</p></header>
-      <div className={styles.budget}><strong>Consumo de IA: no disponible</strong><span>Presupuesto del proyecto: USD 20. La consulta del gasto está pendiente.</span><span>Este editor no realiza llamadas a modelos.</span></div>
+      <AiUsagePanel />
+      <div className={styles.budget}><span>Buscar imágenes puede usar IA para sugerir una candidata. La elección y la publicación son tuyas.</span></div>
       <section className={styles.editor} aria-labelledby="editor-title">
         {publishedId ? <div className={styles.success} role="status"><p className={styles.eyebrow}>Publicación guardada</p><h2 ref={stepTitle} tabIndex={-1} id="editor-title">Tu noticia ya está publicada.</h2><p>El servidor confirmó la publicación. Puedes abrirla desde la edición.</p><Link href={`/noticias/${publishedId}`}>Abrir noticia →</Link><Link href="/edicion">Ver la edición →</Link><Button onClick={reset}>Preparar otra noticia</Button></div> : <>
           <h2 ref={stepTitle} tabIndex={-1} id="editor-title">{["Preparar una noticia", "Revisar fuentes e imagen", "Revisar antes de publicar"][step]}</h2>
@@ -341,12 +380,20 @@ export function EditorialDesk() {
                 <label htmlFor="status">Estado editorial<select id="status" value={draft.status} required aria-invalid={!!errors.status} aria-describedby={errors.status ? "status-error" : undefined} onChange={(event) => update("status", event.target.value as Draft["status"])}><option value="">Selecciona un estado</option>{catalog?.statuses.map((value) => <option value={value} key={value}>{STATUS_LABELS[value]}</option>)}</select>{fieldError("status")}</label>
               </div>
               <label htmlFor="reviewNote">Razón del estado asignado<textarea id="reviewNote" rows={3} value={draft.reviewNote} onChange={(event) => update("reviewNote", event.target.value)} maxLength={1500} required aria-invalid={!!errors.reviewNote} aria-describedby={errors.reviewNote ? "reviewNote-error" : undefined} placeholder="Describe lo que revisaste y qué sigue sin confirmarse." />{fieldError("reviewNote")}</label>
-              <fieldset className={styles.visuals}><legend>Una imagen con su procedencia</legend><p className={styles.note}>La imagen es opcional. Sube un PNG, JPEG o WebP de hasta 4 MB. Las sugerencias de banco de imágenes todavía no están disponibles.</p>
+              <fieldset className={styles.visuals}><legend>Una imagen con su procedencia</legend><p className={styles.note}>La imagen es opcional. Sube un PNG, JPEG o WebP de hasta 4 MB, o elige una imagen ilustrativa de Pixabay.</p>
                 <label htmlFor="file">Subir imagen<input id="file" type="file" accept="image/png,image/jpeg,image/webp" aria-invalid={!!errors.file || !!errors["image.uploadId"] || !!errors.image} aria-describedby={errors.file || errors["image.uploadId"] || errors.image ? "file-error" : undefined} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; void uploadPhoto(file); }} /></label>
                 {fieldError("file")}{fieldError("image.uploadId")}{fieldError("image")}
                 {uploading && <p role="status">Subiendo imagen…</p>}
                 {uploadError && <ApiErrorNotice error={uploadError} />}
-                {imageSelected && <Button variant="ghost" onClick={removeImage}>Quitar imagen</Button>}
+                {(imageSelected || stockImage) && <Button variant="ghost" onClick={removeImage}>Quitar imagen</Button>}
+                <StockImagePicker title={draft.title} summary={draft.summary} disabled={publishing || uploading} selectedId={stockImage?.candidate.id ?? null} onSelect={selectStockImage} />
+                {stockImage && <div id="stock-selection" tabIndex={-1} className={styles.imageDetails}>
+                  <p>Imagen ilustrativa elegida de {stockImage.source}. Sustituye cualquier foto subida.</p>
+                  {fieldError("image.pixabayId")}
+                  <label htmlFor="image-alt">Texto alternativo<input id="image-alt" value={draft.imageAlt} maxLength={300} required onChange={(event) => update("imageAlt", event.target.value)} aria-invalid={!!errors["image.alt"]} aria-describedby={errors["image.alt"] ? "image-alt-error" : undefined} />{fieldError("image.alt")}</label>
+                  {previewImage && <ArticleVisual image={previewImage} />}
+                  <p className={styles.note}><a href={stockImage.licenseUrl} target="_blank" rel="noopener noreferrer">{stockImage.license} ↗</a>. Revisa que la imagen corresponda al contexto. No representa una fotografía del hecho.</p>
+                </div>}
                 {upload && <div className={styles.imageDetails}>
                   <p role="status">Imagen subida. Completa su procedencia antes de publicar.</p>
                   <label htmlFor="image-alt">Texto alternativo<input id="image-alt" value={draft.imageAlt} maxLength={300} required onChange={(event) => update("imageAlt", event.target.value)} aria-invalid={!!errors["image.alt"]} aria-describedby={errors["image.alt"] ? "image-alt-error" : undefined} />{fieldError("image.alt")}</label>
@@ -374,6 +421,7 @@ export function EditorialDesk() {
         </>}
       </section>
       <section className={styles.list} aria-labelledby="published-title"><div className={styles.listHeading}><h2 id="published-title">Noticias publicadas</h2><span role="status">{articles.length} noticias cargadas</span><Button variant="ghost" onClick={reloadList} disabled={listLoading}>Actualizar listado</Button></div>
+        <p ref={listNoticeRef} tabIndex={-1} role="status" className={styles.listNotice}>{listNotice}</p>
         <form className={styles.fields} onSubmit={applyFilters} aria-label="Filtrar publicaciones"><div className={styles.row}>
           <label htmlFor="filter-title">Buscar por título<input id="filter-title" type="search" value={filterDraft.q} onChange={(event) => setFilterDraft((current) => ({ ...current, q: event.target.value }))} /></label>
           <label htmlFor="filter-topic">Tema<select id="filter-topic" value={filterDraft.topic} onChange={(event) => setFilterDraft((current) => ({ ...current, topic: event.target.value }))}><option value="">Todos los temas</option>{catalog?.topics.map((topic) => <option value={topic.slug} key={topic.id}>{topic.label}</option>)}</select></label>
@@ -381,7 +429,7 @@ export function EditorialDesk() {
         </div><div><Button type="submit" variant="ghost">Aplicar filtros</Button></div></form>
         {listError && <ApiErrorNotice error={listError} retry={reloadList} />}
         {!listLoading && !listError && articles.length === 0 && <StateNotice state="empty" title="No hay publicaciones para mostrar" description="Publica una noticia o cambia los filtros del listado." />}
-        {articles.map((article) => <article key={article.id}><div><p className={styles.eyebrow}>{catalog?.topics.filter((topic) => article.topicIds.includes(topic.id)).map((topic) => topic.label).join(" · ")}</p><h3><Link href={`/noticias/${article.id}`}>{article.title}</Link></h3></div><ArticleMeta article={article} /></article>)}
+        {articles.map((article) => <article key={article.id}><div><p className={styles.eyebrow}>{catalog?.topics.filter((topic) => article.topicIds.includes(topic.id)).map((topic) => topic.label).join(" · ")}</p><h3><Link href={`/noticias/${article.id}`}>{article.title}</Link></h3></div><ArticleMeta article={article} /><div className={styles.statusEditor}><ArticleStatusEditor article={article} statuses={catalogError ? [] : catalog?.statuses ?? []} onUpdated={updateArticleStatus} onMissing={removeMissingArticle} /></div></article>)}
         {listLoading && <p role="status">Cargando publicaciones…</p>}
         {nextCursor && <div className={styles.formActions}><Button variant="ghost" onClick={() => void loadMore()} disabled={listLoading}>Cargar más</Button></div>}
       </section>

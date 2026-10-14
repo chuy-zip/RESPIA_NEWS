@@ -42,6 +42,8 @@
 .success a { min-height: var(--touch-target); display: inline-flex; align-items: center; }
 .listHeading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-3); border-top: var(--rule-width) double var(--color-ink); padding-block: var(--space-5); }
 .listHeading span { color: var(--color-ink-muted); font-size: var(--text-sm); }
+.listNotice:not(:empty) { padding: var(--space-4); background: var(--color-accent-soft); margin-bottom: var(--space-4); }
+.statusEditor { grid-column: 1 / -1; min-width: 0; }
 .list > article { display: grid; gap: var(--space-3); border-bottom: var(--border-hairline); padding-block: var(--space-4); }
 .list h3 { font-size: var(--text-lg); margin-top: var(--space-2); overflow-wrap: anywhere; }
 .list h3 a { color: inherit; min-height: var(--touch-target); display: inline-flex; align-items: center; }

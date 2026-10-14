@@ -344,7 +344,7 @@ fuente de confusión. Para inspeccionar datos, usar el dashboard.
 
 | Aspecto | Valor |
 |---|---|
-| Proyecto | `RESP-AI` |
+| Proyecto | `prueba` (el nombre es provisional; es el proyecto que contiene el cliente OAuth vigente). El anterior, `RESP-AI`, se apagó por error el 11-oct-2026 y no se usa |
 | Google Auth Platform → Audience | **External**, estado **Testing** |
 | Cliente OAuth | Tipo *Web application* |
 | URI de redirección autorizada | `https://<project-ref>.supabase.co/auth/v1/callback`: la de **Supabase**, no la de la app |
@@ -1040,6 +1040,8 @@ pueden requerir reinstalar.
 |---|---|---|
 | Tras el login vuelve a `localhost` en producción | Site URL de Supabase apunta a localhost | Cambiarla a la URL de producción |
 | Error `redirect_uri_mismatch` de Google | La URI autorizada en Google no es exactamente la de Supabase | Registrar `https://<project-ref>.supabase.co/auth/v1/callback` |
+| Google responde `deleted_client` ("The OAuth client was deleted") | El cliente OAuth se borró, o el proyecto de Google Cloud se apagó. Restaurar el proyecto no devolvió el cliente | Crear un cliente nuevo y pegar su Client ID y Secret en Supabase → Authentication → Providers → Google (ver la bitácora de la feature `acceso`, entrada del 2026-10-13) |
+| Al crear un cliente, "The brand that you're trying to edit has been deleted" | La configuración de la pantalla de consentimiento se perdió con el apagado del proyecto | Usar un proyecto de Google Cloud nuevo y recorrer el asistente de Google Auth Platform desde cero |
 | El login funciona en producción pero falla en una preview | Falta la URL de preview en la lista de redirects, o faltan las variables en el entorno Preview | Revisar el comodín y las variables |
 | Sesión que se pierde al refrescar o "al azar" | Código entre `createServerClient` y `getClaims()`, o se devolvió otra respuesta en el proxy | Ver las piezas críticas (sección 8) |
 | `42501` al consultar una tabla | Falta `GRANT` (auto-exponer está desactivado) | Agregarlo en el script SQL de esa tabla |
@@ -1073,6 +1075,7 @@ Ordenados por prioridad. Los dueños son sugeridos.
 | 12 | **Hobby: uso no comercial y un solo desarrollador** | Si el proyecto se monetizara, hay que pasar a Pro | Fuera del alcance del curso | — |
 | 13 | Iconos y marca provisionales (generados por script) | Estética | Rediseñar con la marca definitiva y ejecutar `npm run icons` | Frontend |
 | 14 | La portada y `/contenido` son pantallas de verificación temporales | No son producto | Sustituir por las pantallas reales | Frontend |
+| 15 | **Apagar o borrar el proyecto de Google Cloud, o su cliente OAuth** | El login con Google deja de funcionar para quien inicie sesión de nuevo (las sesiones abiertas siguen). Restaurar puede tardar de 1 a 3 días, según Google, y no está garantizado | No apagar ni borrar el proyecto ni el cliente. Si ocurre, crear un cliente nuevo en un proyecto limpio (sección 14). Comprobar siempre iniciando sesión de nuevo, no con una sesión abierta | Infra |
 
 ### Límites de plan a tener presentes
 

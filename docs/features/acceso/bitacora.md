@@ -4,6 +4,44 @@ De lo más reciente a lo más antiguo. Las entradas de esta página se **reconst
 el 7-oct-2026** a partir del historial de Git y de la conversación de trabajo con el
 asistente de IA; las fechas son hora local (Guatemala).
 
+## 2026-10-13 · Se apagó el proyecto de Google Cloud y el login dejó de funcionar
+
+**Requisitos:** `RF-02`
+
+- **Comprensión:** el 2026-10-11 se apagó por error el proyecto de Google Cloud `RESP-AI`
+  (se apagó por error). Al principio el
+  login parecía seguir funcionando.
+- **Hipótesis:** restaurar el proyecto dentro del plazo recupera todo, incluido el
+  cliente OAuth.
+- **Prueba:** la sesión abierta no sirve como prueba, porque no vuelve a hablar con
+  Google. El asistente repitió desde afuera el inicio de sesión: pidió la
+  autorización a Supabase y siguió la redirección hasta Google.
+- **Observación:**
+  1. Google respondió `deleted_client` ("The OAuth client was deleted") para el
+     Client ID de siempre, que coincidía con el que Supabase enviaba. Esto ocurrió
+     aunque el proyecto ya estaba restaurado y la consola mostraba el cliente.
+  2. Al crear un cliente nuevo, Google falló con "the brand that you're trying to
+     edit has been deleted", pese a que Branding y Audience mostraban datos: la
+     consola enseñaba una configuración que en el servidor ya no existía.
+  3. La documentación oficial de Google dice que los clientes OAuth de un proyecto
+     restaurado pueden tardar de 1 a 3 días en volver, y un caso idéntico en el foro
+     de Google se resolvió en semanas y con soporte. Con la entrega a 3 días, esperar
+     no era viable.
+- **Corrección:** se descartó restaurar y se usó un proyecto de Google Cloud limpio:
+  configuración de la pantalla de consentimiento desde cero, solo los permisos
+  básicos, cliente nuevo y credenciales nuevas pegadas en Supabase. Desde afuera,
+  Supabase ya enviaba el cliente nuevo y Google lo aceptaba. El equipo comprobó que
+  dos cuentas pueden iniciar sesión, que no se duplicó ningún usuario y que los
+  administradores conservan el rol.
+- **Uso de IA:** el asistente aconsejó primero restaurar y esperar, y luego descartó
+  esa vía al ver el error de la configuración y la documentación. También separó
+  "la sesión abierta funciona" de "el login funciona" y construyó la comprobación
+  externa que permitió ver el error real.
+- **Evidencia:** respuesta de Google (`deleted_client`) y, después, aceptación del
+  cliente nuevo; verificación del equipo con la consulta de usuarios contra
+  administradores. Quedó en [INFRA_HANDOFF.md](../../INFRA_HANDOFF.md) como riesgo 15 y
+  como fila del cuadro de problemas frecuentes.
+
 ## 2026-10-07 · No hace falta publicar la pantalla de consentimiento de Google
 
 **Requisitos:** `RF-06`

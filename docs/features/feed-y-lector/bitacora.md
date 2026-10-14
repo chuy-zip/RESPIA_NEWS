@@ -54,3 +54,26 @@ Los resultados iniciales de lint señalaron scripts de las skills. La configurac
 No se editaron las skills para ocultar sus errores. El registro conserva tanto el fallo inicial como la verificación final.
 La revisión pública detectó una primera secuencia con URL y DOM distintos después de un ancla, sin causa confirmada.
 La nueva secuencia sin ancla pasó. El historial con anclas permanece sin validar.
+
+## 2026-10-14 · Uniformar las tarjetas secundarias sin cambiar el orden
+
+**Requisitos:** RF-01, RF-08, RF-09, RT-01. **Ticket y ciclo:** pendientes de asignación.
+
+- **Comprensión:** el usuario observa tamaños distintos y acepta que la primera noticia sea mayor.
+- **Hipótesis:** una principal destacada y tarjetas secundarias de igual ancho y altura por fila hacen más clara la edición. La tipografía puede conservar la jerarquía editorial.
+- **Construcción:** ajustar la presentación de ArticleCard y reducir el interruptor de tema. Conservar orden y contratos.
+- **Prueba:** revisión visual aislada y comprobaciones técnicas. La aceptación en la app real queda pendiente.
+- **Observación:** el usuario eligió secundarias uniformes y rechazó cambiar el contrato para añadir otro orden. Es una preferencia reportada, no una prueba funcional.
+- **Corrección:** sustituir la composición anterior de secundarias y filas compactas distintas. El agente atribuyó cuatro niveles a RF-08 al preguntar. Tras revisar ALCANCE, corrigió que exige al menos tres antes de implementar.
+- **Agente:** Codex coordinador y subagentes. Modelo exacto no disponible.
+- **Pedido:** control de tema más pequeño, explicación del orden y tarjetas uniformes después de la principal.
+- **Propuesta:** conservar personalización y ofrecer Más recientes. Como opción visual, alinear alturas conservando los formatos anteriores.
+- **Decisión:** el usuario conserva el contrato actual y elige uniformar las secundarias. No se implementa el selector de orden propuesto.
+- **Verificación:** los resultados se registran junto al cambio en [feed y lector](../../../specs/front/feed-y-lector.md#reducir-el-interruptor-de-tema--2026-10-14). No se cierra el ciclo sin prueba real.
+
+En una revisión posterior del mismo día, el usuario reportó que las tarjetas verticales ocupaban demasiado espacio
+en teléfono. Se revisó la propuesta: conservar cuatro noticias verticales y usar filas con miniatura desde la quinta,
+sin cambiar tablet, escritorio ni el orden. El titular conserva el acceso al lector, por lo que no se añade «Leer más».
+Este ajuste responde a su observación y referencia visual. No constituye una prueba ejecutada por el agente.
+El coordinador documenta la decisión, un subagente implementa y otro revisa el límite y la paginación.
+La evidencia se registra en [filas de noticias en teléfono](../../../specs/front/feed-y-lector.md#filas-de-noticias-en-teléfono--2026-10-14).

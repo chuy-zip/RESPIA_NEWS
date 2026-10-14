@@ -34,7 +34,6 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
   const router = useRouter();
   const { catalog, profile, messages, appendMessages, clearMessages, conversationRevision, refreshFeed } = useReaderSession();
   const [question, setQuestion] = useState("");
-  const [showExamples, setShowExamples] = useState(messages.length === 0);
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [articleTitle, setArticleTitle] = useState<string | null>(null);
@@ -80,19 +79,36 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
     const panel = conversation.current;
     if (!panel) return;
     const viewport = window.visualViewport;
+    const desktop = window.matchMedia("(min-width: 64rem) and (pointer: fine)");
+    let lastHeight = 0;
+    let frame = 0;
     // El formulario permanece en el flujo al reducirse el espacio por el teclado.
     const reposition = () => {
       const top = Math.max(0, panel.getBoundingClientRect().top - (viewport?.offsetTop ?? 0));
-      panel.style.setProperty("--chat-height", `${Math.max(272, (viewport?.height ?? window.innerHeight) - top - 16)}px`);
+      const viewportHeight = Math.max(0, (viewport?.height ?? window.innerHeight) - 16);
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const minimumHeight = Math.min((desktop.matches ? 38 : 17) * rem, viewportHeight);
+      const height = Math.round(Math.max(minimumHeight, viewportHeight - top));
+      if (height !== lastHeight) {
+        panel.style.setProperty("--chat-height", `${height}px`);
+        lastHeight = height;
+      }
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(reposition);
     };
     reposition();
-    window.addEventListener("resize", reposition);
-    viewport?.addEventListener("resize", reposition);
-    viewport?.addEventListener("scroll", reposition);
+    window.addEventListener("resize", schedule);
+    desktop.addEventListener("change", schedule);
+    viewport?.addEventListener("resize", schedule);
+    viewport?.addEventListener("scroll", schedule);
     return () => {
-      window.removeEventListener("resize", reposition);
-      viewport?.removeEventListener("resize", reposition);
-      viewport?.removeEventListener("scroll", reposition);
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", schedule);
+      desktop.removeEventListener("change", schedule);
+      viewport?.removeEventListener("resize", schedule);
+      viewport?.removeEventListener("scroll", schedule);
     };
   }, []);
 
@@ -114,7 +130,6 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
     setQuestion(text);
     setError(null);
     setPendingQuestion(trimmed);
-    setShowExamples(false);
     followReply.current = true;
     const body: ChatRequest = {
       question: trimmed,
@@ -176,7 +191,6 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
     setError(null);
     clearMessages();
     setQuestion("");
-    setShowExamples(true);
     setEnteringReply(null);
     if (articleId || invalidArticle) {
       setResettingContext(true);
@@ -206,10 +220,6 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
             {error?.fields?.articleId && <p id="chat-article-error" className={styles.contextError} role="alert">{error.fields.articleId}</p>}
             <Link className={styles.contextAction} href="/chat" scroll={false}>Preguntar sobre la edición</Link>
           </aside>}
-          <button className={styles.examplesToggle} type="button" aria-expanded={showExamples} aria-controls="chat-examples" onClick={() => setShowExamples((current) => !current)}>{showExamples ? "Ocultar preguntas de ejemplo" : "Ver preguntas de ejemplo"}</button>
-          <div id="chat-examples" className={styles.suggestions} hidden={!showExamples} aria-label="Preguntas sugeridas">
-            {questions.map((text) => <button key={text} type="button" disabled={pending || contextBlocked} onClick={() => { void send(text); }}>{text} <span aria-hidden="true">↗</span></button>)}
-          </div>
         </div>
         <div className={styles.messages} role="log" aria-label="Conversación temporal" aria-live="polite" aria-relevant="additions">
         {messages.map((message) => <article key={message.id} className={`${styles.message}${enteringReply === message.id ? ` ${styles.messageEnter}` : ""}`} data-role={message.role} onAnimationEnd={() => { if (enteringReply === message.id) setEnteringReply(null); }}>
@@ -219,11 +229,17 @@ export function ChatPanel({ articleId, invalidArticle = false }: { articleId?: s
             {segment.citations.length > 0 && <ul className={styles.citations} aria-label="Fuentes de este texto">{segment.citations.map((citation, citationIndex) => <li key={`${citation.kind}-${citationIndex}`}><Citation citation={citation} /></li>)}</ul>}
           </div>) : <p>{message.text}</p>}
         </article>)}
-        {pendingQuestion && <article className={`${styles.message} ${styles.messageEnter}`} data-role="reader"><p className={styles.author}>Tu pregunta</p><p>{pendingQuestion}</p><p className={styles.pendingStatus} role="status">Consultando las noticias…</p></article>}
+        {pendingQuestion && <>
+          <article className={`${styles.message} ${styles.messageEnter}`} data-role="reader"><p className={styles.author}>Tu pregunta</p><p>{pendingQuestion}</p></article>
+          <article className={styles.message} data-role="assistant"><p className={styles.author}>Meridian · conversación</p><p className={styles.pendingStatus} role="status">Consultando las noticias…</p></article>
+        </>}
         </div>
         {error && <div ref={errorSummary} tabIndex={-1}><ApiErrorNotice error={error} /></div>}
       </div>
       <form className={styles.dock} onSubmit={submit}>
+        <div className={styles.suggestions} role="group" aria-label="Preguntas sugeridas">
+          {questions.map((text) => <button key={text} type="button" disabled={pending || contextBlocked} onClick={() => { void send(text); }}>{text}</button>)}
+        </div>
         <label htmlFor="news-question">{articleId ? "Pregunta sobre esta noticia" : "Pregunta sobre tu edición"}</label>
         <div className={styles.inputRow}>
           <input ref={input} id="news-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="¿Qué está cambiando?" maxLength={500} disabled={pending || resettingContext} required autoComplete="off" enterKeyHint="send" aria-invalid={Boolean(error?.fields?.question)} aria-describedby={`${error?.fields?.question ? "chat-question-error " : ""}${error?.fields?.articleId ? "chat-article-error " : ""}chat-note`} />

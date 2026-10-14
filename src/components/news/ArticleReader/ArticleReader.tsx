@@ -100,17 +100,19 @@ export function ArticleReader({ id }: { id: string }) {
       <p className={styles.shareStatus} role="status">{shareMessage}</p>
       {shareUrl && <label className={styles.shareFallback}>Enlace de la noticia<input readOnly value={shareUrl} onFocus={(event) => event.currentTarget.select()} /></label>}
       <ArticleVisual image={article.image} />
-      <div className={styles.body}>
-        {article.body.map((block, index) => block.type === "heading" ? <h2 key={index}>{block.text}</h2> : <p key={index}>{block.text}</p>)}
+      <div className={styles.readingLayout}>
+        <div className={styles.body}>
+          {article.body.map((block, index) => block.type === "heading" ? <h2 key={index}>{block.text}</h2> : <p key={index}>{block.text}</p>)}
+          <Link href={`/chat?articleId=${encodeURIComponent(article.id)}`} className={styles.question}>Preguntar sobre esta noticia ↗</Link>
+        </div>
+        <aside className={styles.sources} aria-labelledby="sources-title">
+          <h2 id="sources-title">La información detrás del titular</h2>
+          <dl><dt>Tipo de contenido</dt><dd>{CONTENT_TYPE_LABELS[article.contentType]}</dd>{regionLabels.length > 0 && <><dt>Regiones de relevancia</dt><dd>{regionLabels.join(" · ")}</dd></>}<dt>Imagen</dt><dd>{article.image ? `${article.image.label}. Autor: ${article.image.author}. Licencia: ${article.image.license}.` : "Esta noticia se publicó sin imagen."}</dd><dt>Revisión editorial</dt><dd>{article.reviewNote}</dd>{article.important && <><dt>Importancia editorial</dt><dd>La redacción marcó esta noticia como importante.</dd></>}</dl>
+          {catalogError && <ApiErrorNotice error={catalogError} retry={reloadCatalog} />}
+          <h3>Fuentes declaradas</h3>
+          <ul>{article.sources.map((source, index) => <li key={index}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.name} ↗</a></li>)}</ul>
+        </aside>
       </div>
-      <aside className={styles.sources} aria-labelledby="sources-title">
-        <h2 id="sources-title">La información detrás del titular</h2>
-        <dl><dt>Tipo de contenido</dt><dd>{CONTENT_TYPE_LABELS[article.contentType]}</dd>{regionLabels.length > 0 && <><dt>Regiones de relevancia</dt><dd>{regionLabels.join(" · ")}</dd></>}<dt>Imagen</dt><dd>{article.image ? `${article.image.label}. Autor: ${article.image.author}. Licencia: ${article.image.license}.` : "Esta noticia se publicó sin imagen."}</dd><dt>Revisión editorial</dt><dd>{article.reviewNote}</dd>{article.important && <><dt>Importancia editorial</dt><dd>La redacción marcó esta noticia como importante.</dd></>}</dl>
-        {catalogError && <ApiErrorNotice error={catalogError} retry={reloadCatalog} />}
-        <h3>Fuentes declaradas</h3>
-        <ul>{article.sources.map((source, index) => <li key={index}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.name} ↗</a></li>)}</ul>
-      </aside>
-      <Link href={`/chat?articleId=${encodeURIComponent(article.id)}`} className={styles.back}>Preguntar sobre esta noticia ↗</Link>
     </article>
   );
 }

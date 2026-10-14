@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  * guarde un dato nuevo (ubicación simulada, intereses, noticias leídas…), hay que
  * actualizar esta página y la fecha de abajo en el mismo cambio.
  */
-const LAST_UPDATE = "10 de octubre de 2026";
+const LAST_UPDATE = "14 de octubre de 2026";
 
 export default function PrivacidadPage() {
   return (
@@ -117,7 +117,7 @@ export default function PrivacidadPage() {
           <section className={styles.block}>
             <h2 className={styles.subhead}>Con quién se comparten</h2>
             <p className={styles.text}>
-              No vendemos ni cedemos tus datos. Para funcionar dependemos de cinco
+              No vendemos tus datos. Para funcionar dependemos de seis
               proveedores que los procesan por nosotros:
             </p>
             <ul className={styles.list}>
@@ -133,11 +133,14 @@ export default function PrivacidadPage() {
               </li>
               <li>
                 <strong>Anthropic</strong>, cuyo modelo de IA redacta las
-                respuestas del chat.
+                respuestas del chat y sugiere imágenes para las noticias.
               </li>
               <li>
                 <strong>Tavily</strong>, un buscador de noticias que el chat usa
                 en algunos casos.
+              </li>
+              <li>
+                <strong>Pixabay</strong>, donde buscamos imágenes ilustrativas para las noticias.
               </li>
             </ul>
             <p className={styles.text}>
@@ -155,6 +158,13 @@ export default function PrivacidadPage() {
               verificada por la redacción».
             </p>
             <p className={styles.text}>Si abres un enlace de fuente, visitas ese sitio y se aplican sus propias condiciones.</p>
+            <p className={styles.text}>
+              Si buscas una imagen en el portal, Pixabay recibe las palabras de búsqueda.
+              Tu navegador carga las vistas previas desde su servicio de imágenes.
+              Para sugerir una candidata, Anthropic recibe el título y la entradilla del borrador,
+              junto con los identificadores, tipos y etiquetas de las candidatas. No enviamos datos de tu cuenta.
+              La elección es tuya. Al publicar, el servidor copia la imagen elegida al espacio público de Supabase.
+            </p>
           </section>
 
           <section className={styles.block}>

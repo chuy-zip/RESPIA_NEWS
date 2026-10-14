@@ -5,17 +5,21 @@ import { useState } from "react";
 import type { ImageProvenance } from "@/types/news";
 import styles from "./ArticleVisual.module.css";
 
-type ArticleVisualProps = { image: ImageProvenance | null; visual?: never } | { visual: "orbit"; image?: never };
+type ArticleVisualProps = ({ image: ImageProvenance | null; visual?: never } | { visual: "orbit"; image?: never }) & { mobileThumbnail?: boolean };
 
-export function ArticleVisual({ image, visual }: ArticleVisualProps) {
+export function ArticleVisual({ image, visual, mobileThumbnail = false }: ArticleVisualProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   if (image) {
-    return <figure className={styles.figure}>
-      <div className={styles.photo}>
+    const credits = <>{image.author} · {image.license}{image.sourceUrl && <> · <a href={image.sourceUrl} target="_blank" rel="noopener noreferrer">Origen de la imagen ↗</a></>}</>;
+    return <figure className={`${styles.figure}${mobileThumbnail ? ` ${styles.thumbnail}` : ""}`}>
+      <div className={styles.photo} data-unavailable={failedUrl === image.url || undefined}>
         {failedUrl === image.url ? <p className={styles.unavailable}>No se pudo cargar la imagen.</p> : <Image src={image.url} alt={image.alt} fill unoptimized sizes="(max-width: 40rem) 100vw, 60rem" className={styles.image} onError={() => setFailedUrl(image.url)} />}
         <span className={styles.origin}>{image.label}</span>
       </div>
-      <figcaption>{image.author} · {image.license}{image.sourceUrl && <> · <a href={image.sourceUrl} target="_blank" rel="noopener noreferrer">Origen de la imagen ↗</a></>}</figcaption>
+      <figcaption>{mobileThumbnail ? <>
+        <span className={styles.fullCredits}>{credits}</span>
+        <details className={styles.mobileCredits}><summary>Créditos</summary><div>{credits}</div></details>
+      </> : credits}</figcaption>
     </figure>;
   }
   if (!visual) return null;

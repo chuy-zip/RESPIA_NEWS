@@ -106,15 +106,16 @@
   --duration-base: 220ms;
   --duration-pulse: 1500ms;
 
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 /*
- * Modo oscuro por preferencia del sistema. Solo se redefinen los tokens de
- * color: todo lo demás (espaciado, tipografía, forma) es independiente del tema.
+ * El sistema elige el tema hasta que la persona usa el selector.
+ * Solo cambian colores y sombras, sin alterar la composición.
  */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --color-surface: #171c19;
     --color-surface-raised: #202722;
     --color-surface-sunken: #111713;
@@ -143,4 +144,30 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-surface: #171c19;
+  --color-surface-raised: #202722;
+  --color-surface-sunken: #111713;
+  --color-ink: #f0eee6;
+  --color-ink-muted: #b3baaf;
+  --color-ink-inverse: #0d0f14;
+  --color-line: #374039;
+  --color-line-strong: #6a766b;
+  --color-accent: #ccd9c9;
+  --color-accent-hover: #e7efe4;
+  --color-accent-soft: #29372c;
+  --color-action-ink: #172b20;
+  --color-art-paper: #29332b;
+  --color-art-line: #38493b;
+  --color-art-plane: #344838;
+  --color-art-ink: #acbca3;
+  --color-signal-idle: #6b7280;
+  --color-signal-wait: #d9a520;
+  --color-signal-ok: #35c99a;
+  --color-signal-fail: #f2685e;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
 }

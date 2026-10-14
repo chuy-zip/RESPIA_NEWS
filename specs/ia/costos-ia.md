@@ -10,8 +10,9 @@ Registro de cada llamada a un modelo, tope de gasto y reserva para la demo.
 
 ## Comportamiento actual
 
-Todavía no hay llamadas a modelos. Gasto acumulado: USD 0. La API de créditos de OpenRouter lo confirmó el
-2026-10-10.
+El servidor registra las llamadas y calcula su costo con los tokens recibidos y los precios configurados.
+El chat y la sugerencia de imágenes usan este módulo. La lectura del código no confirma el gasto actual del despliegue.
+El registro del 2026-10-10 indicaba USD 0 en OpenRouter. Es una observación histórica, no el saldo actual.
 
 ### Presupuesto (D-30)
 
@@ -29,7 +30,7 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 
 - **Desarrollo y producción:** Claude Haiku 5.5 (`claude-haiku-5-5`) por la API oficial de Anthropic, la opción
   sin comisión. No se usan modelos `:free`.
-- **Llave:** `ANTHROPIC_API_KEY`, variable de servidor. El código del modelo se escribe cuando haya créditos.
+- **Llave:** `ANTHROPIC_API_KEY`, variable de servidor. El modelo ya tiene implementación. El portal no recibe la llave.
 - **Costo de desarrollo:** el conjunto fijo del chat (CIC-17) cuesta entre USD 0.01 y 0.04 por ejecución.
 
 ## Criterios de aceptación
@@ -42,15 +43,23 @@ mes (D-25). El registro cuenta los créditos de Tavily de cada búsqueda para vi
 
 ## No incluido
 
-- Un panel con gráficos. El gasto se consulta con SQL o con una página simple del portal.
+- Facturación de la cuenta del proveedor y usos de la llave fuera de esta app.
+- Cambiar precios, tope o reserva desde el portal.
 
 ## Dependencias
 
 - Datos: el script `006_ai_usage.sql`, con la tabla y sus tres funciones. Lo revisa Ricardo y se ejecuta cuando
   llegue a `main`. Sin `user_id` mientras no haya un límite por usuario (CIC-15).
+- Historial: `009_ai_usage_daily.sql` añade la consulta diaria para administradores. No se ejecutó durante esta tarea.
+  Ricardo revisará y aplicará el archivo solo después de que su PR llegue a `main`.
 - Backend: la ruta `GET /api/admin/ai-usage`, que llama a `getAiUsageSummary()`, y la traducción de `AiLimitError` a
   429 `AI_LIMIT_REACHED` (D-34). Ambas existen en la rama `chat`; Backend las revisa.
 - Infra: las variables de servidor del modelo y de Tavily (`TAVILY_API_KEY`), sin `NEXT_PUBLIC_`.
+
+El resumen reúne todos los entornos de la base compartida. `remaining` es el saldo hasta el tope de la app.
+`availability` informa el límite registrado, no comprueba la disponibilidad del proveedor.
+La reserva no se resta otra vez del saldo. El portal no calcula el presupuesto total sumando tope y reserva.
+Un registro fallido puede omitir un costo ya pagado. El equipo debe conciliar el registro con la consola del proveedor.
 
 ## Uso de IA en el producto
 
@@ -72,6 +81,18 @@ Lista de todas las funciones con IA del producto (`RP-03`):
 Están en el ticket [TKT-3](https://app.notion.com/p/3f5f573ce6df817e8164c1d218f1c3ef) de la base [Tickets](https://app.notion.com/p/e7bcbe3443c343b2873a2b5b97eb474c) de Notion (D-28). El ticket guarda la lista de tareas con su evidencia y de qué áreas depende.
 
 ## Cambio en curso
+
+### Historial administrativo · 2026-10-14
+
+El usuario autoriza extender el servicio de costos y Backend para mostrar el consumo diario en el portal (RP-01, RP-02).
+Se conservarán los acumulados. Se añadirá una consulta de 7, 30 o 90 días, con corte diario en America/Guatemala.
+El historial sumará costo, llamadas, tokens y créditos externos desde los registros existentes de todos los entornos.
+Un fallo de la consulta devolverá historial no disponible. Los días sin consumo solo tendrán cero tras una consulta correcta.
+La migración será nueva. No se ejecutará durante esta tarea y requerirá revisión de Datos antes de aplicarse tras llegar a main.
+La ampliación no llama al proveedor, no lee archivos de entorno ni modifica el control de gasto o los precios.
+El panel no acredita el saldo real del proveedor. La conciliación y la prueba con sesión real siguen pendientes.
+El [contrato y registro de verificación del portal](../backend/portal-admin.md#consumo-de-ia-en-el-portal--2026-10-14)
+conserva la evidencia local de esta ampliación. Las pruebas de costos usan dependencias simuladas, sin gasto real.
 
 ### Incremento 1: registro de costo y tope (rama `costos-ia`)
 

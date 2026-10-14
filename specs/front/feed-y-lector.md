@@ -21,6 +21,20 @@ Cada pregunta contextual lleva `articleId`. El servidor registra la señal `chat
 La conversación permanece al cambiar de noticia. «Nueva conversación» borra mensajes y vuelve a `/chat` sin contexto.
 Cambiar el contexto cancela peticiones pendientes. El feed se actualiza al terminar, incluso si falla o se cancela la respuesta.
 La señal puede guardarse antes de ese fallo. Las animaciones solo afectan a envíos y respuestas nuevos y respetan el movimiento reducido.
+El chat presenta preguntas a la derecha y respuestas a la izquierda, en burbujas redondeadas.
+Las sugerencias permanecen encima del compositor y se desplazan horizontalmente cuando falta ancho.
+El encabezado mantiene la misma composición en todas las rutas. Su selector alterna los colores de toda la interfaz.
+El tema sigue al dispositivo hasta una selección manual. La selección permanece durante la navegación y se reinicia al recargar.
+El lector aprovecha hasta 68rem en escritorio, con párrafos limitados a 43rem y fuentes laterales cuando caben.
+La primera tarjeta ocupa la fila completa. Desde 64rem distribuye imagen y texto en dos columnas.
+Desde 40rem, las demás comparten formato y altura por fila: dos columnas y tres desde 64rem.
+En teléfono, las primeras cuatro noticias conservan la composición vertical. Desde la quinta y en el bloque importante,
+se muestran filas con texto a la izquierda y miniatura a la derecha. El título ocupa hasta tres líneas y la entradilla dos.
+El titular abre el lector completo y se expande al recibir foco. Estado, tipo, fecha y motivo siguen visibles.
+La etiqueta de imagen permanece visible. Autor, licencia y origen se consultan en «Créditos» dentro de la miniatura.
+La tipografía conserva la jerarquía del servidor en las primeras cuatro noticias. Tablet y escritorio no recortan textos.
+Las noticias sin foto reservan un espacio identificado como «Sin imagen». El orden personalizado no cambia.
+Los botones de Android y iPhone ofrecen la instalación PWA o las instrucciones correspondientes, sin enlaces a tiendas.
 
 ### Backend
 
@@ -170,8 +184,139 @@ Probar con iPhone y Android instalados y cuentas reales antes del cierre funcion
 | En curso | Informar el estado de Búsqueda y Guardados | Ampliación solicitada, ID pendiente | Ambas pantallas informan integración pendiente. Servicios y requisito formal pendientes |
 | En curso | Conectar la conversación temporal al servidor | RF-07, RF-12, RF-13, RF-14 | Código conectado sin respuestas preparadas. Modelo incorporado. Pruebas funcionales pendientes |
 | En curso | Preguntar desde una noticia y comunicar estados del chat | RF-07, RF-10, RF-12, RF-13, RF-14, RT-04, RT-06 | [Ajuste y verificación local](#validación-del-contexto-del-chat-2026-10-10). Sin prueba real ni cierre funcional |
+| En curso | Burbujas, sugerencias visibles, lector responsive, encabezado común y tema manual | RF-01, RF-07, RF-08, RF-09 | [Revisión visual y técnica](#validación-visual-2026-10-13). Teclado móvil y navegación con sesión pendientes |
+| En curso | Botones de instalación para Android y iPhone | RF-01, RF-05 | Estados e instrucciones implementados. Instalación real de esta versión pendiente |
+| En curso | Interruptor sol/luna, iconos de plataforma y chat más alto en laptop | RF-01, RF-05, RF-07 | [Validación local](#validación-visual-2026-10-14). Navegación e instalación reales pendientes |
+| En curso | Cuatro noticias verticales y filas horizontales en teléfono | RF-01, RF-08, RF-09, RF-18 | [Ajuste móvil y evidencia](#filas-de-noticias-en-teléfono--2026-10-14). Prueba en teléfono real pendiente |
 
 ## Cambio en curso
+
+### Filas de noticias en teléfono · 2026-10-14
+
+RF-01, RF-08, RF-09, RF-18, RT-02 y RT-06. El usuario solicita las primeras cuatro noticias verticales
+y las siguientes horizontales solo en teléfono. Se usará el índice del listado acumulado, no el nivel de prominencia.
+Bajo 40rem, desde la quinta noticia se verá el texto a la izquierda y una miniatura a la derecha, con entradilla breve.
+El bloque importante también usará filas móviles. Desde 40rem se conservará el diseño actual.
+El titular seguirá enlazando al lector completo. El usuario considera opcional «Leer más»: no se duplicará esa acción.
+Se conservarán estado, tipo, fecha, motivo, texto alternativo y etiqueta de imagen. Los créditos podrán desplegarse en móvil.
+No cambiarán orden, contratos, filtros ni cursores. Se comprobarán la cuarta y quinta tarjetas, paginación, zoom y falta de imagen.
+Ticket de frontend pendiente. Prueba con sesión y teléfonos reales a cargo del usuario. Sin commits ni localhost.
+
+| Fecha | Entorno y acción | Observación | Resultado |
+|---|---|---|---|
+| 2026-10-14 | Node local con componentes y hooks simulados | Siete casos: límite cuarta/quinta, acumulación de páginas 20 a 23 con duplicados, orden y prominencia, bloque importante, foto ausente o rota, titular y créditos | Pasaron. No acredita React DOM ni servicios reales |
+| 2026-10-14 | Navegador aislado con ocho noticias ficticias, 320 y 390px | Primeras cuatro verticales. Desde la quinta, texto y miniatura en horizontal, sin desbordamiento. Titular de tres líneas, resumen de dos, estado y fecha completos. Créditos desplegables de 44px y titular completo al recibir foco | Pasó con los datos de prueba |
+| 2026-10-14 | Comparación aislada a 640, 768 y 1366px | Posiciones, dimensiones y tipografía de las ocho tarjetas coinciden con la variante anterior | Pasó. Tablet y escritorio conservan la composición |
+| 2026-10-14 | Fuente raíz al 200% en vista aislada de 390px | Sin desbordamiento horizontal. Etiqueta y créditos visibles, pero la columna de texto se estrecha a 84px | Comprobación parcial. Falta evaluar legibilidad con zoom y texto ampliado en teléfono real |
+| 2026-10-14 | Windows, typecheck, lint y build | Salida 0. Compilación y 23 páginas generadas | Pasaron |
+| 2026-10-14 | Validación Markdown en spec, documento de traslado y bitácora. `git diff --check` | Estructura, enlaces y espacios correctos | Pasaron |
+| 2026-10-14 | `node scripts/check-specs.mjs` | Repite 13 errores y 13 avisos previos. Los errores corresponden a archivos locales en la raíz y enlaces de FRONTEND.md | No pasó globalmente. Sin errores nuevos identificados |
+
+La revisión independiente comprobó estáticamente que las nuevas reglas están limitadas a menos de 40rem.
+No hay peticiones nuevas ni cambios en orden o autorización. La prueba en Vercel y teléfonos reales sigue pendiente.
+
+### Reducir el interruptor de tema · 2026-10-14
+
+RF-01. El usuario pide un control más pequeño. La pista visible pasará de 76 × 44px a 60 × 32px,
+con un área táctil de 60 × 44px. Se conservan colores, foco y funcionamiento.
+El usuario decide mantener el contrato y el orden actuales. Pide la primera tarjeta grande y las demás uniformes.
+RF-08 y RF-09: la destacada ocupará la fila completa. Las siguientes compartirán columnas, formato de imagen,
+borde, resumen y altura por fila. Sin foto, se mostrará un espacio identificado. Se conservarán diferencias de
+tipografía según `prominence`, sin cambiar puntajes, orden, filtros ni paginación. RF-08 exige al menos tres niveles,
+no cuatro: se corrige esa afirmación del agente antes de implementar. La propuesta de otro orden no fue aceptada.
+
+| Fecha | Entorno y acción | Observación | Resultado |
+|---|---|---|---|
+| 2026-10-14 | Chrome aislado, encabezado en claro y oscuro a 390 y 1366px | Pista 60 × 32px dentro de botón 60 × 44px. Indicador de 18px centrado, sin recortes | Pasó en las cuatro vistas |
+| 2026-10-14 | Chrome aislado, siete tarjetas ficticias a 390, 768 y 1366px en ambos temas | Sin desbordamiento. Principal a todo el ancho. Secundarias con igual ancho y altura por fila, con foto o placeholder 16:9. Titulares de 52, 34 y 22px en escritorio | Pasó en las seis vistas |
+| 2026-10-14 | Windows, typecheck, lint y build después del ajuste de tarjetas | Salida 0. Compilación y generación de las 23 páginas | Pasaron |
+| 2026-10-14 | Validación de los tres documentos modificados y `git diff --check` | Sin errores en estructura, enlaces ni espacios del diff revisado | Pasaron |
+
+Se conserva el funcionamiento del selector. Las vistas aisladas no acreditan la app con sesión ni el teclado real.
+El cambio de composición y la corrección de RF-08 quedan en la bitácora. Las pruebas del usuario siguen pendientes.
+
+### Interruptor de tema y espacio del chat · 2026-10-14
+
+Requisitos: RF-01, RF-05 y RF-07. Ticket de frontend pendiente de asignación.
+Se adaptará el selector a un interruptor de sol y luna, con teclado, foco visible y movimiento reducido.
+Su fondo claro usará el papel cálido de la página. Se conservarán CSS Modules y el comportamiento temporal del tema.
+El chat tendrá más altura de lectura en laptop, sin imponer ese mínimo cuando aparezca el teclado móvil.
+Los botones PWA usarán `FaAndroid` y `FaAppStoreIos` de `react-icons/fa6`, según la petición del usuario.
+La única dependencia nueva será `react-icons`. Sus cambios de paquete requieren revisión de Infra al integrar el PR.
+Los endpoints, el acceso y la instalación seguirán usando los mecanismos existentes. No se harán commits ni despliegues.
+
+### Validación visual 2026-10-14
+
+El interruptor usa el papel cálido en claro y los tokens actuales en oscuro. Expone `role="switch"`, estado accesible,
+foco y teclado nativo. Sigue al sistema hasta la elección manual. No persiste la preferencia al recargar.
+El chat permite un mínimo de 38rem en pantallas de al menos 64rem con puntero preciso, limitado por el viewport visible.
+Esto amplía el área de lectura en laptop. Cuando el panel no cabe completo, el compositor se alcanza desplazando la página.
+En móvil se conserva el cálculo según el teclado. Los dos botones de instalación usan los iconos solicitados.
+
+| Fecha | Entorno y acción | Observación | Resultado |
+|---|---|---|---|
+| 2026-10-14 | Windows, instalación de `react-icons@5.7.0` con `--ignore-scripts` | Solo se añadió la dependencia solicitada y su entrada en el lockfile. Sin ejecutar `prepare` | Pasó |
+| 2026-10-14 | Chrome sin interfaz, componentes SSR aislados con fixtures | Chat a 320, 390, 768 y 1366px en ambos temas. Sin desbordamiento horizontal | Pasó para esas ocho vistas |
+| 2026-10-14 | Misma vista a 1366 × 768px, medición de altura | Panel de 608px y área de conversación de 364px. La fórmula anterior daría 441px y 197px en ese mismo montaje | Más espacio de lectura en el montaje aislado |
+| 2026-10-14 | Capturas y medidas del interruptor y de instalación | Switch de 76 × 44px. Fondo claro igual al papel: `rgb(247,245,240)`. Luna en oscuro. Los dos iconos se renderizan, sin desbordamiento a 390px claro y 1366px oscuro | Revisión visual parcial |
+
+Las capturas usan el código y CSS reales con datos ficticios. No comprueban hidratación, clics, teclado móvil ni instalación.
+Las verificaciones técnicas compartidas y sus límites están en [portal](../backend/portal-admin.md#verificación-de-frontend-2026-10-14).
+Pendiente en Vercel: alternar con teclado y toque, navegar, recargar, abrir el teclado móvil y probar instalación.
+
+| Agent | Request | Proposal | Decision | Verification |
+|---|---|---|---|---|
+| Codex y subagente de interfaz. Modelo exacto no disponible | Adaptar el ejemplo de switch, aumentar lectura e incorporar iconos | CSS Modules, tokens actuales y altura limitada por viewport, sin styled-components | Petición explícita del usuario. No se atribuye aprobación de capturas | Vistas aisladas anteriores. Funcionamiento con sesión y dispositivos pendiente |
+
+No se modificaron manifiesto, service worker, autenticación ni iconos de la PWA. Infra debe revisar la dependencia al integrar.
+La tarea permanece en curso hasta contar con la evidencia real exigida por el proceso. Sin commits, staging ni push.
+
+### Lectura y conversación responsive · 2026-10-13
+
+Requisitos: RF-01, RF-05, RF-07, RF-08 y RF-09. Ticket de frontend pendiente de asignación.
+El usuario solicita burbujas redondeadas: respuestas a la izquierda y preguntas a la derecha.
+Las preguntas sugeridas permanecerán sobre el compositor después del primer envío.
+Se ampliará la composición del lector en escritorio, conservando una medida legible en teléfono y tablet.
+Las tarjetas tendrán separaciones más visibles y todas las rutas compartirán el encabezado editorial.
+Un botón permitirá alternar los temas claro y oscuro. La selección durará durante la navegación, sin almacenamiento persistente.
+La instalación mostrará dos botones equivalentes para Android y iPhone, con instrucciones del navegador cuando correspondan.
+Se conservan los contratos, permisos, identidad visual y mecanismos actuales de instalación de la PWA.
+Los agentes trabajarán en archivos exclusivos de chat, noticias e instalación. El coordinador ajustará encabezado, tokens y documentación.
+Se comprobarán tipos, lint, build y documentos. Las pruebas con sesión, teclado móvil e instalación real quedan pendientes del usuario.
+No se levantarán servidores ni se realizarán consultas al modelo, publicaciones, commits o push.
+
+### Validación visual 2026-10-13
+
+La implementación conserva los endpoints y la autorización. El tema modifica tokens y el color de la barra del navegador.
+No usa cookies ni almacenamiento del navegador. Perfil explica que recargar restaura el tema del dispositivo.
+El chat limita su altura al viewport visible. Cuando falta espacio, el panel permite desplazarse hasta los controles.
+La revisión detectó un mínimo CSS de 320px que contradecía el cálculo de 272px. Se retiró ese mínimo fijo.
+Las sugerencias no se parten en varias líneas. El teclado real sigue pendiente de prueba.
+La captura de tablet mostró titulares largos en una columna demasiado estrecha. Se añadieron dos columnas secundarias hasta 64rem.
+
+| Fecha | Entorno y acción | Observación | Resultado |
+|---|---|---|---|
+| 2026-10-13 | Windows, `npm run typecheck` y `npm run lint` | Sin errores | Pasó |
+| 2026-10-13 | Windows, `npm run build` | Compilación y generación de rutas completas | Pasó |
+| 2026-10-13 | Chrome sin interfaz, componentes aislados con datos ficticios | Ocho vistas de chat, lector, edición e instalación. Anchos de 320, 390, 768 y 1366px, con ambos temas. Sin desbordamiento horizontal de la página | Pasó para esas vistas |
+| 2026-10-13 | Capturas y medidas del lector aislado | En escritorio, cuerpo de 688px y fuentes laterales. En teléfono, fuentes debajo. Burbujas a cada lado y sugerencias encima del campo | Revisión visual parcial |
+| 2026-10-13 | Validador Markdown sobre los dos documentos modificados y `git diff --check` | Sin errores | Pasó |
+| 2026-10-13 | `node scripts/check-specs.mjs` | 13 errores previos en los archivos locales `FRONTEND.md`, `brief.md` e `instructions.md`. 13 avisos en documentación existente | No pasó globalmente |
+
+Las vistas aisladas usan datos ficticios y fuentes locales de reserva. No ejecutan la sesión, la hidratación ni las peticiones reales.
+No acreditan instalación, accesibilidad completa, teclado móvil, cambio de tema interactivo ni navegación en el despliegue.
+El validador requirió otra ejecución con permisos porque el entorno restringido bloqueó su proceso Git.
+No se leen los valores de `.env.local`. El build utiliza automáticamente la configuración local existente.
+
+| Agent | Request | Proposal | Decision | Verification |
+|---|---|---|---|---|
+| Codex, coordinador y tres subagentes. Modelo exacto no identificado | Ajustar chat, lector, encabezado, tema e instalación | Reutilizar componentes y tokens. Repartir archivos exclusivos. Mantener contratos | El usuario pidió estos cambios visuales y conservar la identidad editorial. No se cambian requisitos ni se asignan IDs ficticios | Tipos, lint, build, revisión independiente y capturas aisladas. Funcionalidad desplegada pendiente |
+
+Prueba pendiente del usuario: alternar ambos temas, navegar entre chat y edición y comprobar que el encabezado conserva su tamaño.
+Enviar preguntas, recorrer respuestas largas y usar sugerencias con el teclado abierto en iPhone y Android.
+Abrir una noticia con foto en teléfono, tablet y laptop. Comprobar texto, procedencia y fuentes.
+Probar ambos botones de instalación, cancelación, navegador interno y apertura desde el icono instalado.
+La evidencia debe indicar fecha, dispositivo, navegador, acción y resultado. Las tareas continúan en curso.
 
 ### Contexto del chat · 2026-10-10
 

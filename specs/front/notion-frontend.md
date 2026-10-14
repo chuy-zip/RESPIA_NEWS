@@ -9,6 +9,71 @@
 > - Investigación de Frontend: la base Investigación (R&D) de Notion. Sergio la traslada.
 > - Tareas de Frontend: sus tickets de Notion.
 
+## Ajuste visual y portal · 2026-10-14
+
+### Consumo de IA
+
+El usuario pide consultar el gasto desde Administración y autoriza la ampliación de Backend e IA para el historial diario.
+Se añade «Consumo de IA»: gasto de hoy y acumulado, saldo hasta el tope, reserva y llamadas registradas.
+Los periodos de 7, 30 y 90 días usan America/Guatemala. El gráfico tiene detalle en tabla y desglose acumulado por función.
+La fuente es el registro de la app, no la facturación del proveedor. Se incluyen todos los entornos de la base compartida.
+No se lee `.env.local`, no se envía la llave al navegador y no se llama al modelo para generar el reporte.
+
+La ampliación de GET `/api/admin/ai-usage` y su contrato quedan en el [spec del portal](../backend/portal-admin.md).
+El historial requiere `009_ai_usage_daily.sql`: revisión de Ricardo y aplicación solo después del PR a main.
+Sin esa migración, los acumulados siguen disponibles y el historial se muestra como no disponible.
+Gerardo revisará el endpoint y Rodrigo el servicio. El usuario autorizó estos cambios fuera de Frontend.
+Las pruebas reales y la conciliación con el proveedor siguen pendientes. No se cierra TKT-3 ni se inventa un ticket de frontend.
+La evidencia local incluye 14 pruebas de costos, 26 casos HTTP y 10 casos del panel con dependencias simuladas.
+Typecheck, lint y build pasaron. Las vistas aisladas incluyen móvil, escritorio, ambos temas y texto ampliado.
+El registro detallado permanece en el spec del portal. La migración y los recorridos con sesión real siguen pendientes.
+
+### Refinamientos visuales
+
+El usuario pidió un interruptor de sol y luna con papel cálido, más espacio de lectura en laptop y los iconos
+`FaAndroid` y `FaAppStoreIos`. Se implementaron con los tokens y CSS Modules actuales. Se añadió únicamente
+`react-icons@5.7.0`, sin ejecutar scripts de instalación. No cambia la instalación PWA ni la duración temporal del tema.
+En el ajuste posterior, el interruptor reduce su pista a 60 × 32px y conserva un área táctil de 60 × 44px.
+El usuario mantiene el contrato y el orden personalizado. Solicita una tarjeta principal grande y las demás uniformes,
+con diferencias de tipografía para conservar los niveles de prominencia. La evidencia queda en el spec de feed y lector.
+Tras revisar la experiencia en teléfono, solicita cuatro noticias verticales y filas horizontales desde la quinta.
+Las filas móviles limitan la entradilla, conservan estado y fecha, y permiten desplegar los créditos de la miniatura.
+El titular abre el lector completo. No se añade «Leer más». Se mantienen tablet, escritorio, orden y paginación.
+
+En `/admin`, cada noticia permite cambiar estado y motivo. El cambio se confirma con HTTP 200 y se vuelve a consultar
+el listado con los filtros vigentes. Confirmado requiere dos fuentes registradas. Este formulario no añade fuentes.
+En el paso de fuentes, la búsqueda de Pixabay muestra candidatas, autor, licencia y sugerencia de IA cuando existe.
+La elección es explícita y exige texto alternativo. Una candidata sustituye la foto propia, y viceversa.
+Privacidad explica el envío de palabras a Pixabay y de título y entradilla a Anthropic.
+
+### Contratos conectados y pendientes
+
+La integración de estados e imágenes reutiliza servicios y tipos. Se conectaron PATCH `/api/admin/articles/[id]` y POST `/api/admin/images/preview`
+con los contratos del [portal administrativo](../backend/portal-admin.md). Publicar una candidata envía solo `{ pixabayId, alt }`.
+La importación JSON y la procedencia de imágenes ya tenían interfaz. Consumo de IA se conecta en esta entrega.
+Relacionadas sigue pendiente de interfaz. Búsqueda pública y Guardados conservan sus dependencias anteriores.
+El documento de traspaso `update-backend-front-ia.md` aún describe `suggestedId: null`: el código actual ya puede sugerir una candidata.
+Esta revisión no cambia decisiones de IA ni presume la configuración o el funcionamiento de los proveedores en producción.
+
+La evidencia y los recorridos pendientes se registran en [portal](../backend/portal-admin.md#verificación-de-frontend-2026-10-14)
+y [feed y lector](feed-y-lector.md#validación-visual-2026-10-14). Los tickets de frontend siguen sin asignación.
+Se conserva el registro histórico siguiente. Sus pendientes deben leerse con la actualización de esta fecha.
+
+## Ajuste visual · 2026-10-13
+
+El usuario pidió burbujas de conversación, un encabezado uniforme, tema manual y mejor lectura en distintas pantallas.
+Las preguntas aparecen a la derecha y las respuestas a la izquierda. Las sugerencias permanecen encima del compositor.
+El lector aprovecha el ancho de escritorio y coloca las fuentes debajo del cuerpo cuando no caben al lado.
+Las noticias tienen separaciones más visibles. Se mantienen las prominencias, Georgia, Inter y la paleta editorial.
+El selector cambia todos los tokens de color. Sigue al sistema hasta la elección manual y vuelve al sistema al recargar.
+Los botones de Android y iPhone ofrecen la instalación PWA, con instrucciones cuando no existe un diálogo disponible.
+Perfil describe el comportamiento del tema. No se modifican endpoints, autenticación, manifiesto, iconos ni caché.
+
+El coordinador y tres subagentes trabajaron en archivos exclusivos. No se crearon commits ni se publicó el código.
+El [registro de verificación](feed-y-lector.md#validación-visual-2026-10-13) contiene resultados, límites y pasos pendientes.
+Las capturas aisladas con datos ficticios no sustituyen las pruebas con sesión, teclado móvil o instalación real.
+Los tickets siguen pendientes de asignación. El registro histórico de este archivo permanece sin cambios.
+
 ## Actualización de integración · 2026-10-10
 
 La integración sustituye la demo por los endpoints presentes en la rama de frontend. Conserva la identidad

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useId, useState, useSyncExternalStore } from "react";
+import { FaAndroid, FaAppStoreIos } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/Button";
 
@@ -88,8 +89,13 @@ export function InstallPrompt() {
 
   const [deferredEvent, setDeferredEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [showIosSteps, setShowIosSteps] = useState(false);
+  const [platform, setPlatform] = useState<"android" | "ios" | null>(null);
+  const [installing, setInstalling] = useState(false);
+  const [installed, setInstalled] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const id = useId();
 
   useEffect(() => {
     const onBeforeInstallPrompt = (event: Event) => {
@@ -98,41 +104,100 @@ export function InstallPrompt() {
       setDeferredEvent(event as BeforeInstallPromptEvent);
     };
 
+    const onInstalled = () => setInstalled(true);
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    return () =>
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   const install = useCallback(async () => {
-    if (!deferredEvent) return;
+    if (installing) return;
+    setPlatform("android");
+    setNotice("");
+    setError("");
+    if (!deferredEvent || environment === "in-app" || environment === "ios") return;
 
-    await deferredEvent.prompt();
-    await deferredEvent.userChoice;
-
-    // El evento se consume de un solo uso; el navegador lo vuelve a emitir más
-    // adelante si el usuario dijo que no.
-    setDeferredEvent(null);
-  }, [deferredEvent]);
+    setInstalling(true);
+    try {
+      await deferredEvent.prompt();
+      const choice = await deferredEvent.userChoice;
+      setNotice(choice.outcome === "accepted"
+        ? "Solicitud aceptada. El navegador completará la instalación."
+        : "Instalación cancelada. Puedes volver a intentarlo desde el menú del navegador.");
+    } catch {
+      setError("No se pudo abrir la instalación. Sigue los pasos del navegador que aparecen abajo.");
+    } finally {
+      // El navegador permite usar cada evento de instalación una sola vez.
+      setDeferredEvent(null);
+      setInstalling(false);
+    }
+  }, [deferredEvent, environment, installing]);
 
   const copyLink = useCallback(async () => {
+    setError("");
     try {
       await navigator.clipboard.writeText(window.location.href);
       setLinkCopied(true);
     } catch {
-      // Sin permiso de portapapeles el usuario todavía puede copiar la URL
-      // a mano desde la barra de direcciones.
+      setError("No se pudo copiar el enlace. Cópialo desde la barra de direcciones.");
     }
   }, []);
 
-  if (environment === "pending" || environment === "installed") {
+  if (environment === "pending" || environment === "installed" || installed) {
     return null;
   }
 
   return (
-    <section className={styles.install} aria-labelledby="install-title">
-      <h2 id="install-title" className={styles.title}>
+    <section className={styles.install} aria-labelledby={`${id}-title`}>
+      <h2 id={`${id}-title`} className={styles.title}>
         Instalar en el teléfono
       </h2>
+      <p className={styles.lead}>
+        Lleva tu edición a la pantalla de inicio. Se instala desde el navegador,
+        sin pasar por una tienda.
+      </p>
+
+      <div className={styles.badges}>
+        <button
+          type="button"
+          className={styles.badge}
+          onClick={install}
+          disabled={installing}
+          aria-busy={installing}
+          aria-expanded={platform === "android"}
+          aria-controls={`${id}-android`}
+        >
+          <FaAndroid className={styles.icon} aria-hidden="true" />
+          <span className={styles.badgeText}>
+            <span className={styles.caption}>{installing ? "Abriendo instalación…" : "Instalar en"}</span>
+            <span className={styles.platform}>Android</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          className={styles.badge}
+          onClick={() => {
+            setPlatform((current) => current === "ios" ? null : "ios");
+            setNotice("");
+            setError("");
+          }}
+          disabled={installing}
+          aria-expanded={platform === "ios"}
+          aria-controls={`${id}-ios`}
+        >
+          <FaAppStoreIos className={styles.icon} aria-hidden="true" />
+          <span className={styles.badgeText}>
+            <span className={styles.caption}>Instalar en</span>
+            <span className={styles.platform}>iPhone o iPad</span>
+          </span>
+        </button>
+      </div>
+
+      {notice ? <p className={styles.feedback} role="status">{notice}</p> : null}
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
 
       {environment === "in-app" ? (
         <div className={styles.action}>
@@ -144,53 +209,18 @@ export function InstallPrompt() {
             {linkCopied ? "Enlace copiado" : "Copiar enlace"}
           </Button>
         </div>
-      ) : deferredEvent ? (
-        <div className={styles.action}>
-          <p className={styles.lead}>
-            Se instala como aplicación: icono propio y pantalla completa, sin la
-            barra del navegador.
-          </p>
-          <Button onClick={install}>Instalar app</Button>
-        </div>
-      ) : environment === "ios" ? (
-        <div className={styles.ios}>
-          <p className={styles.lead}>
-            Se instala como aplicación: icono propio y pantalla completa, sin la
-            barra del navegador. En iPhone son tres toques.
-          </p>
-
-          <Button
-            variant="ghost"
-            onClick={() => setShowIosSteps((visible) => !visible)}
-            aria-expanded={showIosSteps}
-            aria-controls="ios-steps"
-          >
-            {showIosSteps ? "Ocultar los pasos" : "Ver cómo instalarla"}
-          </Button>
-
-          {showIosSteps ? (
-            <div id="ios-steps">
-              <IosInstallSteps />
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <dl className={styles.list}>
-          <div className={styles.row}>
-            <dt className={styles.platform}>Android</dt>
-            <dd className={styles.steps}>
-              Abre el sitio en Chrome y toca <b>Instalar app</b> en el menú de
-              tres puntos. Si no aparece, puede que ya la tengas instalada.
-            </dd>
-          </div>
-          <div className={styles.row}>
-            <dt className={styles.platform}>iPhone</dt>
-            <dd className={styles.steps}>
-              Toca <b>Compartir</b> y elige <b>Añadir a pantalla de inicio</b>.
-            </dd>
-          </div>
-        </dl>
-      )}
+      ) : null}
+      <div id={`${id}-android`} className={styles.instructions} hidden={platform !== "android"}>
+        <h3 className={styles.title}>Desde Chrome en Android</h3>
+        <p className={styles.steps}>
+          Abre el sitio en Chrome y toca <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b> en el menú de
+          tres puntos. Si no aparece, comprueba si ya la tienes instalada.
+        </p>
+      </div>
+      <div id={`${id}-ios`} className={styles.instructions} hidden={platform !== "ios"}>
+        <h3 className={styles.title}>Desde el navegador en iPhone o iPad</h3>
+        <IosInstallSteps />
+      </div>
     </section>
   );
 }

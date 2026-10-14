@@ -126,7 +126,7 @@ function FeedEdition({ topic, topics, refresh }: { topic?: CatalogItem; topics: 
       <div className={styles.sectionHead}><h2 id="edition-title">{topic ? `En ${topic.label.toLocaleLowerCase("es")}` : "En portada"}</h2><Button variant="ghost" onClick={refresh} disabled={loading || loadingMore}>Actualizar edición</Button></div>
       {loading ? <StateNotice state="loading" /> : <>
         {!error && <p className={styles.results} role="status">{items.length} noticias en esta edición</p>}
-        {items.length > 0 && <div className={styles.feed}>{items.map((item) => <ArticleCard key={item.article.id} article={item.article} prominence={item.prominence} reason={item.reason} topics={topics} />)}</div>}
+        {items.length > 0 && <div className={styles.feed}>{items.map((item, index) => <ArticleCard key={item.article.id} article={item.article} prominence={item.prominence} reason={item.reason} topics={topics} mobileRow={index >= 4} />)}</div>}
         {!items.length && !error && <StateNotice state="empty" title={topic ? "Este tema aún no tiene noticias" : "Todavía no hay noticias publicadas"} description={topic ? "Explora otro tema o consulta la información importante de esta edición." : "Las noticias aparecerán aquí cuando la redacción las publique."}>{topic && <Link href="/edicion">Ver toda la edición</Link>}</StateNotice>}
         {error && <ApiErrorNotice error={error} retry={items.length ? () => void loadMore() : refresh} />}
         {nextCursor && <div className={styles.pagination}><Button variant="ghost" onClick={() => void loadMore()} disabled={loadingMore}>{loadingMore ? "Cargando noticias…" : "Cargar más"}</Button></div>}
@@ -135,7 +135,7 @@ function FeedEdition({ topic, topics, refresh }: { topic?: CatalogItem; topics: 
     {!loading && importantItems.length > 0 && <section className={styles.perspective} aria-labelledby="perspective-title">
       <div className={styles.sectionHead}><h2 id="perspective-title">La otra perspectiva</h2><span>Información importante</span></div>
       <p>Las noticias importantes siguen visibles aunque no coincidan con tus preferencias o con el tema elegido.</p>
-      <div className={styles.feed}>{importantItems.map((item) => <ArticleCard key={item.article.id} article={item.article} prominence={item.prominence} reason={item.reason} topics={topics} />)}</div>
+      <div className={styles.feed}>{importantItems.map((item) => <ArticleCard key={item.article.id} article={item.article} prominence={item.prominence} reason={item.reason} topics={topics} mobileRow />)}</div>
     </section>}
   </>;
 }

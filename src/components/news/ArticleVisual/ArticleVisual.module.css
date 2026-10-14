@@ -10,3 +10,22 @@
 .origin { position: absolute; inset-inline-start: var(--space-3); bottom: var(--space-3); max-width: calc(100% - 2 * var(--space-3)); padding: var(--space-1) var(--space-2); background: var(--color-surface-raised); color: var(--color-ink); font-size: var(--text-xs); }
 .unavailable { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--space-5); color: var(--color-ink-muted); }
 .figure figcaption a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+.mobileCredits { display: none; }
+@media (width < 40rem) {
+  .thumbnail { min-width: 0; }
+  .thumbnail .photo { aspect-ratio: 1; }
+  .thumbnail .origin { inset-inline-start: var(--space-1); bottom: var(--space-1); max-width: calc(100% - 2 * var(--space-1)); line-height: 1.25; overflow-wrap: anywhere; }
+  .thumbnail .unavailable { padding: var(--space-1); font-size: var(--text-xs); line-height: 1.25; }
+  .thumbnail .photo[data-unavailable="true"] { display: grid; aspect-ratio: auto; min-height: 5.25rem; }
+  .thumbnail .photo[data-unavailable="true"] .unavailable { position: static; }
+  .thumbnail .photo[data-unavailable="true"] .origin { position: static; margin: var(--space-1); }
+  .thumbnail figcaption { padding: 0; }
+  .thumbnail .fullCredits { display: none; }
+  .mobileCredits { display: block; overflow-wrap: anywhere; }
+  .mobileCredits summary { display: flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: var(--touch-target); padding-inline: var(--space-1); cursor: pointer; text-decoration: underline; }
+  .mobileCredits summary::after { content: "+"; }
+  .mobileCredits summary:focus-visible, .mobileCredits a:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+  .mobileCredits[open] summary::after { content: "−"; }
+  .mobileCredits > div { padding: var(--space-1); }
+  .thumbnail figcaption a { display: flex; overflow-wrap: anywhere; }
+}

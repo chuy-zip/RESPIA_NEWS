@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+
 import styles from "./SiteHeader.module.css";
 
 interface SiteHeaderProps {
@@ -13,7 +15,6 @@ interface SiteHeaderProps {
 // El layout obtiene estos permisos en servidor. Cada página vuelve a autorizar el acceso.
 export function SiteHeader({ signedIn, admin }: SiteHeaderProps) {
   const pathname = usePathname();
-  const compact = pathname !== "/" && pathname !== "/edicion" && !pathname.startsWith("/temas/");
   const links = signedIn
     ? [{ href: "/chat", label: "Preguntar" }, { href: "/edicion", label: "Edición" }, { href: "/buscar", label: "Buscar" }, { href: "/perfil", label: "Perfil" }]
     : [{ href: "/", label: "Inicio" }, { href: "/#acceso", label: "Iniciar sesión" }, { href: "/#instalar", label: "Instalar" }];
@@ -24,10 +25,11 @@ export function SiteHeader({ signedIn, admin }: SiteHeaderProps) {
   }
 
   return (
-    <header className={styles.header} data-compact={compact}>
+    <header className={styles.header}>
       <div className={styles.utility}>
         <span>Tecnología · Economía · Finanzas</span>
-        <span>Una perspectiva más amplia</span>
+        <span className={styles.perspective}>Una perspectiva más amplia</span>
+        <ThemeToggle />
       </div>
       <Link href="/" className={styles.brand} aria-label="The Meridian Times, inicio">
         <svg

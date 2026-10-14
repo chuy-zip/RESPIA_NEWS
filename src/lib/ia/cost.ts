@@ -116,6 +116,30 @@ export async function recordExternalSearch(): Promise<void> {
   await record("buscarExterno", "tavily-basic", { input_tokens: 0, output_tokens: 0 }, 0, 1);
 }
 
+export type AiUsageDays = 7 | 30 | 90;
+
+/** Solo admite las ventanas que puede consultar el portal. No acepta parámetros repetidos. */
+export function parseAiUsageDays(params: URLSearchParams): AiUsageDays {
+  const values = params.getAll("days");
+  if (values.length === 0) return 30;
+  const value = values[0];
+  if (values.length !== 1 || value === undefined || !["7", "30", "90"].includes(value)) {
+    throw new RangeError("Selecciona un período de 7, 30 o 90 días.");
+  }
+  return Number(value) as AiUsageDays;
+}
+
+export interface AiUsageDay {
+  date: string;
+  calls: number;
+  costUsd: number;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+  externalCredits: number;
+}
+
 /** Respuesta de GET /api/admin/ai-usage (ficha 11). Un dato que no se puede leer va como null, nunca como 0. */
 export interface AiUsageSummary {
   currency: "USD";
@@ -124,6 +148,15 @@ export interface AiUsageSummary {
   reserved: number;
   applicationLimit: number;
   byFunction: { functionName: string; calls: number; costUsd: number; externalCredits: number }[];
+  byFunctionAvailable: boolean;
+  /** Fecha de consulta, no fecha de la última llamada ni de la facturación del proveedor. */
+  updatedAt: string;
+  daily: {
+    timeZone: "America/Guatemala";
+    from: string;
+    to: string;
+    items: AiUsageDay[];
+  } | null;
   availability: "available" | "limit_reached" | "unavailable";
 }
 
@@ -134,13 +167,50 @@ interface SummaryRow {
   external_credits: number | string;
 }
 
+function dailySummary(rows: unknown, days: AiUsageDays): AiUsageSummary["daily"] {
+  if (!Array.isArray(rows) || rows.length !== days) return null;
+  const items: AiUsageDay[] = [];
+  let previousDate: number | null = null;
+
+  for (const candidate of rows as unknown[]) {
+    if (!candidate || typeof candidate !== "object") return null;
+    const row = candidate as Record<string, unknown>;
+    if (typeof row.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(row.date)) return null;
+    const timestamp = Date.parse(`${row.date}T00:00:00Z`);
+    if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== row.date ||
+      (previousDate !== null && timestamp - previousDate !== 86_400_000)) return null;
+    const columns = ["calls", "cost_usd", "input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens", "external_credits"];
+    const values = columns.map((key) => {
+      const value: unknown = row[key];
+      return typeof value === "number" || (typeof value === "string" && value.trim() !== "") ? Number(value) : NaN;
+    });
+    if (values.some((value, index) => !Number.isFinite(value) || value < 0 || (index !== 1 && !Number.isSafeInteger(value)))) return null;
+    const [calls, costUsd, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, externalCredits] = values as [number, number, number, number, number, number, number];
+    items.push({ date: row.date, calls, costUsd, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, externalCredits });
+    previousDate = timestamp;
+  }
+
+  // La ventana viene de una sola consulta SQL, incluso si cambia el día mientras responde.
+  return { timeZone: "America/Guatemala", from: items[0]!.date, to: items[items.length - 1]!.date, items };
+}
+
 /** Resumen de gasto para el portal. La ruta verifica el rol: la base solo devuelve el desglose a administradores. */
-export async function getAiUsageSummary(): Promise<AiUsageSummary> {
+export async function getAiUsageSummary(days: AiUsageDays = 30): Promise<AiUsageSummary> {
+  if (![7, 30, 90].includes(days)) throw new RangeError("Selecciona un período de 7, 30 o 90 días.");
   const supabase = await createClient();
-  const [total, byFunction] = await Promise.all([supabase.rpc("ai_spend_total"), supabase.rpc("ai_usage_summary")]);
+  const [totalResult, functionResult, dailyResult] = await Promise.allSettled([
+    supabase.rpc("ai_spend_total"),
+    supabase.rpc("ai_usage_summary"),
+    supabase.rpc("ai_usage_daily", { p_days: days }),
+  ]);
+  const unavailable = { data: null, error: true };
+  const total = totalResult.status === "fulfilled" ? totalResult.value : unavailable;
+  const byFunction = functionResult.status === "fulfilled" ? functionResult.value : unavailable;
+  const daily = dailyResult.status === "fulfilled" ? dailyResult.value : unavailable;
 
   const spentValue = Number(total.data);
   const spent = total.error || total.data === null || !Number.isFinite(spentValue) ? null : spentValue;
+  const byFunctionAvailable = !byFunction.error && Array.isArray(byFunction.data);
 
   return {
     currency: "USD",
@@ -148,14 +218,17 @@ export async function getAiUsageSummary(): Promise<AiUsageSummary> {
     remaining: spent === null ? null : Math.max(0, SPEND_LIMIT_USD - spent),
     reserved: DEMO_RESERVE_USD,
     applicationLimit: SPEND_LIMIT_USD,
-    byFunction: byFunction.error
-      ? []
-      : ((byFunction.data ?? []) as SummaryRow[]).map((row) => ({
+    byFunction: byFunctionAvailable
+      ? (byFunction.data as SummaryRow[]).map((row) => ({
           functionName: row.function_name,
           calls: Number(row.calls),
           costUsd: Number(row.cost_usd),
           externalCredits: Number(row.external_credits),
-        })),
+        }))
+      : [],
+    byFunctionAvailable,
+    updatedAt: new Date().toISOString(),
+    daily: daily.error ? null : dailySummary(daily.data, days),
     availability: spent === null ? "unavailable" : spent >= SPEND_LIMIT_USD ? "limit_reached" : "available",
   };
 }

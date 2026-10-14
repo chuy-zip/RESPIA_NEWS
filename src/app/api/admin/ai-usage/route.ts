@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ForbiddenError, requireAdmin, UnauthorizedError } from "@/lib/auth/dal";
-import { getAiUsageSummary, type AiUsageSummary } from "@/lib/ia/cost";
+import { getAiUsageSummary, parseAiUsageDays, type AiUsageDays, type AiUsageSummary } from "@/lib/ia/cost";
 import type { ApiErrorResponse } from "@/types/joke";
 
 /**
@@ -19,7 +19,7 @@ function error(status: number, code: string, message: string) {
   return NextResponse.json(body, { status, headers: PRIVATE });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await requireAdmin();
   } catch (failure) {
@@ -33,8 +33,15 @@ export async function GET() {
     return error(503, "SERVICE_UNAVAILABLE", "No se pudo leer el consumo de IA. Intenta de nuevo en unos minutos.");
   }
 
+  let days: AiUsageDays;
   try {
-    const body: { data: AiUsageSummary; meta: Record<string, never> } = { data: await getAiUsageSummary(), meta: {} };
+    days = parseAiUsageDays(new URL(request.url).searchParams);
+  } catch {
+    return error(400, "INVALID_RANGE", "Selecciona un período de 7, 30 o 90 días. No repitas el parámetro days.");
+  }
+
+  try {
+    const body: { data: AiUsageSummary; meta: Record<string, never> } = { data: await getAiUsageSummary(days), meta: {} };
     return NextResponse.json(body, { headers: PRIVATE });
   } catch (failure) {
     // El detalle se queda en los logs de Vercel; el cliente recibe un mensaje que puede mostrar.

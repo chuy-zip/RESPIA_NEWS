@@ -55,9 +55,10 @@ Toda pantalla o ruta que dependa del rol se probó con una cuenta administradora
 | ✅ | Contenido protegido: 401 o pantalla bloqueada sin sesión | `RF-02` | Prueba del 2026-09-23: la API responde 401 sin sesión. Ver [INFRA_HANDOFF.md](../../docs/INFRA_HANDOFF.md) |
 | ✅ | Tabla de administradores, `private.is_admin()` y administradores cargados | `RF-03` | Bitácora 2026-10-04, script `supabase/migrations/001_admins.sql`, commit `8b26007`; verificación del equipo en el SQL Editor el 4-oct |
 | ✅ | Proveedor Email desactivado | `RF-03` | Bitácora 2026-10-04: el endpoint público de ajustes devuelve solo Google |
-| ✅ | Icono de administración y pantalla `/admin` | `RF-03` | Bitácora 2026-10-04, commit `766ddf0`. Probado sin sesión; falta la prueba con cuentas |
-| ⏳ | Probar `RF-03` con una cuenta administradora y una común, y anotar el resultado | `RF-03` | |
-| ⏳ | Crear `/privacidad` y enlazarla desde la portada | `RF-06` | Creada el 2026-10-07 (`src/app/privacidad/page.tsx`) y compilada; el servidor local responde 200. Se enlaza desde el pie de la portada y bajo el botón de iniciar sesión (que aparece en `/`, `/contenido` y `/admin` sin sesión). Falta probarla desplegada |
+| ✅ | Icono de administración y pantalla `/admin` | `RF-03` | Bitácora 2026-10-04, commit `766ddf0`. Probado sin sesión |
+| ✅ | Probar `RF-03` con una cuenta administradora y una común | `RF-03` | Prueba del equipo, 2026-10-13, en producción: el escudo y el panel salen solo con la cuenta administradora; con la común no |
+| ✅ | Crear `/privacidad` y enlazarla desde la portada | `RF-06` | Creada el 2026-10-07 (`src/app/privacidad/page.tsx`). Se enlaza desde el pie de la portada y bajo el botón de iniciar sesión. Producción responde 200 en `/privacidad` (comprobado desde afuera el 2026-10-13) |
+| ✅ | Restablecer el inicio de sesión tras apagarse el proyecto de Google Cloud | `RF-02` | Bitácora 2026-10-13. Con el cliente nuevo, dos cuentas iniciaron sesión, no se duplicó ningún usuario y los administradores conservan el rol |
 | — | ~~Publicar la pantalla de consentimiento de Google~~ | `RF-06` | Descartada el 2026-10-07: con permisos básicos no hace falta. Bitácora 2026-10-07, D-12 |
 | ✅ | Probar el inicio de sesión con una cuenta ajena al equipo | `RF-06` | Prueba del equipo reportada el 2026-10-07: una cuenta que no es del equipo ni está definida en Google Cloud inició sesión sin problema |
 | ⏳ | Mantener `/privacidad` al día: cada feature que guarde un dato nuevo del usuario la actualiza en el mismo cambio | `RF-06` | Tarea permanente |

@@ -145,10 +145,10 @@ por el registro de cambios.
 |---|---|---|
 | RF-01 | En curso | Instalación verificada en iPhone y Android; falta la experiencia final |
 | RF-02 | Hecho | Verificado en iPhone y Android instalados |
-| RF-03 | En curso | Acceso y rol listos; faltan las funciones del portal |
+| RF-03 | En curso | Acceso y rol listos y probados con cuenta administradora y común; faltan las funciones del portal |
 | RF-04 | Pendiente | |
 | RF-05 | Hecho | Enlace público e instrucciones de instalación en la app |
-| RF-06 | En curso | `/privacidad` creada y cuenta ajena probada; falta probar la página desplegada |
+| RF-06 | Hecho | `/privacidad` desplegada y enlazada; cuenta ajena probada |
 | RF-07 | En curso | `POST /api/chat` hecho (PR #11), sin el módulo del modelo. Diseño en `specs/ia/chat.md` (D-34, D-25) |
 | RF-08 a RF-11 | En curso | Recomendador y `GET /api/feed` hechos (PR #5, #8, #9, #11). Falta la prueba con dos cuentas reales. Spec: `specs/ia/recomendacion.md` |
 | RF-12 a RF-14 | En curso | Contexto y validación hechos (PR #11). Falta el módulo del modelo, que espera créditos (D-34, D-30) |

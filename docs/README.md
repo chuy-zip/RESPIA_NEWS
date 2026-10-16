@@ -10,6 +10,7 @@ IA están en [AGENTS.md](../AGENTS.md).
 | [DECISIONES.md](DECISIONES.md) | ¿Qué se decidió, por qué y qué decisión reemplazó a cuál? |
 | [`specs/`](../specs/) | ¿Qué hace cada feature hoy, cómo se prueba y qué tareas tiene? |
 | `features/<feature>/bitacora.md` | ¿Qué ciclos cambiaron una decisión y qué hizo el agente? |
+| [INFRAESTRUCTURA.md](INFRAESTRUCTURA.md) | ¿Qué servicios componen el sistema y cuánto cuesta cada uno? (vista corta, con diagrama) |
 | [INFRA_HANDOFF.md](INFRA_HANDOFF.md) | ¿Cómo está montada la infraestructura y cómo se opera? |
 | [`supabase/migrations/`](../supabase/migrations/) | ¿Cómo se crea la base? Scripts numerados que se ejecutan a mano en Supabase |
 | [Enunciado del curso](Proyecto%202%20AI%20Assisted%20News%20App.pdf) | ¿Qué pide el curso? |

@@ -135,22 +135,26 @@ flowchart LR
 
   subgraph Vercel["Vercel Hobby · Next.js 16"]
     P["proxy.ts<br/>refresca la sesión"]
-    PG["Páginas<br/>/ y /contenido"]
-    API["Route Handlers<br/>/api/joke · /auth/callback"]
-    DAL["DAL<br/>getCurrentUser · requireUser"]
-    SVC["Servicios<br/>lib/services · server-only"]
+    PG["Páginas<br/>chat · edición · buscar · perfil · admin"]
+    API["Route Handlers<br/>/api/chat · /api/feed · /api/articles<br/>/api/profile · /api/interactions · /api/admin/*"]
+    DAL["DAL<br/>getCurrentUser · isAdmin · requireAdmin"]
+    SVC["Servicios de datos<br/>lib/services · server-only"]
+    REC["Recomendador<br/>lib/recomendacion · sin IA"]
+    IAM["Módulos de IA<br/>lib/ia · chat · imágenes<br/>costos · búsqueda externa"]
     SW["Service worker<br/>public/sw.js"]
   end
 
   subgraph Supabase["Supabase Free"]
     AUTH["Auth<br/>PKCE + cookies de sesión"]
-    DB[("Postgres + RLS<br/>sin tablas todavía")]
+    DB[("Postgres + RLS<br/>noticias · perfiles · interacciones<br/>admins · ai_usage")]
+    ST[("Storage<br/>bucket article-images")]
   end
 
   G["Google OAuth<br/>Google Cloud"]
-  J["JokeAPI v2<br/>sustituto de noticias"]
-  IA["Modelo de IA<br/>D-22: OpenRouter en pruebas"]
-  BX["Búsqueda externa<br/>D-25: RSS y Tavily"]
+  CL["Anthropic API<br/>Claude Haiku 5.5"]
+  TV["Tavily<br/>búsqueda externa"]
+  RS["RSS<br/>sitios permitidos"]
+  PX["Pixabay<br/>banco de imágenes"]
 
   A --> P
   B --> P
@@ -161,14 +165,21 @@ flowchart LR
   API --> DAL
   DAL -->|"getClaims verifica el JWT"| AUTH
   API --> SVC
-  SVC --> J
-  SVC -.-> IA
-  SVC -.-> BX
-  SVC -.-> DB
+  SVC --> DB
+  SVC --> ST
+  SVC --> REC
+  SVC --> PX
+  SVC --> IAM
+  IAM --> CL
+  IAM --> RS
+  IAM --> TV
+  IAM -->|"registra el gasto"| DB
   AUTH <--> G
 ```
 
-Las líneas punteadas son conexiones **previstas** que aún no existen en el código.
+Todas las conexiones del diagrama existen en el código. Dos reglas lo sostienen:
+solo los módulos de `lib/ia` hablan con un modelo, y todos lo hacen a través del
+registro de costo (diagrama 4.6); el recomendador del feed no usa ningún modelo.
 
 ### 4.2 Flujo de login
 
@@ -250,6 +261,70 @@ Consecuencia práctica: como `/` y `/contenido` leen la sesión, Next.js las mar
 muestra la pantalla "Sin conexión" (`public/offline.html`); todavía **no hay
 contenido disponible offline**. Eso es trabajo futuro del feed y de las noticias
 (solo se podrá cachear lo que sea público).
+
+### 4.5 Qué pasa cuando alguien pregunta en el chat
+
+```mermaid
+flowchart TD
+  Q["El lector envía una pregunta<br/>POST /api/chat"] --> S{"¿Hay sesión?"}
+  S -- No --> E401["401"]
+  S -- Sí --> V{"¿Pregunta válida?<br/>hasta 500 caracteres · últimos 4 turnos"}
+  V -- No --> E422["422"]
+  V -- Sí --> C["Arma el contexto sin IA<br/>noticias recomendadas del feed<br/>más búsqueda de texto en Postgres"]
+  C --> T{"¿La búsqueda de texto<br/>encontró noticias?"}
+  T -- Sí --> N
+  T -- No --> X["Busca fuentes externas<br/>primero RSS gratis, luego Tavily"]
+  X --> N{"¿Hay noticias<br/>o fuentes externas?"}
+  N -- No --> NC["Sin cobertura<br/>no se llama al modelo"]
+  N -- Sí --> L{"¿El gasto de IA<br/>está bajo el tope?"}
+  L -- No --> E429["429 AI_LIMIT_REACHED"]
+  L -- Sí --> LLM["Claude Haiku 5.5<br/>respuesta JSON estructurada"]
+  LLM -. "si falla" .-> UN["Servicio no disponible"]
+  LLM --> R["Registra tokens y costo<br/>en ai_usage"]
+  R --> VAL["El servidor valida la salida<br/>solo IDs del contexto · estado desde la base<br/>solo URLs de sitios permitidos"]
+  VAL --> O{"¿Qué devolvió el modelo?"}
+  O -- "Fuera de alcance" --> OS["Respuesta fija:<br/>solo responde sobre noticias"]
+  O -- "Sin fuente que lo respalde" --> NC2["Sin cobertura"]
+  O -- "Con fuente" --> AN["Respuesta con citas<br/>estado de cada noticia · fuente externa<br/>marcada como no verificada"]
+```
+
+El modelo **no decide qué es verdad**: solo redacta con lo que el servidor le pasa.
+El estado de cada noticia (confirmada, en desarrollo, no confirmada) sale de la base,
+y una respuesta sin una fuente que la respalde no se muestra. Buscar y ordenar
+noticias no usa ningún modelo.
+
+### 4.6 Dónde interviene un modelo y quién decide
+
+```mermaid
+flowchart LR
+  subgraph SinIA["Sin modelo de IA"]
+    F["Feed y relacionadas<br/>región 0.35 · interés 0.30<br/>recencia 0.20 · importancia 0.15"]
+    PUB["Publicar una noticia<br/>un estado confirmado exige 2 fuentes o más"]
+  end
+
+  subgraph ConIA["Con modelo de IA"]
+    CH["Chat"]
+    IMG["Imagen de una noticia sin foto"]
+  end
+
+  GW["lib/ia/cost · withSpendLimit<br/>lee el gasto antes de llamar<br/>y registra tokens y costo después"]
+  LIM["Tope de USD 14 hasta la demo<br/>reserva de USD 6 de los 20"]
+
+  H1["Decide el servidor<br/>IDs, estado y URLs permitidas"]
+  H2["Decide el administrador<br/>confirma o descarta la imagen"]
+  H3["Decide una persona<br/>publica y asigna el estado"]
+
+  CH --> GW
+  IMG --> GW
+  GW --> LIM
+  CH --> H1
+  IMG --> H2
+  PUB --> H3
+```
+
+Cada función de IA pasa por el mismo registro de costo y por el mismo tope: si no
+puede leer el gasto, no llama al modelo. En ningún caso el modelo publica ni asigna
+el estado de una noticia; eso es siempre de una persona.
 
 ---
 
